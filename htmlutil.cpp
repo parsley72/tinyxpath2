@@ -46,9 +46,9 @@ void v_levelize (int i_level, FILE * Fp_out, bool o_html)
 /// Dumps an XML tree to an HTML document
 /// \n This is a recursive function, called again at each element in the tree
 void v_out_html (
-	FILE * Fp_out,             ///< Output HTML file
+	FILE * Fp_out,                   ///< Output HTML file
 	const TiXmlNode * XNp_source,    ///< Input XML tree
-	unsigned u_level)          ///< Current level
+	unsigned u_level)                ///< Current level
 {
 	TiXmlNode * XNp_child;
 	TiXmlAttribute * XAp_att;
@@ -56,94 +56,77 @@ void v_out_html (
 	XNp_child = XNp_source -> FirstChild ();
 	while (XNp_child)
 	{
-		if (XNp_child -> ToDocument ())
-		{
-			fprintf (Fp_out, "\nStart document\n");
-		}
-		else
-		if (XNp_child -> ToElement ())
-		{
-			v_levelize ((int) u_level, Fp_out, true);
-			fprintf (Fp_out, "&lt;");   // '<'
-			if (XNp_child -> GetUserValue () & l_select_mask)
-				fprintf (Fp_out, "<b>");
-			fprintf (Fp_out, "%s", XNp_child -> ToElement () -> Value ());
-			if (XNp_child -> GetUserValue () & l_select_mask)
-				fprintf (Fp_out, "</b>");
-         // fprintf (Fp_out, "<small>[%d]</small>", XNp_child -> GetUserValue ());
-			XAp_att = XNp_child -> ToElement () -> FirstAttribute ();
-			while (XAp_att)
-			{
-				if (XAp_att -> GetUserValue () & l_select_mask)
+      switch (XNp_child -> Type ())
+      {
+         case TiXmlNode::DOCUMENT :
+			   fprintf (Fp_out, "\nStart document\n");
+            break;
+
+		   case TiXmlNode::ELEMENT :
+			   v_levelize ((int) u_level, Fp_out, true);
+			   fprintf (Fp_out, "&lt;");   // '<'
+			   if (XNp_child -> GetUserValue () & l_select_mask)
 				   fprintf (Fp_out, "<b>");
-				fprintf (Fp_out, " %s='%s'", XAp_att -> Name (), XAp_att -> Value ());
-				if (XAp_att -> GetUserValue () & l_select_mask)
+			   fprintf (Fp_out, "%s", XNp_child -> ToElement () -> Value ());
+			   if (XNp_child -> GetUserValue () & l_select_mask)
 				   fprintf (Fp_out, "</b>");
-				XAp_att = XAp_att -> Next ();
-			}
-			if (XNp_child -> FirstChild ())
-			   fprintf (Fp_out, "&gt;<br>\n");   // '>\n'
-			else
-				fprintf (Fp_out, " /&gt;<br>\n");
-		}
-		else
-		if (XNp_child -> ToComment ())
-		{
-			fprintf (Fp_out, "&lt;!-- %s --&gt;<br>\n", XNp_child -> ToComment () -> Value ());
-		}
-		else
-		if (XNp_child -> ToText ())
-		{
-			fprintf (Fp_out, "%s\n", XNp_child -> ToText () -> Value ());
-		}
-		else
-		if (XNp_child -> ToDeclaration ())
-		{
-		}
-		else
-		if (XNp_child -> ToUnknown ())
-		{
-		}
-		else
-			assert (false);
+            // fprintf (Fp_out, "<small>[%d]</small>", XNp_child -> GetUserValue ());
+			   XAp_att = XNp_child -> ToElement () -> FirstAttribute ();
+			   while (XAp_att)
+			   {
+				   if (XAp_att -> GetUserValue () & l_select_mask)
+				      fprintf (Fp_out, "<b>");
+				   fprintf (Fp_out, " %s='%s'", XAp_att -> Name (), XAp_att -> Value ());
+				   if (XAp_att -> GetUserValue () & l_select_mask)
+				      fprintf (Fp_out, "</b>");
+				   XAp_att = XAp_att -> Next ();
+			   }
+			   if (XNp_child -> FirstChild ())
+			      fprintf (Fp_out, "&gt;<br>\n");   // '>\n'
+			   else
+				   fprintf (Fp_out, " /&gt;<br>\n");
+            break;
+
+		   case TiXmlNode::COMMENT :
+			   fprintf (Fp_out, "&lt;!-- %s --&gt;<br>\n", XNp_child -> ToComment () -> Value ());
+            break;
+		   case TiXmlNode::TEXT :
+			   fprintf (Fp_out, "%s\n", XNp_child -> ToText () -> Value ());
+            break;
+		   case TiXmlNode::UNKNOWN :
+		   case TiXmlNode::DECLARATION :
+            break;
+		   default :
+			   assert (false);
+      }
 
 		v_out_html (Fp_out, XNp_child, u_level + 1);
 
-		if (XNp_child -> ToDocument ())
-		{
-			fprintf (Fp_out, "\nEnd document\n");
-		}
-		else
-		if (XNp_child -> ToElement ())
-		{
-			if (XNp_child -> FirstChild ())
-			{
-				v_levelize ((int) u_level, Fp_out, true);
-				fprintf (Fp_out, "&lt;");
-				if (XNp_child -> GetUserValue () & l_select_mask)
-					fprintf (Fp_out, "<b>");
-				fprintf (Fp_out, "/%s", XNp_child -> ToElement () -> Value ());
-				if (XNp_child -> GetUserValue () & l_select_mask)
-					fprintf (Fp_out, "</b>");
-				fprintf (Fp_out, "&gt;<br>\n");   // '>\n'
-			}
-		}
-		else
-		if (XNp_child -> ToComment ())
-		{
-		}
-		else
-		if (XNp_child -> ToText ())
-		{
-		}
-		else
-		if (XNp_child -> ToDeclaration ())
-		{
-		}
-		else
-		if (XNp_child -> ToUnknown ())
-		{
-		}
+      switch (XNp_child -> Type ())
+      {
+         case TiXmlNode::DOCUMENT :
+   			fprintf (Fp_out, "\nEnd document\n");
+            break;
+		   case TiXmlNode::ELEMENT :
+			   if (XNp_child -> FirstChild ())
+			   {
+				   v_levelize ((int) u_level, Fp_out, true);
+				   fprintf (Fp_out, "&lt;");
+				   if (XNp_child -> GetUserValue () & l_select_mask)
+					   fprintf (Fp_out, "<b>");
+				   fprintf (Fp_out, "/%s", XNp_child -> ToElement () -> Value ());
+				   if (XNp_child -> GetUserValue () & l_select_mask)
+					   fprintf (Fp_out, "</b>");
+				   fprintf (Fp_out, "&gt;<br>\n");   // '>\n'
+			   }
+            break;
+         case TiXmlNode::COMMENT :
+         case TiXmlNode::TEXT :
+		   case TiXmlNode::UNKNOWN :
+		   case TiXmlNode::DECLARATION :
+         default :
+            break;
+      }
 		XNp_child = XNp_child -> NextSibling ();
 	}
 }

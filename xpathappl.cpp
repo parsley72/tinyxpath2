@@ -31,23 +31,26 @@ distribution.
 #include "xpathappl.h"
 #include "htmlutil.h"
 
-xpath_from_source::xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr)
+/// XPath main class constructor
+xpath_from_source::xpath_from_source (
+   TiXmlNode * XNp_source_tree,  ///< Input source XML tree
+   const char * cp_in_expr)      ///< Input XPath expression
    : xpath_stream (cp_in_expr)
 {
    XNp_source = XNp_source_tree;
-   XDp_target = new TiXmlDocument;
-}
-xpath_from_source::~ xpath_from_source ()
-{
-   assert (XDp_target);
-   delete XDp_target;
 }
 
+/// XPath destructor
+xpath_from_source::~ xpath_from_source ()
+{
+}
+
+/// Syntax execution. Redefined from xpath_stream::v_action
 void xpath_from_source::v_action (
-	unsigned u_rule, 
-	unsigned u_sub, 
-	unsigned u_variable, 
-	const char * cp_explain)
+	xpath_construct xc_rule,      ///< XPath Rule 
+	unsigned u_sub,               ///< Rule sub number
+	unsigned u_variable,          ///< Parameter, depends on the rule
+	const char * cp_literal)      ///< Input literal, depends on the rule
 {
    TIXML_STRING S_name, S_name_2;
    work_step * wp_step, * wp_step_2;
@@ -57,7 +60,7 @@ void xpath_from_source::v_action (
    unsigned u_nb_predicate, u_predicate, u_arg;
    work_item ** wipp_list;
 
-   switch (u_rule)
+   switch (xc_rule)
    {
       case xpath_absolute_location_path :
          // [2]
@@ -170,7 +173,7 @@ void xpath_from_source::v_action (
                break;
             case 2 :
                printf ("[7] Node type is processing-instruction ()");
-               wsp_stack -> v_push (new work_node_test (2, lex_processing_instruction, cp_explain));
+               wsp_stack -> v_push (new work_node_test (2, lex_processing_instruction, cp_literal));
                break;
             case 3 :
                S_name = wsp_stack -> cp_get_top_value ();
@@ -215,14 +218,14 @@ void xpath_from_source::v_action (
 					assert (false);
 					break;
             case 2 :
-					wsp_stack -> v_push (new work_expr (e_work_expr_literal, 0, cp_explain));
+					wsp_stack -> v_push (new work_expr (e_work_expr_literal, 0, cp_literal));
 					break;
             case 3 :
                // Houston, we have a number
-					if (strchr (cp_explain, '.'))
-						wsp_stack -> v_push (new work_expr (atof (cp_explain)));
+					if (strchr (cp_literal, '.'))
+						wsp_stack -> v_push (new work_expr (atof (cp_literal)));
 					else
-                  wsp_stack -> v_push (new work_expr (e_work_expr_value, atoi (cp_explain)));
+                  wsp_stack -> v_push (new work_expr (e_work_expr_value, atoi (cp_literal)));
                break;
             case 4 :
                // Houston : it's getting worse : we have a function call
@@ -468,13 +471,13 @@ void xpath_from_source::v_action (
          break;
       case xpath_xml_prefix :
          // [207]
-         printf ("[207]   Prefix is %s\n", cp_explain);
-         wsp_stack -> v_push (new work_string (cp_explain));
+         printf ("[207]   Prefix is %s\n", cp_literal);
+         wsp_stack -> v_push (new work_string (cp_literal));
          break;
       case xpath_xml_local_part :
          // [208]
-         printf ("[208]   LocalPart is %s\n", cp_explain);
-         wsp_stack -> v_push (new work_string (cp_explain));
+         printf ("[208]   LocalPart is %s\n", cp_literal);
+         wsp_stack -> v_push (new work_string (cp_literal));
          break;
 		default :
 			// printf ("[%d]   Skipping !\n", u_rule);
@@ -483,7 +486,7 @@ void xpath_from_source::v_action (
 }
 
 /// If we don't have an XPath string result yet, let's compute it now
-TIXML_STRING xpath_from_source::S_evaluate_xpath_string (long l_mark_level)
+TIXML_STRING xpath_from_source::S_evaluate_xpath_string ()
 {
    TiXmlNode * XNp_out, * XNp_top;
    TiXmlAttribute * XAp_out;
@@ -549,7 +552,7 @@ TIXML_STRING xpath_from_source::S_run (
 
    v_retain_attrib_tree (XDp_target, l_mark_level);
 
-   S_xpath_res = S_evaluate_xpath_string (l_mark_level);
+   S_xpath_res = S_evaluate_xpath_string ();
 
 	if (Fp_html)
 	{
@@ -583,15 +586,24 @@ TIXML_STRING xpath_from_source::S_apply_xpath (
    return S_res;
 }
 
+/// Creates the work frame for the XPath evaluation : assign an empty stack, create a dummy document to initialize the
+/// target
 void xpath_from_source::v_init ()
 {
    wsp_stack = new work_stack;
+   XDp_target = new TiXmlDocument;
    XDp_target -> Parse ("<?xml version=\"1.0\"?><xpath:root/>");
    XEp_root = XDp_target -> FirstChildElement ();
    assert (XEp_root);
 }
 
+/// Destruction of the stack and output target
 void xpath_from_source::v_close ()
 {
+   assert (XDp_target);
+   delete XDp_target;
+   XDp_target = NULL;
+   assert (wsp_stack);
    delete wsp_stack;
+   wsp_stack = NULL;
 }

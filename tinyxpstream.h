@@ -211,14 +211,6 @@ public :
       }
    }
 
-   #ifdef TINYXPATH_DEBUG
-      /// (debug) dump the lexical list
-      void v_lexico_dump (const char * cp_title)
-      {
-         tlp_list -> v_dump (cp_title);
-      }
-   #endif
-
    /// Evaluate a XPath expression \n
    /// Right now, it decodes the lexical and syntax contents and dump it
    void v_evaluate ()
@@ -227,7 +219,7 @@ public :
       tlp_list -> v_syntax_decode ();
    }
 
-   virtual void v_action (unsigned , unsigned , unsigned , const char * )
+   virtual void v_action (xpath_construct , unsigned , unsigned , const char * )
 	{
 		// Must be redefined
 		assert (false);

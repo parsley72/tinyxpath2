@@ -73,12 +73,9 @@ public :
    token_syntax_decoder () : token_list ()   {}
    virtual ~ token_syntax_decoder ()   {}
    void v_syntax_decode ();
-   virtual void v_action (unsigned /* u_rule */, unsigned /* u_sub */, 
-		unsigned /* u_variable */ = 0, const char * /* cp_explain */ = "")
-	{
-		// must be redefined 
-		assert (false);
-	}
+   /// Pure virtual : action taken when processing the rule
+   virtual void v_action (xpath_construct xc_rule, unsigned u_sub, 
+		unsigned u_variable = 0, const char * cp_literal = "") = 0;
    void v_recognize (xpath_construct xc_current, bool o_final);
 } ;
 

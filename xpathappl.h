@@ -37,24 +37,34 @@ distribution.
 #include "workstack.h"
 
 /// Top-level object that applies an XPath expression to a source XML tree
+/// \n Usage : 
+/// - Create an instance of the class, giving the source XML tree and the XPath expression to the constructor
+/// - Call S_apply_xpath ()
+/// \n The result string of S_apply_xpath is the XPath expression result, and the generated HTML file contains the 
+/// input/output of the XPath expression
 class xpath_from_source : public xpath_stream
 {
 protected :
+   /// Source tree
    TiXmlNode * XNp_source;
+   /// Target document
    TiXmlDocument * XDp_target;
 
+   /// XPath expression analysis stack
    work_stack * wsp_stack;
+   /// Current marker for evaluation
    long l_mark_level;
+   /// First element in the target document (XDp_target -> FirstChildElement ())
    TiXmlElement * XEp_root;
 	TIXML_STRING S_run (const char * cp_test_name, FILE * Fp_html);
-   TIXML_STRING S_evaluate_xpath_string (long l_mark_level);
+   TIXML_STRING S_evaluate_xpath_string ();
 	void v_init ();
 	void v_close ();
 
 public :
    xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr);
    virtual ~ xpath_from_source ();
-   virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain);
+   virtual void v_action (xpath_construct xc_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain);
    TIXML_STRING S_apply_xpath (const char * cp_test_name, FILE * Fp_html_out);
 } ;
 

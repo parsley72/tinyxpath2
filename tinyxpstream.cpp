@@ -40,9 +40,9 @@ public :
 	{
 		xsp_stream = xsp_in;
 	}
-   virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable = 0, const char * cp_explain = "")
+   virtual void v_action (xpath_construct xc_rule, unsigned u_sub, unsigned u_variable = 0, const char * cp_literal = "")
 	{
-		xsp_stream -> v_action (u_rule, u_sub, u_variable, cp_explain);
+		xsp_stream -> v_action (xc_rule, u_sub, u_variable, cp_literal);
 	}
 } ;
 

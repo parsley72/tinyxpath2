@@ -69,18 +69,6 @@ public :
          delete [] cp_value;
    }
 
-   #ifdef TINYXPATH_DEBUG
-      /// (debug) : dumps one item to stdout
-      void v_dump () const
-      {
-         if (o_is_valid ())
-         {
-            printf ("[%d][%s][%s]\n", l_enum, cp_disp_class_lex (l_enum), cp_value);
-            ltp_next -> v_dump ();
-         }
-      }
-   #endif
-
    /// get next in list
    lex_token * ltp_get_next () const
    {
@@ -93,6 +81,7 @@ public :
       return ltp_prev;
    }
 
+   /// Return the next i-th element in the list
    lex_token * ltp_get_next (int i_nb)
    {
       lex_token * ltp_ret;
@@ -110,11 +99,13 @@ public :
       return ltp_ret;
    }
 
+   /// return the value of a lexical element
    lexico lex_get_value () const
    {
       return l_enum;
    }
 
+   /// Set the string value of a lexical element
    void v_set (lexico lex_in, const char * cp_repre)
    {
       unsigned u_length;
@@ -125,10 +116,14 @@ public :
       cp_value = new char [u_length + 1];
       strcpy (cp_value, cp_repre);
    }
+
+   /// return the string value of a lexical element
    const char * cp_get_literal ()
    {
       return cp_value;
    }
+
+   /// check if the lexical element is valid
    bool o_is_valid () const {return (l_enum != lex_null);}
 } ;
 

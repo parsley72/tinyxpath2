@@ -1,0 +1,4 @@
+/**
+   \mainpage TinyXPath documentation
+
+*/
