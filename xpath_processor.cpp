@@ -32,6 +32,7 @@ distribution.
 class TiXmlElementNoDelete : public TiXmlElement
 {
 public :
+   TiXmlElementNoDelete () : TiXmlElement ("") {} // this constructor is never used
    void v_clean_children () {firstChild=0; lastChild=0;}
 } ;
 
@@ -90,8 +91,10 @@ const TiXmlNode * xpath_processor::XNp_get_xpath_node (
    unsigned u_order)    ///< Order of the node. Must be between 0 and the number of nodes - 1
 {
    bool o_attrib;
-   TiXmlBase * XBp_res;
+   const TiXmlBase * XBp_res;
 
+   o_attrib = false;
+   XBp_res = NULL;
    v_get_xpath_base (u_order, XBp_res, o_attrib);
    if (o_attrib)
       return NULL;
@@ -103,8 +106,10 @@ const TiXmlAttribute * xpath_processor::XAp_get_xpath_attribute (
    unsigned u_order)    ///< Order of the node. Must be between 0 and the number of nodes - 1
 {
    bool o_attrib;
-   TiXmlBase * XBp_res;
+   const TiXmlBase * XBp_res;
 
+   o_attrib = false;
+   XBp_res = NULL;
    v_get_xpath_base (u_order, XBp_res, o_attrib);
    if (! o_attrib)
       return NULL;
@@ -1266,7 +1271,7 @@ void xpath_processor::v_function_concat (
       throw execution_error ();
    S_res = erpp_arg [0] -> S_get_string ();
    for (u_arg = 1; u_arg < u_nb_arg; u_arg++)
-      S_res += erpp_arg [u_arg] -> S_get_string ();
+      S_res += erpp_arg [u_arg] -> S_get_string () . c_str ();
    v_push_string (S_res);
 }
 

@@ -52,7 +52,7 @@ public :
       op_attrib = NULL;
    }
 
-   operator = (const node_set & ns2);
+   node_set & operator = (const node_set & ns2);
    void v_add_base_in_set (const TiXmlBase * XBp_member, bool o_attrib);
 
    void v_add_attrib_in_set (const TiXmlAttribute * XAp_attrib)

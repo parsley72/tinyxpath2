@@ -31,7 +31,7 @@ node_set::node_set (const node_set & ns2)
 }
 
 /// Assignation operator. Allows one to write expressions like ns_1 = ns_2;
-node_set::operator = (const node_set & ns2)
+node_set & node_set::operator = (const node_set & ns2)
 {
    u_nb_node = ns2 . u_nb_node;
    if (u_nb_node)
@@ -46,6 +46,7 @@ node_set::operator = (const node_set & ns2)
       vpp_node_set = NULL;
       op_attrib = NULL;
    }
+   return * this;
 }
 
 /// Copy all element children of a node to the node_set

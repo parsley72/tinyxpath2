@@ -63,7 +63,7 @@ public :
       * this = er_2;
 	}
 
-   operator = (const expression_result & er_2)
+   expression_result & operator = (const expression_result & er_2)
    {
 		e_type = er_2 . e_type;
       switch (e_type)
@@ -85,6 +85,7 @@ public :
             break;
       }
       S_comment = er_2 . S_comment;
+      return * this;
    }
    /// Set expression_result to a bool
 	void v_set_bool (bool o_in)

@@ -84,7 +84,7 @@ static void v_test_one_string_tiny (const TiXmlNode * XNp_root, const char * cp_
 #endif
 
 
-void main ()
+int main ()
 {
    TiXmlDocument * XDp_doc;
    TiXmlElement * XEp_main;
@@ -99,7 +99,7 @@ void main ()
 
    Fp_out_html = fopen ("out.htm", "wt");
    if (! Fp_out_html)
-      return;
+      return 1;
    fprintf (Fp_out_html, "<html><head><title>Result</title>\n<style>");
    fprintf (Fp_out_html, "em{color: red;}</style>\n");
    fprintf (Fp_out_html, "</head><body>\n");
@@ -228,5 +228,5 @@ void main ()
       xmlFreeDoc (Dp_doc);
    #endif
    delete XDp_doc;
-
+   return 0;
 }

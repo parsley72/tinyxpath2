@@ -50,7 +50,7 @@ public :
    /// constructor
    xpath_stream (const char * cp_in);
    /// destructor
-   ~ xpath_stream ()
+   virtual ~ xpath_stream ()
    {
       delete tlp_list;
    }
