@@ -97,7 +97,12 @@ class TiXmlBase
 	friend class TiXmlDocument;
 
 public:
-	TiXmlBase()								{}
+	TiXmlBase()								
+	{
+	#ifdef TINYXPATH
+	uservalue = 0;
+	#endif
+	}
 	virtual ~TiXmlBase()					{}
 
 	/**	All TinyXml classes can print themselves to a filestream.
@@ -117,6 +122,11 @@ public:
 
 	/// Return the current white space setting.
 	static bool IsWhiteSpaceCondensed()						{ return condenseWhiteSpace; }
+
+	#ifdef TINYXPATH
+   void SetUserValue (long int _in) { uservalue = _in; }
+   long int GetUserValue () { return uservalue; }
+	#endif
 
 protected:
 
@@ -196,6 +206,7 @@ protected:
 		TIXML_ERROR_STRING_COUNT
 	};
 	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
+   long int uservalue;
 
 private:
 	struct Entity
@@ -602,7 +613,12 @@ public:
 	*/
 	void SetAttribute( const char * name, const char * value );
 
-    #ifdef TIXML_USE_STL
+	#ifdef TINYXPATH
+   void SetAttributeUserValue (const char * name, long int _user);
+   long int GetAttributeUserValue (const char * name) const;
+	#endif
+
+   #ifdef TIXML_USE_STL
 	void SetAttribute( const std::string& name, const std::string& value )	{	SetAttribute (name . c_str (), value . c_str ());	}	///< STL std::string form.
 	void SetAttribute( const std::string& name, int value )	{	SetAttribute (name . c_str (), value);	}	///< STL std::string form.
 	#endif
@@ -615,7 +631,7 @@ public:
 	/** Deletes an attribute with the given name.
 	*/
 	void RemoveAttribute( const char * name );
-    #ifdef TIXML_USE_STL
+   #ifdef TIXML_USE_STL
 	void RemoveAttribute( const std::string& name )	{	RemoveAttribute (name . c_str ());	}	///< STL std::string form.
 	#endif
 

@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "..\tinyxml" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "..\tinyxml" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "TINYXPATH" /YX /FD /c
 # ADD BASE RSC /l 0x80c /d "NDEBUG"
 # ADD RSC /l 0x80c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W4 /Gm /GX /ZI /Od /I "..\tinyxml" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /W4 /Gm /GX /ZI /Od /I "..\tinyxml" /D "_DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "TINYXPATH" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x80c /d "_DEBUG"
 # ADD RSC /l 0x80c /d "_DEBUG"
 BSC32=bscmake.exe

@@ -32,7 +32,6 @@ distribution.
 
 #include "xmlutil.h"
 
-#define CA_WORK "xpath-work"
 #define CA_FINAL "xpath-final"
 
 #ifdef TEST_SYNTAX
@@ -108,7 +107,7 @@ public :
    /// Get an expression's value
    virtual int i_get_expr_value () { assert (false); return 0;}
    /// Apply an XPath predicate
-   virtual void v_apply (TiXmlNode * , const char * , int & ) { assert (false); }
+   virtual void v_apply (TiXmlNode * , const char * , long & ) { assert (false); }
 } ;
 
 /// Specialized work_item for strings
@@ -225,20 +224,20 @@ public :
          assert (false);
       return i_value;
    }
-   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, int & i_marker)
+   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, long & l_marker)
    {
       switch (u_cat)
       {
          case 0 :
-            v_mark_children_name_order (XNp_target, CA_WORK, cp_name, i_get_expr_value (), 
-               i_marker, i_marker + 1); 
-            i_marker += 1;
+            v_mark_children_name_order (XNp_target, cp_name, i_get_expr_value (), 
+               l_marker, l_marker + 1); 
+            l_marker += 1;
             break;
          case 1 :
             if (S_value == "last")
             {
-               v_mark_children_name_last (XNp_target, CA_WORK, cp_name, i_marker, i_marker + 1); 
-               i_marker += 1;
+               v_mark_children_name_last (XNp_target, cp_name, l_marker, l_marker + 1); 
+               l_marker += 1;
             }
             else
                assert (false);
@@ -382,38 +381,38 @@ public :
 
    // Look for all first-level items that have the S_value name, and mark them with
    // the attribute xpath-selected=i_id
-   void v_find_node (TiXmlNode * XNp_target, int i_id)
+   void v_find_node (TiXmlNode * XNp_target, long l_id)
    {
       if (S_value == "*")
-         v_mark_first_level (XNp_target, CA_WORK, i_id);      
+         v_mark_first_level (XNp_target, l_id);      
       else
-         v_mark_first_level_name (XNp_target, S_value . c_str (), CA_WORK, i_id);      
+         v_mark_first_level_name (XNp_target, S_value . c_str (), l_id);      
    }
 
    // Find all subtree and mark all elements with xpath-selected = i_id
-   void v_find_all (TiXmlDocument * XDp_target, int i_id)
+   void v_find_all (TiXmlDocument * XDp_target, long l_id)
    {
-      v_mark_all_children (XDp_target, CA_WORK, i_id);
+      v_mark_all_children (XDp_target, l_id);
    }
 
    // Mark all children of a selection with next level
-   void v_find_child (TiXmlNode * XNp_target, int & i_id)
+   void v_find_child (TiXmlNode * XNp_target, long & l_id)
    {
       if (S_value == "*")
       {
-         v_mark_children_inside (XNp_target, CA_WORK, i_id, i_id + 1);
-         i_id += 1;
+         v_mark_children_inside (XNp_target, l_id, l_id + 1);
+         l_id += 1;
       }
       else
       {
          switch (u_nb_predicate)
          {
             case 0 :
-               v_mark_children_name (XNp_target, CA_WORK, S_value . c_str (), i_id, i_id + 1); 
-               i_id += 1;
+               v_mark_children_name (XNp_target, S_value . c_str (), l_id, l_id + 1); 
+               l_id += 1;
                break;
             case 1 :
-               wipp_list [0] -> v_apply (XNp_target, S_value . c_str (), i_id);
+               wipp_list [0] -> v_apply (XNp_target, S_value . c_str (), l_id);
                break;
             default :
                assert (false);  // don't know how to process more than 1 predicate
@@ -423,12 +422,12 @@ public :
    }
 
    // Mark all children of a selection with next level
-   void v_find_child_attrib (TiXmlNode * XNp_target, int & i_id)
+   void v_find_child_attrib (TiXmlNode * XNp_target, long & l_id)
    {
 		XNp_target -> Print (stdout, 0);
-      v_mark_children_attrib (XNp_target, CA_WORK, S_value . c_str (), i_id, i_id + 1); 
+      v_mark_children_attrib (XNp_target, S_value . c_str (), l_id, l_id + 1); 
 		XNp_target -> Print (stdout, 0);
-      i_id += 1;
+      l_id += 1;
    }
 } ;
 
@@ -525,30 +524,30 @@ public :
          wp_next_step -> v_dump (i_level + 1);
       }
    }
-   void v_step_it (TiXmlNode * XNp_context, int & i_mark_level)
+   void v_step_it (TiXmlNode * XNp_context, long & l_mark_level)
    {
-      wp_node_test -> v_find_node (XNp_context, i_mark_level);
+      wp_node_test -> v_find_node (XNp_context, l_mark_level);
       if (wp_next_step)
-         wp_next_step -> v_step_child (XNp_context, i_mark_level);
+         wp_next_step -> v_step_child (XNp_context, l_mark_level);
    }
-   void v_step_all (TiXmlDocument * XDp_target, int & i_mark_level)
+   void v_step_all (TiXmlDocument * XDp_target, long & l_mark_level)
    {
-      wp_node_test -> v_find_all (XDp_target, i_mark_level);
-      v_step_child (XDp_target, i_mark_level);
+      wp_node_test -> v_find_all (XDp_target, l_mark_level);
+      v_step_child (XDp_target, l_mark_level);
    }
-   void v_step_child (TiXmlNode * XNp_context, int & i_mark_level)
+   void v_step_child (TiXmlNode * XNp_context, long & l_mark_level)
    {
 		if (wp_axis -> o_is_at ())
 		{
-			wp_node_test -> v_find_child_attrib (XNp_context, i_mark_level);
+			wp_node_test -> v_find_child_attrib (XNp_context, l_mark_level);
 			if (wp_next_step)
-				wp_next_step -> v_step_child (XNp_context, i_mark_level);
+				wp_next_step -> v_step_child (XNp_context, l_mark_level);
 		}
 		else
 		{
-			wp_node_test -> v_find_child (XNp_context, i_mark_level);
+			wp_node_test -> v_find_child (XNp_context, l_mark_level);
 			if (wp_next_step)
-				wp_next_step -> v_step_child (XNp_context, i_mark_level);
+				wp_next_step -> v_step_child (XNp_context, l_mark_level);
 		}
    }
    void v_set_next_step (const work_step * wp_in_next)
@@ -655,7 +654,7 @@ public :
       work_step * wp_step, * wp_step_2;
       work_node_test * wp_node_test;
       work_axis * wp_axis;
-      int i_mark_level;
+      long l_mark_level;
       TiXmlElement * XEp_root;
       TiXmlComment * XCp_comment;
       unsigned u_nb_predicate, u_predicate;
@@ -673,11 +672,11 @@ public :
       assert (XEp_root);
 
       v_clone_children (XNp_source, XEp_root);
-      v_mark_all_children (XDp_target, CA_WORK, 1);
+      v_mark_all_children (XDp_target, 1);
 
       XDp_target -> Print (stdout);
 
-      i_mark_level = 2;
+      l_mark_level = 2;
       while (alp_in -> o_is_valid ())
       {
          aip_current = alp_in -> aip_get_current ();
@@ -691,7 +690,7 @@ public :
                   case 0 :
                   case 1 :
                      wp_step = (work_step *) wsp_stack -> wip_top ();
-                     wp_step -> v_step_it (XEp_root, i_mark_level);
+                     wp_step -> v_step_it (XEp_root, l_mark_level);
                      wsp_stack -> v_pop ();
                      break;
                   case 2 :
@@ -808,7 +807,7 @@ public :
                wp_step = (work_step *) wsp_stack -> wip_top ();
 					XDp_target -> Print (stdout, 0);
 					wsp_stack -> v_dump ();
-               wp_step -> v_step_all (XDp_target, i_mark_level);
+               wp_step -> v_step_all (XDp_target, l_mark_level);
                wsp_stack -> v_pop ();
                break;
 
@@ -902,7 +901,7 @@ public :
 
       XDp_target -> Print (stdout);
 
-      v_retain_attrib_tree (XDp_target, CA_WORK, i_mark_level, CA_FINAL, 1);
+      v_retain_attrib_tree (XDp_target, l_mark_level, CA_FINAL, "1");
 
       XDp_target -> Print (stdout);
 

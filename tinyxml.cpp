@@ -433,6 +433,22 @@ const char * TiXmlElement::Attribute( const char * name ) const
 	return 0;
 }
 
+#ifdef TINYXPATH
+	void TiXmlElement::SetAttributeUserValue (const char * name, long int _user)
+	{
+		TiXmlAttribute* node = attributeSet.Find( name );
+		if (node)
+			node -> SetUserValue (_user);
+	}
+
+	long int TiXmlElement::GetAttributeUserValue (const char * name) const
+	{
+		TiXmlAttribute* node = attributeSet.Find( name );
+		if (node)
+			return node -> GetUserValue ();
+		return 0;
+	}
+#endif
 
 const char * TiXmlElement::Attribute( const char * name, int & i ) const
 {
