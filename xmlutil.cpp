@@ -294,11 +294,9 @@ static void v_keep_bracket_if (
 	{
 		l_test = XAp_att -> GetUserValue ();
 		if (l_test == l_source)
-		{
-			S_out = XAp_att -> Value ();
-			S_out += "|xpath-final";
-			XAp_att -> SetValue (S_out . c_str ());
-		}
+			XAp_att -> SetUserValue (1);
+		else
+			XAp_att -> SetUserValue (0);
 		XAp_att = XAp_att -> Next ();
 	}
 }
@@ -306,9 +304,7 @@ static void v_keep_bracket_if (
 
 void v_retain_attrib_tree (
    TiXmlNode * XNp_target,
-   long l_source_value,
-   const char * cp_new_attrib,
-   const char * cp_new_val)
+   long l_source_value)
 {
    TiXmlElement * XEp_child;
    long l_test;
@@ -318,9 +314,11 @@ void v_retain_attrib_tree (
    {
 		l_test = XEp_child -> GetUserValue ();
       if (l_test == l_source_value)
-         XEp_child -> SetAttribute (cp_new_attrib, cp_new_val);
+			XEp_child -> SetUserValue (1);
+		else
+			XEp_child -> SetUserValue (0);
 		v_keep_bracket_if (XEp_child, l_source_value);
-      v_retain_attrib_tree (XEp_child, l_source_value, cp_new_attrib, cp_new_val);
+      v_retain_attrib_tree (XEp_child, l_source_value);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
 }
@@ -352,4 +350,106 @@ void v_mark_by_order (
       v_mark_by_order (XEp_child, cp_attrib, i_order, i_mother_value, i_child_value);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
+}
+
+void v_levelize (int i_level, FILE * Fp_out, bool o_html)
+{
+	int i_loop;
+	for (i_loop = 0; i_loop < i_level; i_loop++)
+		if (o_html)
+   		fprintf (Fp_out, "&nbsp;&nbsp;&nbsp;");
+		else
+	   	fprintf (Fp_out, "   ");
+}
+
+void v_out_html (
+	FILE * Fp_out,
+	TiXmlNode * XNp_source,
+	unsigned u_level)
+{
+	TiXmlNode * XNp_child;
+	TiXmlAttribute * XAp_att;
+
+	XNp_child = XNp_source -> FirstChild ();
+	while (XNp_child)
+	{
+		if (XNp_child -> ToDocument ())
+		{
+			fprintf (Fp_out, "\nStart document\n");
+		}
+		else
+		if (XNp_child -> ToElement ())
+		{
+			v_levelize ((int) u_level, Fp_out, true);
+			if (XNp_child -> GetUserValue ())
+				fprintf (Fp_out, "<b>");
+			fprintf (Fp_out, "&lt;%s", XNp_child -> ToElement () -> Value ());
+			XAp_att = XNp_child -> ToElement () -> FirstAttribute ();
+			while (XAp_att)
+			{
+				if (XAp_att -> GetUserValue ())
+				   fprintf (Fp_out, "<b>");
+				fprintf (Fp_out, " %s='%s'", XAp_att -> Name (), XAp_att -> Value ());
+				if (XAp_att -> GetUserValue ())
+				   fprintf (Fp_out, "</b>");
+				XAp_att = XAp_att -> Next ();
+			}
+			fprintf (Fp_out, "&gt;");
+			if (XNp_child -> GetUserValue ())
+				fprintf (Fp_out, "</b>");
+			fprintf (Fp_out, "<br>\n");
+		}
+		else
+		if (XNp_child -> ToComment ())
+		{
+			fprintf (Fp_out, "&lt;!-- %s --&gt;<br>\n", XNp_child -> ToComment () -> Value ());
+		}
+		else
+		if (XNp_child -> ToText ())
+		{
+			fprintf (Fp_out, "%s\n", XNp_child -> ToText () -> Value ());
+		}
+		else
+		if (XNp_child -> ToDeclaration ())
+		{
+		}
+		else
+		if (XNp_child -> ToUnknown ())
+		{
+		}
+		else
+			assert (false);
+		v_out_html (Fp_out, XNp_child, u_level + 1);
+		if (XNp_child -> ToDocument ())
+		{
+			fprintf (Fp_out, "\nEnd document\n");
+		}
+		else
+		if (XNp_child -> ToElement ())
+		{
+			v_levelize ((int) u_level, Fp_out, true);
+			if (XNp_child -> GetUserValue ())
+				fprintf (Fp_out, "<b>");
+			fprintf (Fp_out, "&lt;/%s&gt;<br>\n", XNp_child -> ToElement () -> Value ());
+			if (XNp_child -> GetUserValue ())
+				fprintf (Fp_out, "</b>");
+		}
+		else
+		if (XNp_child -> ToComment ())
+		{
+		}
+		else
+		if (XNp_child -> ToText ())
+		{
+		}
+		else
+		if (XNp_child -> ToDeclaration ())
+		{
+		}
+		else
+		if (XNp_child -> ToUnknown ())
+		{
+		}
+		XNp_child = XNp_child -> NextSibling ();
+	}
 }

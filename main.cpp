@@ -32,8 +32,6 @@ distribution.
 
 #include "xmlutil.h"
 
-#define CA_FINAL "xpath-final"
-
 #ifdef TEST_SYNTAX
    static void v_decode (const char * cp_in)
    {
@@ -67,13 +65,6 @@ class test_fail {};
 
 enum WORK_ITEM_ENUM {WORK_NONE, WORK_STRING, WORK_QNAME, WORK_AXIS, WORK_NAME_TEST, WORK_NODE_TEST, WORK_STEP,
       WORK_EXPR};
-
-static void v_levelize (int i_level)
-{
-	int i_loop;
-	for (i_loop = 0; i_loop < i_level; i_loop++)
-		printf ("   ");
-}
 
 /// Working stack virtual item
 class work_item
@@ -646,7 +637,10 @@ public :
       assert (xsp_stream);
       delete xsp_stream;
    }
-   void v_apply_rule (action_list * alp_in, TiXmlElement * XEp_out)
+   void v_apply_rule (
+		action_list * alp_in, 
+		const char * cp_test_name, 
+		FILE * Fp_html)
    {
       const action_item * aip_current;
       work_stack * wsp_stack;
@@ -656,17 +650,11 @@ public :
       work_axis * wp_axis;
       long l_mark_level;
       TiXmlElement * XEp_root;
-      TiXmlComment * XCp_comment;
       unsigned u_nb_predicate, u_predicate;
       work_item ** wipp_list;
 
       wsp_stack = new work_stack;
       XDp_target -> Parse ("<?xml version=\"1.0\"?><xpath:root/>");
-
-      XCp_comment = new TiXmlComment ();
-      XCp_comment -> SetValue (" Output of XPath ");
-      XDp_target -> InsertEndChild (* XCp_comment);
-      delete XCp_comment;
 
       XEp_root = XDp_target -> FirstChildElement ();
       assert (XEp_root);
@@ -901,42 +889,54 @@ public :
 
       XDp_target -> Print (stdout);
 
-      v_retain_attrib_tree (XDp_target, l_mark_level, CA_FINAL, "1");
+      v_retain_attrib_tree (XDp_target, l_mark_level);
 
       XDp_target -> Print (stdout);
 
-      // printf ("\nResult is : \n");
-      XEp_out -> InsertEndChild (* XDp_target -> FirstChildElement ());
-      // XDp_target -> Print (stdout, 0);
-      // printf ("\n");
+	   if (Fp_html)
+		{
+			fprintf (Fp_html, "<h1>%s</h1>\n", cp_test_name);
+			fprintf (Fp_html, "<table border=1><tr><th colspan=\"2\">XPath expression : %s</th></tr>\n", xsp_stream -> cp_get_expr ());
+			fprintf (Fp_html, "<tr><th>Input</th><th>Output</th></tr>\n");
+			fprintf (Fp_html, "<tr><td valign=\"top\">");
+			fprintf (Fp_html, "<p>\n");
+			v_out_html (Fp_html, XNp_source, 0);
+			fprintf (Fp_html, "</p></td>\n");
+			fprintf (Fp_html, "<td valign=\"top\"><p>\n");
+			v_out_html (Fp_html, XDp_target -> FirstChildElement (), 0);
+			fprintf (Fp_html, "</p></td></tr></table>\n");
+		}
       delete wsp_stack;
    }
-   void v_apply_xpath (TiXmlElement * XEp_out)
+   void v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
    {
       xsp_stream -> v_evaluate ();
-      v_apply_rule (xsp_stream -> alp_get_action_list (), XEp_out);
+      v_apply_rule (xsp_stream -> alp_get_action_list (), cp_test_name, Fp_html_out);
    }
 } ;
 
-static void v_apply_xml (TiXmlDocument * XDp_doc, const char * cp_out)
+static void v_apply_xml (TiXmlDocument * XDp_doc)
 {
-   TiXmlElement * XEp_source, * XEp_test, * XEp_out;
+   TiXmlElement * XEp_source, * XEp_test;
    xpath_from_source * xfsp_engine;
    const char * cp_test_name, * cp_expr;
-   TiXmlDocument * XDp_out;
+	FILE * Fp_html;
 
    try
    {
-      XDp_out = new TiXmlDocument (cp_out);
-      XDp_out -> Parse ("<?xml version=\"1.0\"><basic_result/>");
-      XEp_out = XDp_out -> FirstChildElement ();
+		Fp_html = fopen ("res.html", "wt");
+	   if (Fp_html)
+			fprintf (Fp_html, "<html><head><title>TinyXPath results</title>"  \
+						"<style type=\"text/css\">"  \
+						" P {font-family:Courier}"   \
+						" B {color:red}"  \
+						"</style>\n</head><body>\n");
       XEp_test = XDp_doc -> FirstChildElement ();
       if (! XEp_test)
          throw test_fail ();
       XEp_source = XEp_test -> FirstChildElement ("source");
       while (XEp_source)
       {
-         XDp_out -> FirstChildElement () -> InsertEndChild (* XEp_source);
          cp_test_name = XEp_source -> Attribute ("name");
          if (! cp_test_name)
             throw test_fail ();
@@ -945,12 +945,15 @@ static void v_apply_xml (TiXmlDocument * XDp_doc, const char * cp_out)
             throw test_fail ();
          printf ("\nXPath expr --> %s <--\n\n", cp_expr);
          xfsp_engine = new xpath_from_source (XEp_source, cp_expr);
-         xfsp_engine -> v_apply_xpath (XEp_out);
+         xfsp_engine -> v_apply_xpath (cp_test_name, Fp_html);
          delete xfsp_engine;
          XEp_source = XEp_source -> NextSiblingElement ("source");
       }
-      XDp_out -> SaveFile ();
-      delete XDp_out;
+	   if (Fp_html)
+		{
+			fprintf (Fp_html, "</body></html>\n");	
+		   fclose (Fp_html);
+		}
    }
    catch (test_fail)
    {
@@ -958,7 +961,7 @@ static void v_apply_xml (TiXmlDocument * XDp_doc, const char * cp_out)
    }
 }
 
-static void v_apply_1 (const char * cp_in_file_name, const char * cp_out_file_name)
+static void v_apply_1 (const char * cp_in_file_name)
 {
    TiXmlDocument * XDp_doc;
 
@@ -966,13 +969,13 @@ static void v_apply_1 (const char * cp_in_file_name, const char * cp_out_file_na
    if (! XDp_doc -> LoadFile ())
       printf ("Can't load %s file !\n", cp_in_file_name);
    else
-      v_apply_xml (XDp_doc, cp_out_file_name);
+      v_apply_xml (XDp_doc);
    delete XDp_doc;
 }
 
 static void v_apply ()
 {
-   v_apply_1 ("basic_in.xml", "basic_out.xml");
+   v_apply_1 ("basic_in.xml");
 }
 
 void main ()

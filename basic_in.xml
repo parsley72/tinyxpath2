@@ -4,7 +4,7 @@
 
    <!-- Example 1 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
 
-   <source name="Example 1 / test1" xpath_expr="/AAA">
+   <source name="test1" detail="Example 1 / test1" xpath_expr="/AAA">
       <AAA>
          <BBB/>
          <CCC/>
@@ -16,7 +16,7 @@
          <CCC/>
      </AAA>      
    </source>
-   <source name="Example 1 / test2" xpath_expr="/AAA/CCC">
+   <source name="test2" detail="Example 1 / test2" xpath_expr="/AAA/CCC">
       <AAA>
          <BBB/>
          <CCC/>
@@ -29,7 +29,7 @@
      </AAA>      
    </source>
 
-   <source name="Example 1 / test3" xpath_expr="/AAA/DDD/BBB">
+   <source name="test3" detail="Example 1 / test3" xpath_expr="/AAA/DDD/BBB">
       <AAA>
          <BBB/>
          <CCC/>
@@ -44,7 +44,7 @@
 
    <!-- Example 2 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
 
-   <source name="Example 2 / test4" xpath_expr="//BBB">
+   <source name="test4" detail="Example 2 / test4" xpath_expr="//BBB">
       <AAA>
          <BBB/>
          <CCC/>
@@ -60,7 +60,7 @@
          </CCC>
       </AAA>
    </source>
-   <source name="Example 2 / test5" xpath_expr="//DDD/BBB">
+   <source name="test5" detail="Example 2 / test5" xpath_expr="//DDD/BBB">
       <AAA>
          <BBB/>
          <CCC/>
@@ -79,7 +79,7 @@
 
    <!-- Example 3 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
 
-   <source name="Example 3 / test6" xpath_expr="/AAA/CCC/DDD/*">
+   <source name="test6" detail="Example 3 / test6" xpath_expr="/AAA/CCC/DDD/*">
       <AAA>
          <XXX>
             <DDD>
@@ -107,7 +107,7 @@
       </AAA>
    </source>
 
-   <source name="Example 3 / test7" xpath_expr="/*/*/*/BBB">
+   <source name="test7" detail="Example 3 / test7" xpath_expr="/*/*/*/BBB">
       <AAA>
          <XXX>
             <DDD>
@@ -135,7 +135,7 @@
       </AAA>
    </source>
 
-   <source name="Example 3 / test8" xpath_expr="//*">
+   <source name="test8" detail="Example 3 / test8" xpath_expr="//*">
       <AAA>
          <XXX>
             <DDD>
@@ -163,7 +163,7 @@
       </AAA>
    </source>
 
-   <source name="Example 4 / test9" xpath_expr="/AAA/BBB[1]">
+   <source name="test9" detail="Example 4 / test9" xpath_expr="/AAA/BBB[1]">
       <AAA>
          <BBB/>
          <BBB/>
@@ -172,7 +172,7 @@
       </AAA>
    </source>
 
-   <source name="Example 4 / test10" xpath_expr="/AAA/BBB[last()]">
+   <source name="test10" detail="Example 4 / test10" xpath_expr="/AAA/BBB[last()]">
       <AAA>
          <BBB/>
          <BBB/>
@@ -198,7 +198,7 @@ Currently preferred method : 3
 
  -->
 
-   <source name="Example 5 / test11" xpath_expr="//@id">
+   <source name="test11" detail="Example 5 / test11" xpath_expr="//@id">
       <AAA>
          <BBB id = "b1"/>
          <BBB id = "b2"/>

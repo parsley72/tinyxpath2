@@ -37,11 +37,13 @@ class xpath_stream : public byte_stream
 protected :
    /// List of tokens
    token_syntax_decoder * tlp_list;
+	TIXML_STRING S_expr;
 
 public :
    /// constructor
    xpath_stream (const char * cp_in) : byte_stream (cp_in) 
    {
+		S_expr = cp_in;
       tlp_list = new token_syntax_decoder;
    }
    /// destructor
@@ -226,6 +228,11 @@ public :
    {
       return tlp_list -> alp_get_action_list ();
    }
+
+	const char * cp_get_expr ()
+	{
+		return S_expr . c_str ();
+	}
 } ;     // class xpath_stream
 
 #endif

@@ -66,15 +66,18 @@ extern void v_mark_children_inside (
    long l_child_value);
 extern void v_retain_attrib_tree (
    TiXmlNode * XNp_target,
-   long l_source_value,
-   const char * cp_new_attrib,
-   const char * cp_new_val);
+   long l_source_value);
 extern void v_mark_by_order (
    TiXmlNode * XNp_target,
    const char * cp_source_attrib,
    int i_order,
    int i_mother_value,
    int i_child_value);
+extern void v_out_html (
+	FILE * Fp_out,
+	TiXmlNode * XNp_source,
+	unsigned u_level);
+extern void v_levelize (int i_level, FILE * Fp_out = stdout, bool o_html = false);
 
 #endif
 
