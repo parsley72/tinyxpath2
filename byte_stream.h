@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -28,11 +28,12 @@ distribution.
 #include "lex_util.h"
 
 /**
-   A Byte stream class 
+   A Byte stream class, very crude. The only purpose of this class is to walk in a byte stream,
+   available at construction time.
 */
 class byte_stream
 {
-   /// Length of the total string
+   /// Length of the total string, + 1
    unsigned u_length;
    /// Total string
    _byte_ * bp_in;
