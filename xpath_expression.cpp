@@ -39,10 +39,8 @@ int expression_result::i_get_int ()
          return o_content ? 1 : 0;
       case e_double :
          return (int) (d_content);
-      case e_string :
-         return atoi (S_content . c_str ());
       default :
-         return 0;
+         return atoi (S_get_string () . c_str ());
    }
 }	
 
