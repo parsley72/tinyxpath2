@@ -1093,6 +1093,23 @@ void xpath_processor ::v_execute_step (
                         XNp_next = XNp_next -> NextSibling ();
                      }
                      break;
+                  case lex_text :
+                     XNp_next = XEp_father -> FirstChild ();               
+                     while (XNp_next)
+                     {
+                        if (XNp_next -> Type () == TiXmlNode::TEXT)
+                           ns_target . v_add_node_in_set (XNp_next);
+                        XNp_next = XNp_next -> NextSibling ();
+                     }
+                     break;
+                  case lex_node :
+                     XNp_next = XEp_father -> FirstChild ();               
+                     while (XNp_next)
+                     {
+                        ns_target . v_add_node_in_set (XNp_next);
+                        XNp_next = XNp_next -> NextSibling ();
+                     }
+                     break;
                   default :
                      // an axis name followed by '::'
                      throw error_not_yet ();
