@@ -98,5 +98,9 @@ SOURCE=.\main.cpp
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
+# Begin Source File
+
+SOURCE=.\changes.txt
+# End Source File
 # End Target
 # End Project
