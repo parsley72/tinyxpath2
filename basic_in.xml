@@ -191,6 +191,9 @@ Solution can be :
 1. To change TiXmlBase class to make it accept a numerical signature. 
 This would be available at once for TiXmlElement and TiXmlAttribute
 2. Add some selection attribute like tinyxpath-attribute-name="1"
+3. Mark every attribute value on input with a prefix containing an integer like "[0]old value"
+
+Currently preferred method : 3
 
  -->
 
