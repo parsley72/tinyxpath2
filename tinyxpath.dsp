@@ -188,9 +188,5 @@ SOURCE=.\basic_in.xml
 
 SOURCE=.\syntax.txt
 # End Source File
-# Begin Source File
-
-SOURCE=.\xpath_in.txt
-# End Source File
 # End Target
 # End Project
