@@ -149,6 +149,10 @@ void xpath_processor::v_build_root ()
       // create a new root for it
       XEp_root = new TiXmlElement ("root");
       XEp_root -> LinkEndChild ((TiXmlNode *) XNp_base);
+
+      // set the main node as the context one, if it's an element
+      if (XNp_base -> ToElement ())
+         XEp_context = XNp_base -> ToElement ();
       v_order_tree ();
    }
    else
@@ -215,7 +219,7 @@ expression_result xpath_processor::er_compute_xpath ()
       er_result = er_null;
       e_error = e_error_overflow;
    }
-   catch (execution_error)
+   catch (execution_error e)
    {
       expression_result er_null;
       er_result = er_null;

@@ -2,6 +2,7 @@
 
 Bug fixes for 1.2.3
 
+- June 19th, 2004 : Bug fix, when computing an expression based on a non-root element node (Thanks Augustus Sanders)
 - May 8th, 2004 : Bug fix by Jonathan Taylor in node_set::S_get_string_value
 - May 8th, 2004 : Bug fix in multiple additive expressions : a+b+c. (Thanks Jonathan Taylor)
 - Apr 26th, 2004 : Bug fix : missing conversion from text to double (Thanks Laura Glow)
