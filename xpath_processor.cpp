@@ -65,11 +65,9 @@ xpath_processor::xpath_processor (
       : xpath_stream (cp_xpath_expr) 
 {
    if (XNp_source_tree && cp_xpath_expr)
-   {
       XNp_base = XNp_source_tree;
-   }
    else
-      XEp_root = NULL;
+      XNp_base = NULL;
    XEp_context = NULL;
 }
 
@@ -136,32 +134,37 @@ const TiXmlAttribute * xpath_processor::XAp_get_xpath_attribute (
 
 void xpath_processor::v_build_root ()
 {
-   // backup the parent, prev and next node pointers
-   // we will restore them in the destructor
-   XNp_caller_parent = XNp_base -> Parent ();
-   XNp_caller_prev = XNp_base -> PreviousSibling ();
-   XNp_caller_next = XNp_base -> NextSibling ();
+   if (XNp_base)
+   {
+      // backup the parent, prev and next node pointers
+      // we will restore them in the destructor
+      XNp_caller_parent = XNp_base -> Parent ();
+      XNp_caller_prev = XNp_base -> PreviousSibling ();
+      XNp_caller_next = XNp_base -> NextSibling ();
 
-   // create a new root for it
-   // !!! warning : this actually kills the natural parent and sister relations of the node !!!
-   XEp_root = new TiXmlElement ("root");
-   XEp_root -> LinkEndChild ((TiXmlNode *) XNp_base);
-   v_order_tree ();
+      // create a new root for it
+      // !!! warning : this actually kills the natural parent and sister relations of the node !!!
+      XEp_root = new TiXmlElement ("root");
+      XEp_root -> LinkEndChild ((TiXmlNode *) XNp_base);
+      v_order_tree ();
+   }
+   else
+      XEp_root = NULL;
 }
 
 /// Remove our fake root, and restore the original relationships of the 
 /// node given to us as argument
 void xpath_processor::v_remove_root ()
 {
-   if (XNp_base && XEp_root)
+   if (XEp_root)
    {
+      assert (XNp_base);
       // reset the original relationships
       TiXmlNodeManip * XNp_false_node = (TiXmlNodeManip *) XNp_base;
-      XNp_false_node -> v_reset (XNp_caller_parent, XNp_caller_prev, XNp_caller_next);
+      XNp_false_node -> v_reset (XNp_caller_parent, XNp_caller_next, XNp_caller_prev);
 
       TiXmlElementNoDelete * XEp_false_root = (TiXmlElementNoDelete *) XEp_root;
       XEp_false_root -> v_clean_children ();
-      assert (XEp_root);
       delete XEp_false_root;
    }
 }
