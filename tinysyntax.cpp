@@ -21,6 +21,13 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file tinysyntax.cpp
+   \author Yves Berquin
+   XPath Syntax analyzer for TinyXPath project
+*/
+
 #include <stdio.h>
 #include "tinysyntax.h"
 

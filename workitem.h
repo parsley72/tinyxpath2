@@ -22,6 +22,12 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/**
+   \file workitem.h
+   \author Yves Berquin
+   Action items for the XPath expressions
+*/
+
 #ifndef __WORKITEM_H
 #define __WORKITEM_H
 
@@ -68,10 +74,10 @@ public :
    /// Apply an XPath predicate
    virtual void v_apply (TiXmlNode * , const char * , long & ) { assert (false); }
 	virtual bool o_identity () {return false;}
-	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * ) 
+	virtual expression_result * erp_compute_predicate (TiXmlElement *, TiXmlNode * ) 
 	{
 	   assert (false);
-		return expression_result ();
+		return new expression_result ();
 	}
 } ;
 
@@ -229,9 +235,10 @@ public :
       assert (false);
    }
 	virtual bool o_identity () {return u_class == WORK_EXPR;}
-	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
+	virtual expression_result * erp_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
 } ;
 
+/// Specialized work_item for functions
 class work_func : public work_item
 {
 	TIXML_STRING S_name;
@@ -259,28 +266,35 @@ public :
 		printf ("work_func (%s)(%d arguments)\n", S_name . c_str (), u_nb_arg);
 	}
    virtual void v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_marker);
-	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
+	virtual expression_result * erp_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
 
 protected :
 
-	expression_result er_func_not (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_internal_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_normalize_space (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_count (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_starts_with (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_contains (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_internal_less (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
-	expression_result er_func_internal_greater (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
-	expression_result er_func_internal_less_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
-	expression_result er_func_internal_greater_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
-	expression_result er_func_string_length (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_modulo (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
-	expression_result er_func_floor (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
-	expression_result er_func_internal_plus (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
-	expression_result er_func_internal_div (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_ceiling (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_internal_or (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
-	expression_result er_func_concat (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_not (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_internal_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_normalize_space (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_count (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_starts_with (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_contains (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_internal_less (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result * erp_func_internal_greater (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result * erp_func_internal_less_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result * erp_func_internal_greater_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result * erp_func_string_length (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_modulo (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result * erp_func_floor (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result * erp_func_internal_plus (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result * erp_func_internal_div (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_ceiling (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_internal_or (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result * erp_func_concat (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+   expression_result * erp_func_name  (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+
+
+   void v_set_int_result (TiXmlNode * XNp_node, int i_res);
+   void v_set_double_result (TiXmlNode * XNp_node, double d_res);
+   void v_set_string_result (TiXmlNode * XNp_node, const char * cp_res);
+   void v_set_result (TiXmlNode * XNp_node, expression_result * erp_res);
 } ;     // work_func
 
 /// Specialized work_item for NameTest
@@ -404,12 +418,26 @@ public :
    void v_find_all (TiXmlNode * XNp_target, long l_id)
    {
       v_mark_all_children (XNp_target, l_id);
+
+      FILE * Fp_d;
+      Fp_d = fopen ("yy2.htm", "wt");
+      if (Fp_d)
+      {
+         fprintf (Fp_d, "<html><body>\n");
+         v_out_html (Fp_d, XNp_target, l_id);
+         fprintf (Fp_d, "</body></html>\n");
+         fclose (Fp_d);
+      }
+
    }
 
    // Mark all children of a selection with next level
    void v_find_child (TiXmlNode * XNp_target, long & l_id)
    {
+      if (u_nb_predicate == 1)
+         wipp_list [0] -> v_dump (0);
       if (S_value == "*")
+         // v_mark_children_inside_one_level (XNp_target, l_id, l_id + 1);
          v_mark_children_inside (XNp_target, l_id, l_id + 1);
 		else
          v_mark_children_name (XNp_target, S_value . c_str (), l_id, l_id + 1); 
@@ -428,7 +456,7 @@ public :
       }
    }
 
-	void v_apply_predicate (TiXmlNode * XNp_taregt, work_item *, const char *, long &);
+	void v_apply_predicate (TiXmlNode * XNp_target, work_item *, const char *, long &);
 
    // Mark all children of a selection with next level
    void v_find_child_attrib (TiXmlNode * XNp_target, long & l_id)
@@ -544,6 +572,7 @@ public :
       if (wp_next_step)
          wp_next_step -> v_step_child (XNp_context, l_mark_level);
    }
+   /// Mark all children of the target node whose level is given
    void v_step_all (TiXmlNode * XNp_target, long & l_mark_level)
    {
       wp_node_test -> v_find_all (XNp_target, l_mark_level);
@@ -579,7 +608,9 @@ public :
    virtual void v_apply (TiXmlNode * , const char * , long & );
 	void v_set_absolute (bool o_in) {o_absolute = o_in;}
 	void v_set_all (bool o_in) {o_all = o_in;}
-	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
+	virtual expression_result * erp_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root);
+protected :
+   expression_result * work_step::erp_compute_predicate (expression_result * erp_pre);
 } ;
 
 extern work_item * wip_copy (const work_item * wip_in);

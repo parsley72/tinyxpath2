@@ -21,11 +21,18 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file tokenlist.cpp
+   \author Yves Berquin
+   XPath Syntax analyzer for TinyXPath project : token list handling
+*/
+
 #include "tokenlist.h"
 
+/// Decodes an XPath expression, generating a token list
 void token_list::v_tokenize_expression ()
 {
-   // replace double lex_colon to lex_2_colon
    v_set_current (0);
    while (ltp_get (1))
    {

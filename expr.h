@@ -30,6 +30,79 @@ distribution.
 
 typedef enum {e_bool, e_string, e_int, e_double, e_node_set, e_invalid} e_expression_type;
 
+class node_set
+{
+public :
+   node_set () 
+   {
+      u_nb_node = 0; 
+      XBpp_node_set = NULL;
+      op_attrib = NULL;
+   }
+   node_set (const node_set & ns2)
+   {
+      u_nb_node = ns2 . u_nb_node;
+      XBpp_node_set = new const TiXmlBase * [u_nb_node];
+      memcpy (XBpp_node_set, ns2 . XBpp_node_set, u_nb_node * sizeof (TiXmlBase *));
+      op_attrib = new bool [u_nb_node];
+      memcpy (op_attrib, ns2 . op_attrib, u_nb_node * sizeof (bool));
+   }
+   ~ node_set ()
+   {
+      if (u_nb_node && XBpp_node_set) 
+         delete [] XBpp_node_set;
+      if (u_nb_node && op_attrib)
+         delete [] op_attrib;
+      u_nb_node = 0; 
+      XBpp_node_set = NULL;
+      op_attrib = NULL;
+   }
+   void v_add_node_in_set (const TiXmlBase * XBp_member, bool o_attrib)
+   {
+      const TiXmlBase ** XBpp_new_list;
+      bool * op_new_list;
+
+      XBpp_new_list = new const TiXmlBase * [u_nb_node + 1];
+      op_new_list = new bool [u_nb_node + 1];
+      if (u_nb_node)
+      {
+         memcpy (XBpp_new_list, XBpp_node_set, u_nb_node * sizeof (TiXmlBase *));
+         delete [] XBpp_node_set;
+         memcpy (op_new_list, op_attrib, u_nb_node * sizeof (bool));
+         delete [] op_attrib;
+      }
+      XBpp_new_list [u_nb_node] = XBp_member;
+      XBpp_node_set = XBpp_new_list;
+      op_new_list [u_nb_node] = o_attrib;
+      op_attrib = op_new_list;
+      u_nb_node++;
+   }
+   unsigned u_get_nb_node_in_set () const 
+   {
+      return u_nb_node;
+   }
+   const TiXmlBase * XBp_get_node_in_set (unsigned u_which) 
+   {
+      assert (u_which < u_nb_node);
+      return XBpp_node_set [u_which];
+   }
+   bool o_is_attrib (unsigned u_which)
+   {
+      assert (u_which < u_nb_node);
+      return op_attrib [u_which];
+   }
+   void v_copy_node_children (const TiXmlNode * XNp_root);
+   void v_copy_node_children (const TiXmlNode * XNp_root, const char * cp_lookup);
+   void v_copy_selected_node_recursive (const TiXmlNode * XNp_root);
+   void v_copy_selected_node_recursive (const TiXmlNode * XNp_root, const char * cp_lookup);
+   TIXML_STRING S_get_string_value () const;
+   int i_get_first_marked (const TiXmlNode * & XNp_node, const TiXmlAttribute * & XAp_out) const;
+protected :
+   unsigned u_nb_node;
+	const TiXmlBase ** XBpp_node_set;
+   bool * op_attrib;
+} ;
+
 class expression_result
 {
 protected :	
@@ -37,13 +110,35 @@ protected :
 	bool o_content;
 	int i_content;
 	double d_content;
-	TiXmlNode * XNp_node_set;
+   node_set ns_set;
 
 public :
 	e_expression_type e_type;
 	expression_result ()
 	{
 		e_type = e_invalid;
+	}
+	expression_result (const expression_result & er_2)
+	{
+		e_type = er_2 . e_type;
+      switch (e_type)
+      {
+         case e_bool :
+            o_content = er_2 . o_content;
+            break;
+         case e_int :
+            i_content = er_2 . i_content;
+            break;
+         case e_string :
+            S_content = er_2 . S_content;
+            break;
+         case e_double :
+            d_content = er_2 . d_content;
+            break;
+         case e_node_set :
+            ns_set = er_2 . ns_set;
+            break;
+      }
 	}
 	void v_set_bool (bool o_in)
 	{
@@ -105,17 +200,31 @@ public :
 	void v_set_node_set (TiXmlNode * XNp_root)
 	{
 		e_type = e_node_set;
-		XNp_node_set = XNp_copy_selected_node (XNp_root);
+      ns_set . v_copy_node_children (XNp_root);
 	}
 	void v_set_node_set (TiXmlNode * XNp_root, const char * cp_lookup)
 	{
 		e_type = e_node_set;
-		XNp_node_set = XNp_copy_selected_node (XNp_root, cp_lookup);
+      ns_set . v_copy_node_children (XNp_root, cp_lookup);
 	}
-	const TiXmlNode * XNp_get_node_set ()
+	void v_set_node_set_recursive (TiXmlNode * XNp_root)
 	{
-		return XNp_node_set;
+		e_type = e_node_set;
+      ns_set . v_copy_selected_node_recursive (XNp_root);
 	}
+	void v_set_node_set_recursive (TiXmlNode * XNp_root, const char * cp_lookup)
+	{
+		e_type = e_node_set;
+      ns_set . v_copy_selected_node_recursive (XNp_root, cp_lookup);
+	}
+	void v_set_node_set ()
+   {
+      e_type = e_node_set;
+   }
+   node_set * nsp_get_node_set ()
+   {
+      return & ns_set;
+   }
 } ;
 
 #endif

@@ -21,12 +21,18 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file htmlutil.h
+   \author Yves Berquin
+   HTML utilities for TinyXPath project
+*/
 #ifndef __HTMLUTIL_H
 #define __HTMLUTIL_H
 
 #include "tinyxml.h"
 
-extern void v_out_html (FILE * Fp_out, TiXmlNode * XNp_source, unsigned u_level);
+extern void v_out_html (FILE * Fp_out, const TiXmlNode * XNp_source, unsigned u_level);
 extern void v_levelize (int i_level, FILE * Fp_out = stdout, bool o_html = false);
 
 #endif

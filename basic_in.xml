@@ -1,40 +1,51 @@
 <?xml version="1.0"?>
 <!-- Input for XPath tests -->
 <xpath_test>
+
    <source name="s1" detail="First string test" xpath_expr="//tree/@num">
       <tree num='1' />
    </source>
 
-   <source name="s1" detail="First string test" xpath_expr="name(/*[1])">
+   <source name="s2 pre" detail="string test 2" xpath_expr="/*[1]">
       <tree>
          <leaf />
       </tree>
    </source>
 
-   <source name="s2" detail="string test 2" xpath_expr="name(/*/*)">
+   <source name="s2" detail="string test 2" xpath_expr="name(/*[1])">
       <tree>
          <leaf />
       </tree>
    </source>
 
-   <source name="s3" detail="string test 3" xpath_expr="/*/*/@num">
+   <source name="s3" detail="string test 3" xpath_expr="name(/*/*)">
       <tree>
+         <leaf />
+      </tree>
+   </source>
+
+   <source name="s4" detail="string test 4" xpath_expr="/*/*/@num">
+      <tree num='37'>
          <leaf num='1234'/>
       </tree>
    </source>
 
-   <source name="s4" detail="string test 4" xpath_expr="/tree">
+   <source name="s5" detail="string test 5" xpath_expr="/tree">
       <tree>
          Text in between
          <leaf num='1234'/>
       </tree>
    </source>
 
-   <source name="s5" detail="string test 5" xpath_expr="count(//*)">
+   <source name="s6" detail="string test 6" xpath_expr="count(//*)">
       <tree>
          Text in between
          <leaf num='1234'/>
       </tree>
+   </source>
+
+   <source name="s7" detail="string test 7" xpath_expr="2 + 4.5">
+      <tree />
    </source>
 
    <!-- Example 1 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->

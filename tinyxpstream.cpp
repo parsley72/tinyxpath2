@@ -22,8 +22,15 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/**
+   \file tinyxpstream.cpp
+   \author Yves Berquin
+   Specialized byte stream for the TinyXPath project
+*/
+
 #include "tinyxpstream.h"
 
+/// Redefinition of a token_syntax_decoder, with an xpath_stream pointer
 class token_redef : public token_syntax_decoder 
 {
 protected :
@@ -39,6 +46,7 @@ public :
 	}
 } ;
 
+/// xpath_stream constructor
 xpath_stream ::xpath_stream (const char * cp_in) : byte_stream (cp_in) 
 {
 	S_expr = cp_in;

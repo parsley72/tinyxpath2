@@ -22,6 +22,12 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/**
+   \file main.cpp
+   \author Yves Berquin
+   Main example program for TinyXPath
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -37,6 +43,7 @@ distribution.
 
 class test_fail {};
 
+/// Apply all test cases from input XML document
 static void v_apply_xml (TiXmlDocument * XDp_doc)
 {
    TiXmlElement * XEp_source, * XEp_test;
@@ -88,6 +95,7 @@ static void v_apply_xml (TiXmlDocument * XDp_doc)
    }
 }
 
+/// Load a document and apply all test cases
 static void v_apply (const char * cp_in_file_name)
 {
    TiXmlDocument * XDp_doc;
@@ -100,6 +108,7 @@ static void v_apply (const char * cp_in_file_name)
    delete XDp_doc;
 }
 
+/// main function
 void main ()
 {
    v_apply ("basic_in.xml");

@@ -85,6 +85,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\expr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\htmlutil.cpp
 # End Source File
 # Begin Source File
@@ -208,6 +212,26 @@ SOURCE=.\tinyxmlerror.cpp
 SOURCE=.\tinyxmlparser.cpp
 # End Source File
 # End Group
+# Begin Group "website"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\website\index.html
+# End Source File
+# Begin Source File
+
+SOURCE=.\website\res.html
+# End Source File
+# Begin Source File
+
+SOURCE=.\website\upload.cmd
+# End Source File
+# Begin Source File
+
+SOURCE=.\website\upload_dox.cmd
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\ascii.htm
@@ -223,6 +247,14 @@ SOURCE=.\res.html
 # Begin Source File
 
 SOURCE=.\syntax.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\tinyxpath.dox
+# End Source File
+# Begin Source File
+
+SOURCE=.\tinyxpath.txt
 # End Source File
 # Begin Source File
 

@@ -21,6 +21,13 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file xmlutil.h
+   \author Yves Berquin
+   XML utilities functions
+*/
+
 #ifndef __XMLUTIL_H
 #define __XMLUTIL_H
 
@@ -52,6 +59,10 @@ extern void v_mark_children_name (
    long l_mother_value, 
    long l_child_value);
 extern void v_mark_children_inside (
+   TiXmlNode * XNp_target,
+   long l_mother_value,
+   long l_child_value);
+extern void v_mark_children_inside_one_level (
    TiXmlNode * XNp_target,
    long l_mother_value,
    long l_child_value);
@@ -113,6 +124,7 @@ extern int i_xml_cardinality (TiXmlElement * XEp_elem);
 extern int i_xml_valid_sibling (TiXmlElement * XEp_elem);
 extern unsigned u_count_children (TiXmlElement * XEp_elem, const char * cp_elem);
 extern unsigned u_count_children (TiXmlElement * XEp_elem);
+extern unsigned u_count_all_children (const TiXmlElement * XEp_elem);
 extern TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root);
 extern TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root, const char * cp_lookup);
 extern TIXML_STRING S_string_value (const TiXmlElement * XEp_elem);

@@ -22,6 +22,12 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/**
+   \file xpathappl.cpp
+   \author Yves Berquin
+   XPath top level class
+*/
+
 #include "xpathappl.h"
 #include "htmlutil.h"
 
@@ -525,7 +531,10 @@ TIXML_STRING xpath_from_source::S_evaluate_xpath_string (long l_mark_level)
    return S_res;
 }
 
-TIXML_STRING xpath_from_source::S_run (const char * cp_test_name, FILE * Fp_html)
+/// Run the XPath expression evaluation
+TIXML_STRING xpath_from_source::S_run (
+   const char * cp_test_name,     ///< Name of the test
+   FILE * Fp_html)                ///< Output HTML file name (or NULL)
 {
    TIXML_STRING S_xpath_res;
 
@@ -544,7 +553,7 @@ TIXML_STRING xpath_from_source::S_run (const char * cp_test_name, FILE * Fp_html
 
 	if (Fp_html)
 	{
-		fprintf (Fp_html, "<h1>%s</h1>\n", cp_test_name);
+		fprintf (Fp_html, "<h1>%s</h1>\n", cp_test_name ? cp_test_name : "---");
 		fprintf (Fp_html, "<table border=1><tr><th colspan=\"2\">XPath expression : %s</th></tr>\n", cp_get_expr ());
       fprintf (Fp_html, "<tr><th colspan='2'>XPath result : <b>%s</b></th></tr>\n", S_xpath_res . c_str ());
 		fprintf (Fp_html, "<tr><th>Input</th><th>Output</th></tr>\n");
@@ -559,7 +568,11 @@ TIXML_STRING xpath_from_source::S_run (const char * cp_test_name, FILE * Fp_html
    return S_xpath_res;
 }
 
-TIXML_STRING xpath_from_source::S_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
+/// Main function for XPath : Apply an XPath expression to the tree, and store the result image 
+/// to an optionnal HTML file
+TIXML_STRING xpath_from_source::S_apply_xpath (
+   const char * cp_test_name,    ///< Name of the test
+   FILE * Fp_html_out)           ///< Output HTML file name (or NULL)
 {
    TIXML_STRING S_res;
 

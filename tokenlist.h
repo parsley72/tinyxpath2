@@ -21,6 +21,13 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file tokenlist.h
+   \author Yves Berquin
+   XPath Syntax analyzer for TinyXPath project : token list handling
+*/
+
 #ifndef __TOKENLIST_H
 #define __TOKENLIST_H
 
@@ -47,7 +54,7 @@ public :
       ltp_current = NULL;
    }
    /// destructor
-   ~ token_list ()
+   virtual ~ token_list ()
    {
       ltp_current = ltp_first -> ltp_get_next ();
       while (ltp_current -> o_is_valid ())
@@ -104,12 +111,15 @@ public :
       ltp_current = ltp_current -> ltp_get_next (i_rel);
    }
 
+   /// Replaces the current element 
    void v_replace_current (lexico lex_in, const char * cp_rep)
    {
       if (! ltp_current)
          return;
       ltp_current -> v_set (lex_in, cp_rep);
    }
+
+   /// Deletes the current element
    void v_delete_current ()
    {
       lex_token * ltp_temp;
@@ -121,6 +131,7 @@ public :
       delete ltp_temp;
    }
 
+   /// Deletes the next element
    void v_delete_next ()
    {
       lex_token * ltp_temp;

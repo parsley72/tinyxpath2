@@ -21,6 +21,13 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file tinyutil.h
+   \author Yves Berquin
+   Miscellaneous utilities for the TinyXPath project
+*/
+
 #ifndef __TINYUTIL_H
 #define __TINYUTIL_H
 
@@ -32,6 +39,7 @@ distribution.
 
 typedef unsigned char _byte_;
 
+/// Lexical XPath elements
 enum lexico {
             // single chars
 
@@ -62,6 +70,7 @@ enum lexico {
 
              };
 
+/// XPath constructions. The ordinals are rules of XPath or XML definitions in w3c
 enum xpath_construct {
    xpath_unknown = 0,
    xpath_location_path = 1,

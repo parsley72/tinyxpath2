@@ -21,6 +21,13 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file xmlutil.cpp
+   \author Yves Berquin
+   XML utilities functions
+*/
+
 #include "tinyxml.h"
 #include "xmlutil.h"
 
@@ -137,6 +144,20 @@ void v_mark_all_children (
    }
 }
 
+static void v_mark_children (
+   TiXmlNode * XNp_target, 
+   long l_id)
+{
+   TiXmlElement * XEp_child;
+
+   XEp_child = XNp_target -> FirstChildElement ();
+   while (XEp_child)
+   {
+      v_set_user_value (XEp_child, l_id);
+      XEp_child = XEp_child -> NextSiblingElement ();
+   }
+}
+
 static void v_init_node_and_attribute (
 	TiXmlNode * XNp_node)
 {
@@ -249,6 +270,25 @@ void v_mark_children_inside (
       if (l_test == l_mother_value)
          v_mark_all_children (XEp_child, l_child_value);
       v_mark_children_inside (XEp_child, l_mother_value, l_child_value);
+      XEp_child = XEp_child -> NextSiblingElement ();
+   }
+}
+
+void v_mark_children_inside_one_level (
+   TiXmlNode * XNp_target,
+   long l_mother_value,
+   long l_child_value)
+{
+   TiXmlElement * XEp_child;
+   long l_test;
+
+   XEp_child = XNp_target -> FirstChildElement ();
+   while (XEp_child)
+   {
+		l_test = l_get_user_value (XEp_child);
+      if (l_test == l_mother_value)
+       	v_mark_children (XEp_child, l_child_value);
+      v_mark_children_inside_one_level (XEp_child, l_mother_value, l_child_value);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
 }
@@ -467,6 +507,24 @@ unsigned u_count_children (TiXmlElement * XEp_elem)
       XEp_child = XEp_child -> NextSiblingElement ();
 	return i_look;
 }
+
+unsigned u_count_all_children (const TiXmlElement * XEp_elem)
+{
+	TiXmlElement * XEp_child;
+   unsigned u_tot;
+
+	if (! XEp_elem)
+		return 0;
+   u_tot = 1;
+	XEp_child = XEp_elem -> FirstChildElement ();
+   while (XEp_child)
+   {
+      u_tot += u_count_all_children (XEp_child);
+      XEp_child = XEp_child -> NextSiblingElement ();
+   }
+	return u_tot;
+}
+
 
 static void v_mark_all_children_with_name (
 	TiXmlElement * XEp_target, 
@@ -798,22 +856,42 @@ TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root)
 	return XNp_res;
 }
 
+static void v_add_all_children_in_tree (TiXmlNode * XNp_res, const TiXmlNode * XNp_root, const char * cp_lookup)
+{
+   TiXmlNode * XNp_new;
+   TiXmlElement * XEp_child;
+
+	XEp_child = XNp_root -> FirstChildElement ();
+	while (XEp_child)
+	{
+   	XNp_new = XNp_res -> InsertEndChild (* XEp_child);
+      v_add_all_children_in_tree (XNp_new, XEp_child, cp_lookup);
+		XEp_child = XEp_child -> NextSiblingElement ();
+	}
+   
+}
+
 /// Generates a new tree which collects all the selected elements in the 
-/// XNp_root tree
+/// XNp_root tree. The returned tree is a node set, which means that every elements are under the root
+/// It's a simple collection of nodes
 TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root, const char * cp_lookup)
 {
 	TiXmlNode * XNp_res;
-	TiXmlElement * XEp_child;
+	// TiXmlElement * XEp_child;
 
 	XNp_res = new TiXmlElement ("root");
+   v_add_all_children_in_tree (XNp_res, XNp_root, cp_lookup);
+   /*
 	XEp_child = XNp_root -> FirstChildElement (cp_lookup);
 	while (XEp_child)
 	{
    	XNp_res -> InsertEndChild (* XEp_child);
 		XEp_child = XEp_child -> NextSiblingElement (cp_lookup);
 	}
+   */
 	return XNp_res;
 }
+
 
 /// Computes the string() value of an element, that is, the concatenated value of all
 /// element's descendants, in document order. Usually, this means the text value of 

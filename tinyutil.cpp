@@ -21,7 +21,15 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file tinyutil.cpp
+   \author Yves Berquin
+   Miscellaneous utilities for the TinyXPath project
+*/
+
 #include <string.h>
+#include <stdio.h>
 
 #include "tinyutil.h"
 
@@ -64,6 +72,7 @@ static lexico lex_char_map [256] =
    /* f8 .. ff */   lex_bchar,   lex_bchar,   lex_bchar,   lex_bchar,   lex_bchar,   lex_bchar,   lex_bchar,   lex_bchar
  };
 
+/// Dump a lexical element
 const char * cp_disp_class_lex (lexico lex_in)
 {
    switch (lex_in)
@@ -132,15 +141,19 @@ const char * cp_disp_class_lex (lexico lex_in)
    return "???";
 }
 
+/// Get the lexical class of an XPath expression byte
 lexico lex_get_class (_byte_ b_in)
 {
    return lex_char_map [b_in];
 }
+
+/// Display the lexical class of an XPath expression byte
 const char * cp_disp_class (_byte_ b_in)
 {
    return cp_disp_class_lex (lex_get_class (b_in));
 }
 
+/// Check if a lexical element can be an axis name
 bool o_is_axis_name (lexico lex_test)
 {
    if (lex_test >= lex_start_axis_name && lex_test <= lex_end_axis_name)
@@ -148,8 +161,7 @@ bool o_is_axis_name (lexico lex_test)
    return false;
 }
 
-#include <stdio.h>
-
+/// Generates an ascii table summarizing all possible bytes and their XPath properties
 void v_generate_ascii_htm ()
 {
    int c;
@@ -183,6 +195,7 @@ lexico lex_test_id (const _byte_ * bp_str, unsigned u_size)
    return lex_ncname;
 }
 
+/// Removes all leading and trailing white spaces
 TIXML_STRING S_remove_lead_trail (const char * cp_in)
 {	
 	TIXML_STRING S_ret;

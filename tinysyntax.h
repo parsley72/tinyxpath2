@@ -21,6 +21,13 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
+
+/**
+   \file tinysyntax.h
+   \author Yves Berquin
+   XPath Syntax analyzer for TinyXPath project
+*/
+
 #ifndef __TINYSYNTAX_H
 #define __TINYSYNTAX_H
 
@@ -28,6 +35,7 @@ distribution.
 #include <stdio.h>
 #include "tokenlist.h"
 
+/// Exception class for a syntax error
 class syntax_error
 {
 public :
@@ -41,6 +49,7 @@ public :
    char ca_mess [200];
 } ;
 
+/// Exception class for a syntax backtracking
 class syntax_backtrack
 {
 public :
@@ -51,19 +60,18 @@ public :
    char ca_mess [200];
 } ;
 
+/// Exception class for an overflow in syntax decoding
 class syntax_overflow {} ;
 
+/// XPath syntax decoder class
 class token_syntax_decoder : public token_list
 {
 protected :
+   /// Nb of recursions
    unsigned u_nb_recurs;
 public :
-   token_syntax_decoder () : token_list ()
-   {
-   }
-   ~ token_syntax_decoder ()
-   {
-   }
+   token_syntax_decoder () : token_list ()   {}
+   virtual ~ token_syntax_decoder ()   {}
    void v_syntax_decode ();
    virtual void v_action (unsigned /* u_rule */, unsigned /* u_sub */, 
 		unsigned /* u_variable */ = 0, const char * /* cp_explain */ = "")

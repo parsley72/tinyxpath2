@@ -22,6 +22,12 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/**
+   \file xpathappl.h
+   \author Yves Berquin
+   XPath top level class
+*/
+
 #ifndef __XPATHAPPL_H
 #define __XPATHAPPL_H
 

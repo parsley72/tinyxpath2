@@ -22,6 +22,12 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/**
+   \file workitem.cpp
+   \author Yves Berquin
+   Action items for the XPath expressions
+*/
+
 #include <math.h>
 #include "workitem.h"
 
@@ -84,7 +90,7 @@ void work_node_test::v_apply_predicate (
 {
 	TiXmlElement * XEp_child;
 	TIXML_STRING S_ret;
-	expression_result er_res ;
+	expression_result * erp_res;
 	bool o_mark;
 
    XEp_child = XNp_target -> FirstChildElement ();
@@ -92,15 +98,15 @@ void work_node_test::v_apply_predicate (
    {
 		if (l_get_user_value (XEp_child) == l_marker)
 		{
-			er_res = wp_item -> er_compute_predicate (XEp_child, XNp_target);
+			erp_res = wp_item -> erp_compute_predicate (XEp_child, XNp_target);
 			o_mark = false;
-			switch (er_res . e_type)
+			switch (erp_res -> e_type)
 			{
 				case e_bool :
-					o_mark = er_res . o_get_bool ();
+					o_mark = erp_res -> o_get_bool ();
 					break;
 				case e_int :
-					o_mark = i_xml_cardinality (XEp_child) == er_res . i_get_int ();
+					o_mark = i_xml_cardinality (XEp_child) == erp_res -> i_get_int ();
 					break;
 				case e_string :
 					o_mark = true;
@@ -111,6 +117,7 @@ void work_node_test::v_apply_predicate (
 			if (o_mark)
 				// v_set_user_value (XEp_child, l_marker + 1);
             v_mark_node_and_attribute (XEp_child, l_marker + 1);
+         delete erp_res;
 		}
       v_apply_predicate (XEp_child, wp_item, cp_label, l_marker);
       XEp_child = XEp_child -> NextSiblingElement ();
@@ -144,11 +151,15 @@ void work_step::v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_ma
 	*/
 }
 
-expression_result work_step::er_compute_predicate (TiXmlElement * XEp_elem, TiXmlNode * XNp_root) 
+expression_result * work_step::erp_compute_predicate (TiXmlElement * XEp_elem, TiXmlNode * XNp_root) 
 {
 	const char * cp_ret, * cp_lookup;
-	expression_result er_res;
+	expression_result * erp_res;
+   TiXmlElement * XEp_root;
 
+   assert (XNp_root);   
+   v_dump (0);
+   erp_res = new expression_result;
 	// predicates for step ...
 	printf ("Predicate for step\n");
 	assert (wp_axis);
@@ -160,459 +171,655 @@ expression_result work_step::er_compute_predicate (TiXmlElement * XEp_elem, TiXm
 		if (! strcmp (cp_lookup, "*"))
 		{
 			// looking for any attribute
-			er_res . v_set_bool (XEp_elem -> FirstAttribute () != NULL);
+			erp_res -> v_set_bool (XEp_elem -> FirstAttribute () != NULL);
 		}
 		else
 		{
 			cp_ret = XEp_elem -> Attribute (cp_lookup);
 			if (cp_ret)
-				er_res . v_set_string (cp_ret);
+				erp_res -> v_set_string (cp_ret);
 			else
-				er_res . v_set_bool (false);
+				erp_res -> v_set_bool (false);
 		}
 	}
 	else
 	   if (o_absolute)
 		{
+         XEp_root = XNp_root -> FirstChildElement ();
+         assert (XEp_root);
 			if (! strcmp (cp_lookup, "*"))
-  				er_res . v_set_node_set (XNp_root);
+  				erp_res -> v_set_node_set_recursive (XEp_root -> FirstChildElement ());
 			else
-  				er_res . v_set_node_set (XNp_root, cp_lookup);
+  				erp_res -> v_set_node_set_recursive (XEp_root -> FirstChildElement (), cp_lookup);
 		}
 		else
 		{
 			if (! strcmp (cp_lookup, "*"))
-  				er_res . v_set_node_set (XEp_elem);
+  				erp_res -> v_set_node_set (XEp_elem);
 			else
-  				er_res . v_set_node_set (XEp_elem, cp_lookup);
+  				erp_res -> v_set_node_set (XEp_elem, cp_lookup);
 			/* !!!
 			// not an attribute
 			if (! strcmp (cp_lookup, "*"))
 				// looking for any child, and counting
-				er_res . v_set_int ((int) u_count_children (XEp_elem));
+				erp_res -> v_set_int ((int) u_count_children (XEp_elem));
 			else
-				er_res . v_set_int ((int) u_count_children (XEp_elem, cp_lookup));
+				erp_res -> v_set_int ((int) u_count_children (XEp_elem, cp_lookup));
 			!!! */
 		}
-	return er_res;
+   if (wp_next_step)
+   {
+      expression_result * erp_temp;
+
+      erp_temp = erp_res;
+      erp_res = wp_next_step -> erp_compute_predicate (erp_temp);
+      delete erp_temp;
+   }
+	return erp_res;
 }
 
-expression_result work_expr::er_compute_predicate (TiXmlElement * XEp_element, TiXmlNode *) 
+expression_result * work_step::erp_compute_predicate (expression_result * erp_pre)
 {
-	expression_result er_res;
+   expression_result * erp_res;
+	const char * cp_lookup;
+   TiXmlElement * XEp_elem;
+   unsigned u_node;
+   node_set * nsp_in_set;
+   const TiXmlBase * XBp_current;
+   bool o_current_attrib;
+   TiXmlNode * XNp_child, * XNp_current;
+
+   erp_res = new expression_result;
+	assert (wp_axis);
+   cp_lookup = wp_node_test -> cp_get_value ();
+   assert (erp_pre -> e_type == e_node_set);
+   nsp_in_set = erp_pre -> nsp_get_node_set ();
+   for (u_node = 0; u_node < nsp_in_set -> u_get_nb_node_in_set (); u_node++)
+   {
+      XBp_current = nsp_in_set -> XBp_get_node_in_set (u_node);
+      o_current_attrib = nsp_in_set -> o_is_attrib (u_node);
+	   if (wp_axis -> o_is_at ())
+	   {
+         // skip this input node if it is not an attribute
+         if (o_current_attrib)
+         {
+
+         /* todo ...
+
+		      // it's an attribute lookup
+		      printf ("Predicate is the attribute %s\n", cp_lookup);
+		      if (! strcmp (cp_lookup, "*"))
+		      {
+			      // looking for any attribute
+			      erp_res -> v_set_bool (XEp_elem -> FirstAttribute () != NULL);
+		      }
+		      else
+		      {
+			      cp_ret = XEp_elem -> Attribute (cp_lookup);
+			      if (cp_ret)
+				      erp_res -> v_set_string (cp_ret);
+			      else
+				      erp_res -> v_set_bool (false);
+		      }
+
+            ... */
+
+         }
+	   }
+	   else
+      {
+         // skip this input node if it is an attribute
+         if (! o_current_attrib)
+         {
+	         if (o_absolute)
+		      {
+               // we shouldn't have an absolute predicate in a 2nd rule
+               assert (false);
+               /*
+			      if (! strcmp (cp_lookup, "*"))
+  				      erp_res -> v_set_node_set (XEp_root -> FirstChildElement ());
+			      else
+  				      erp_res -> v_set_node_set (XEp_root -> FirstChildElement (), cp_lookup);
+               */
+		      }
+		      else
+		      {
+               erp_res -> v_set_node_set ();
+               XNp_current = (TiXmlNode *) XBp_current;
+               XNp_child = XNp_current -> FirstChildElement ();
+               while (XNp_child)
+               {
+                  XEp_elem = XNp_child -> ToElement ();
+                  if (XEp_elem)
+                  {
+			            if (! strcmp (cp_lookup, "*") || ! strcmp (XEp_elem -> Value (), cp_lookup))
+                        erp_res -> nsp_get_node_set () -> v_add_node_in_set (XEp_elem, false);
+                  }
+                  XNp_child = XNp_child -> NextSibling ();
+               } 
+		      }
+         }
+      }
+   }
+   if (wp_next_step)
+   {
+      expression_result * erp_temp;
+
+      erp_temp = erp_res;
+      erp_res = wp_next_step -> erp_compute_predicate (erp_temp);
+      delete erp_temp;
+   }
+   return erp_res;
+}
+
+expression_result * work_expr::erp_compute_predicate (TiXmlElement * XEp_element, TiXmlNode *) 
+{
+	expression_result * erp_res;
 			
-	switch (u_cat)
+   erp_res = new expression_result;
+   switch (u_cat)
 	{
 		case e_work_expr_value :
-			// here return (i_xml_cardinality (XEp_element) == i_get_expr_value ());
-			er_res . v_set_int (i_get_expr_value ());
+			erp_res -> v_set_int (i_get_expr_value ());
+         // erp_res -> v_set_bool (i_xml_cardinality (XEp_element) == i_get_expr_value ());
 			break;
 
 		case e_work_expr_func :
 			if (S_value == "last")
-				// er_res . v_set_bool (XEp_element -> NextSiblingElement () == NULL);
-				er_res . v_set_int (i_xml_valid_sibling (XEp_element));
+				// erp_res -> v_set_bool (XEp_element -> NextSiblingElement () == NULL);
+				erp_res -> v_set_int (i_xml_valid_sibling (XEp_element));
 			else
 
 			if (S_value == "name")
-				er_res . v_set_string (XEp_element -> Value ());
+				erp_res -> v_set_string (XEp_element -> Value ());
 			else
 
 			if (S_value == "position")
-				er_res . v_set_int (i_xml_cardinality (XEp_element));
+				erp_res -> v_set_int (i_xml_cardinality (XEp_element));
 			else
 
 				assert (false);
 			break;
 
 		case e_work_expr_literal :
-			er_res . v_set_string (S_value);
+			erp_res -> v_set_string (S_value);
 			break;
 
 		case e_work_expr_double_value :
-			er_res . v_set_double (d_value);
+			erp_res -> v_set_double (d_value);
 			break;
 
 		default :
 			assert (false);
 	}
-	return er_res;
+	return erp_res;
 }
 
-expression_result work_func::er_func_not (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_not (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_res;
+	expression_result * erp_arg, * erp_res;
 
 	assert (u_nb_arg == 1);
-	er_arg = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_res . v_set_bool (! er_arg . o_get_bool ());
-	return er_res;
+   erp_res = new expression_result;
+	erp_arg = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_res -> v_set_bool (! erp_arg -> o_get_bool ());
+   delete erp_arg;
+	return erp_res;
 }
 
-expression_result work_func::er_func_internal_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_internal_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_arg_2, er_res;
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
 
 	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	if (er_arg . e_type != er_arg_2 . e_type)
-		er_res . v_set_bool (false);
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	if (erp_arg -> e_type != erp_arg_2 -> e_type)
+		erp_res -> v_set_bool (false);
 	else
-		switch (er_arg . e_type)
+		switch (erp_arg -> e_type)
 		{
 			case e_bool :
-				er_res . v_set_bool (er_arg . o_get_bool () == er_arg_2 . o_get_bool ());
-				assert (false);   // the code is here above, but it doesn't make sense
-										// to compare with an equal two booleans, now does it ?
+				erp_res -> v_set_bool (erp_arg -> o_get_bool () == erp_arg_2 -> o_get_bool ());
 				break;
 			case e_int :
-				er_res . v_set_bool (er_arg . i_get_int () == er_arg_2 . i_get_int ());
+				erp_res -> v_set_bool (erp_arg -> i_get_int () == erp_arg_2 -> i_get_int ());
 				break;
 			case e_string :
-				er_res . v_set_bool (! strcmp (er_arg . cp_get_string (), er_arg_2 . cp_get_string ()));
+				erp_res -> v_set_bool (! strcmp (erp_arg -> cp_get_string (), erp_arg_2 -> cp_get_string ()));
 				break;
 			default :
-				er_res . v_set_bool (false);
+				erp_res -> v_set_bool (false);
 				break;
 		}
-	return er_res;
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
 }
 
-expression_result work_func::er_func_normalize_space (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_normalize_space (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_res;
+	expression_result * erp_arg, * erp_res;
 
 	assert (u_nb_arg == 1);
-	er_arg = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	if (er_arg . e_type == e_string)
-		er_res . v_set_string (S_remove_lead_trail (er_arg . cp_get_string ()));
+   erp_res = new expression_result;
+	erp_arg = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	if (erp_arg -> e_type == e_string)
+		erp_res -> v_set_string (S_remove_lead_trail (erp_arg -> cp_get_string ()));
 	else
-		er_res . v_set_bool (false);
-	return er_res;
+		erp_res -> v_set_bool (false);
+   delete erp_arg;
+	return erp_res;
 }
 
-expression_result work_func::er_func_count (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_count (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_res;
-	unsigned u_count;
-	const TiXmlElement * XEp_child;
-	assert (u_nb_arg == 1);
-	er_arg = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_node_set);
-	u_count = 0;
-	XEp_child = er_arg . XNp_get_node_set () -> FirstChildElement ();
-	while (XEp_child)
-	{
-		u_count++;
-		XEp_child = XEp_child -> NextSiblingElement ();
-	}
-	er_res . v_set_int ((int) u_count);
-	return er_res;
-}
-
-expression_result work_func::er_func_starts_with (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
-{
-	expression_result er_arg, er_arg_2, er_res;
-
-	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_string);
-	assert (er_arg_2 . e_type == e_string);
-	er_res . v_set_bool (! strncmp (er_arg . cp_get_string (), er_arg_2 . cp_get_string (), 
-				strlen (er_arg_2 . cp_get_string ())));
-	return er_res;
-}
-
-expression_result work_func::er_func_contains (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
-{
-	expression_result er_arg, er_arg_2, er_res;
-
-	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_string);
-	assert (er_arg_2 . e_type == e_string);
-	er_res . v_set_bool (strstr (er_arg . cp_get_string (), er_arg_2 . cp_get_string ()) 
-				? true : false);
-	return er_res;
-}
-
-expression_result work_func::er_func_internal_less (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
-{
-	expression_result er_arg, er_arg_2, er_res;
-
-	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_int);
-	assert (er_arg_2 . e_type == e_int);
-	er_res . v_set_bool (er_arg . i_get_int () < er_arg_2 . i_get_int ());
-	return er_res;
-}
-
-expression_result work_func::er_func_internal_greater (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
-{
-	expression_result er_arg, er_arg_2, er_res;
-
-	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_int);
-	assert (er_arg_2 . e_type == e_int);
-	er_res . v_set_bool (er_arg . i_get_int () > er_arg_2 . i_get_int ());
-	return er_res;
-}
-
-expression_result work_func::er_func_internal_less_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
-{
-	expression_result er_arg, er_arg_2, er_res;
-
-	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_int);
-	assert (er_arg_2 . e_type == e_int);
-	er_res . v_set_bool (er_arg . i_get_int () <= er_arg_2 . i_get_int ());
-	return er_res;
-}
-
-expression_result work_func::er_func_internal_greater_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
-{
-	expression_result er_arg, er_arg_2, er_res;
-
-	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_int);
-	assert (er_arg_2 . e_type == e_int);
-	er_res . v_set_bool (er_arg . i_get_int () >= er_arg_2 . i_get_int ());
-	return er_res;
-}
-
-expression_result work_func::er_func_string_length (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
-{
-	expression_result er_arg, er_res;
+	expression_result * erp_arg, * erp_res;
+	unsigned u_count, u_nb, u_node;
+   const TiXmlNode * XNp_node;
 
 	assert (u_nb_arg == 1);
-	er_arg = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_string);
-	er_res . v_set_int (er_arg . S_get_string () . length ());
-	return er_res;
+   erp_res = new expression_result;
+	erp_arg = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_node_set);
+   u_nb = erp_arg -> nsp_get_node_set () -> u_get_nb_node_in_set ();
+   u_count = 0;
+   printf (" start set\n");
+   for (u_node = 0; u_node < u_nb; u_node++)
+      if (! erp_arg -> nsp_get_node_set () -> o_is_attrib (u_node))
+      {
+         XNp_node = (const TiXmlNode *) erp_arg -> nsp_get_node_set () -> XBp_get_node_in_set (u_node);
+         if (XNp_node -> Type () == TiXmlNode::ELEMENT)
+         {
+            printf (" (set) : %s\n", XNp_node -> Value ());
+            u_count++;
+         }
+      }
+   printf (" end set : %d\n", u_count);
+	erp_res -> v_set_int ((int) u_count);
+   delete erp_arg;
+	return erp_res;
 }
 
-expression_result work_func::er_func_modulo (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_starts_with (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_arg_2, er_res;
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
 
 	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_int);
-	assert (er_arg_2 . e_type == e_int);
-	er_res . v_set_int (er_arg . i_get_int () % er_arg_2 . i_get_int ());
-	return er_res;
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_string);
+	assert (erp_arg_2 -> e_type == e_string);
+	erp_res -> v_set_bool (! strncmp (erp_arg -> cp_get_string (), erp_arg_2 -> cp_get_string (), 
+				strlen (erp_arg_2 -> cp_get_string ())));
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
 }
 
-expression_result work_func::er_func_floor (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_contains (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_res;
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
+
+	assert (u_nb_arg == 2);
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_string);
+	assert (erp_arg_2 -> e_type == e_string);
+	erp_res -> v_set_bool (strstr (erp_arg -> cp_get_string (), erp_arg_2 -> cp_get_string ()) ? true : false);
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
+}
+
+expression_result * work_func::erp_func_internal_less (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
+
+	assert (u_nb_arg == 2);
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_int);
+	assert (erp_arg_2 -> e_type == e_int);
+	erp_res -> v_set_bool (erp_arg -> i_get_int () < erp_arg_2 -> i_get_int ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
+}
+
+expression_result * work_func::erp_func_internal_greater (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
+
+	assert (u_nb_arg == 2);
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_int);
+	assert (erp_arg_2 -> e_type == e_int);
+	erp_res -> v_set_bool (erp_arg -> i_get_int () > erp_arg_2 -> i_get_int ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
+}
+
+expression_result * work_func::erp_func_internal_less_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
+
+	assert (u_nb_arg == 2);
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_int);
+	assert (erp_arg_2 -> e_type == e_int);
+	erp_res -> v_set_bool (erp_arg -> i_get_int () <= erp_arg_2 -> i_get_int ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
+}
+
+expression_result * work_func::erp_func_internal_greater_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
+
+	assert (u_nb_arg == 2);
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_int);
+	assert (erp_arg_2 -> e_type == e_int);
+	erp_res -> v_set_bool (erp_arg -> i_get_int () >= erp_arg_2 -> i_get_int ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
+}
+
+expression_result * work_func::erp_func_string_length (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_res;
+
+	assert (u_nb_arg == 1);
+   erp_res = new expression_result;
+	erp_arg = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_string);
+	erp_res -> v_set_int (erp_arg -> S_get_string () . length ());
+   delete erp_arg;
+	return erp_res;
+}
+
+expression_result * work_func::erp_func_modulo (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
+
+	assert (u_nb_arg == 2);
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_int);
+	assert (erp_arg_2 -> e_type == e_int);
+	erp_res -> v_set_int (erp_arg -> i_get_int () % erp_arg_2 -> i_get_int ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
+}
+
+expression_result * work_func::erp_func_floor (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_res;
 	double d_val;
 
 	assert (u_nb_arg == 1);
-	er_arg = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	switch (er_arg . e_type)
+   erp_res = new expression_result;
+	erp_arg = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	switch (erp_arg -> e_type)
 	{
 		case e_int :
-			er_res . v_set_int (er_arg . i_get_int ());
+			erp_res -> v_set_int (erp_arg -> i_get_int ());
 			break;
 		case e_double :
-			d_val = floor (er_arg . d_get_double ());
-			er_res . v_set_int ((int) d_val);
+			d_val = floor (erp_arg -> d_get_double ());
+			erp_res -> v_set_int ((int) d_val);
 			break;
 		default :
 			assert (false);
 	}
-	return er_res;
+   delete erp_arg;
+	return erp_res;
 }
 
-expression_result work_func::er_func_internal_plus (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_name (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_arg_2, er_res;
+	expression_result * erp_arg, * erp_res;
+   int i_res;
+   TiXmlNode * XNp_first;
+   TiXmlAttribute * XAp_first;
+
+	assert (u_nb_arg == 1);
+   erp_res = new expression_result;
+	erp_arg = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+   switch (erp_arg -> e_type)
+   {
+      case e_node_set :
+         i_res = erp_arg -> nsp_get_node_set () -> i_get_first_marked (XNp_first, XAp_first);
+         switch (i_res)
+         {
+            case 0 :
+               erp_res -> v_set_string ("");
+               break;
+            case 1 :
+               erp_res -> v_set_string (XNp_first -> Value ());
+               break;
+            case 2 :
+               erp_res -> v_set_string (XAp_first -> Value ());
+               break;
+            default :   
+               assert (false);
+         }
+         break;
+      default :
+         erp_res -> v_set_string ("");
+         break;
+   }
+   delete erp_arg;
+   return erp_res;
+}
+
+expression_result * work_func::erp_func_internal_plus (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+{
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
 
 	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	if (er_arg . e_type == e_int && er_arg_2 . e_type == e_int)
-		er_res . v_set_int (er_arg . i_get_int () + er_arg_2 . i_get_int ());
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	if (erp_arg -> e_type == e_int && erp_arg_2 -> e_type == e_int)
+		erp_res -> v_set_int (erp_arg -> i_get_int () + erp_arg_2 -> i_get_int ());
 	else
-		er_res . v_set_double (er_arg . d_get_double () + er_arg_2 . d_get_double ());
-	return er_res;
+		erp_res -> v_set_double (erp_arg -> d_get_double () + erp_arg_2 -> d_get_double ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
 }
 
-expression_result work_func::er_func_internal_div (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+/// Evaluates the result of the div operation, which is a real operation, not an int like in Pascal
+expression_result * work_func::erp_func_internal_div (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_arg_2, er_res;
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
 
 	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	if (fabs (er_arg_2 . d_get_double ()) < 1.0e-6)
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	if (fabs (erp_arg_2 -> d_get_double ()) < 1.0e-6)
 		assert (false);
-   er_res . v_set_int ((int) (er_arg . d_get_double () / er_arg_2 . d_get_double ()));
-	return er_res;
+   erp_res -> v_set_double (erp_arg -> d_get_double () / erp_arg_2 -> d_get_double ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
 }
 
-expression_result work_func::er_func_ceiling (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_ceiling (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_res;
+	expression_result * erp_arg, * erp_res;
 	double d_val;
 
 	assert (u_nb_arg == 1);
-	er_arg = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	switch (er_arg  . e_type)
+   erp_res = new expression_result;
+	erp_arg = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	switch (erp_arg -> e_type)
 	{
 		case e_int :
-			er_res . v_set_int (er_arg . i_get_int ());
+			erp_res -> v_set_int (erp_arg -> i_get_int ());
 			break;
 		case e_double :
-			d_val = ceil (er_arg . d_get_double ());
-			er_res . v_set_int ((int) d_val);
+			d_val = ceil (erp_arg -> d_get_double ());
+			erp_res -> v_set_int ((int) d_val);
 			break;
 		default :	
 			assert (false);
 	}
-	return er_res;
+   delete erp_arg;
+	return erp_res;
 }
 
-expression_result work_func::er_func_internal_or (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_internal_or (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_arg_2, er_res;
+	expression_result * erp_arg, * erp_arg_2, * erp_res;
 
 	assert (u_nb_arg == 2);
-	er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test, XNp_root);
-	er_arg = wipp_list [1] -> er_compute_predicate (XEp_test, XNp_root);
-	assert (er_arg . e_type == e_bool);
-	assert (er_arg_2 . e_type == e_bool);
-   er_res . v_set_bool (er_arg . o_get_bool () || er_arg_2 . o_get_bool ());
-	return er_res;
+   erp_res = new expression_result;
+	erp_arg_2 = wipp_list [0] -> erp_compute_predicate (XEp_test, XNp_root);
+	erp_arg = wipp_list [1] -> erp_compute_predicate (XEp_test, XNp_root);
+	assert (erp_arg -> e_type == e_bool);
+	assert (erp_arg_2 -> e_type == e_bool);
+   erp_res -> v_set_bool (erp_arg -> o_get_bool () || erp_arg_2 -> o_get_bool ());
+   delete erp_arg;
+   delete erp_arg_2;
+	return erp_res;
 }
 
-expression_result work_func::er_func_concat (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_func_concat (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_arg, er_res;
+	expression_result * erp_arg, * erp_res;
 	TIXML_STRING S_res, S_to_add;
 	unsigned u_arg;
-	TiXmlElement * XEp_child;
 
 	assert (u_nb_arg >= 2);
+   erp_res = new expression_result;
 	S_res = "";
 	for (u_arg = 0; u_arg < u_nb_arg; u_arg++)
 	{
-		er_arg = wipp_list [u_nb_arg - u_arg - 1] -> er_compute_predicate (XEp_test, XNp_root);
-		switch (er_arg . e_type)
+		erp_arg = wipp_list [u_nb_arg - u_arg - 1] -> erp_compute_predicate (XEp_test, XNp_root);
+		switch (erp_arg -> e_type)
 		{
 			case e_string :
-				S_to_add = er_arg . S_get_string ();
+				S_to_add = erp_arg -> S_get_string ();
 				break;
 			case e_node_set :	
-				XEp_child = er_arg . XNp_get_node_set () -> FirstChildElement ();
-				if (XEp_child) 
-				   S_to_add = S_string_value (XEp_child);
-				else
-					S_to_add = "";
+            S_to_add = erp_arg -> nsp_get_node_set () -> S_get_string_value ();
 				break;
 			default :
 				assert (false);
 				break;
 		}
+      delete erp_arg;
 		S_res += S_to_add;
 	}
-   er_res . v_set_string (S_res . c_str ());
-	return er_res;
+   erp_res -> v_set_string (S_res . c_str ());
+	return erp_res;
 }
 
-expression_result work_func::er_compute_predicate (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
+expression_result * work_func::erp_compute_predicate (TiXmlElement * XEp_test, TiXmlNode * XNp_root) 
 {
-	expression_result er_res;
+	expression_result * erp_res;
 
 	if (S_name == "ceiling")
-		return er_func_ceiling (XEp_test, XNp_root);
+		return erp_func_ceiling (XEp_test, XNp_root);
 	else
 
 	if (S_name == "contains")
-		return er_func_contains (XEp_test, XNp_root);
+		return erp_func_contains (XEp_test, XNp_root);
 	else
 
 	if (S_name == "concat")
-		return er_func_concat (XEp_test, XNp_root);
+		return erp_func_concat (XEp_test, XNp_root);
 	else
 
 	if (S_name == "count")
-		return er_func_count (XEp_test, XNp_root);
+		return erp_func_count (XEp_test, XNp_root);
 	else
 
 	if (S_name == "floor")
-		return er_func_floor (XEp_test, XNp_root);
+		return erp_func_floor (XEp_test, XNp_root);
 	else
 
 	if (S_name == "normalize-space")
-		return er_func_normalize_space (XEp_test, XNp_root);
+		return erp_func_normalize_space (XEp_test, XNp_root);
 	else
 
 	if (S_name == "not")
-		return er_func_not (XEp_test, XNp_root);
+		return erp_func_not (XEp_test, XNp_root);
 	else
 
 	if (S_name == "starts-with")
-		return er_func_starts_with (XEp_test, XNp_root);
+		return erp_func_starts_with (XEp_test, XNp_root);
 	else
 
 	if (S_name == "string-length")
-		return er_func_string_length (XEp_test, XNp_root);
+		return erp_func_string_length (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__div__")
-		return er_func_internal_div (XEp_test, XNp_root);
+		return erp_func_internal_div (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__equal__")
-		return er_func_internal_equal (XEp_test, XNp_root);
+		return erp_func_internal_equal (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__greater__")
-		return er_func_internal_greater (XEp_test, XNp_root);
+		return erp_func_internal_greater (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__greatereq__")
-		return er_func_internal_greater_or_equal (XEp_test, XNp_root);
+		return erp_func_internal_greater_or_equal (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__less__")
-		return er_func_internal_less (XEp_test, XNp_root);
+		return erp_func_internal_less (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__lesseq__")
-		return er_func_internal_less_or_equal (XEp_test, XNp_root);
+		return erp_func_internal_less_or_equal (XEp_test, XNp_root);
 	else
 	if (S_name == "__mod__")
-		return er_func_modulo (XEp_test, XNp_root);
+		return erp_func_modulo (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__or_logical__")
-		return er_func_internal_or (XEp_test, XNp_root);
+		return erp_func_internal_or (XEp_test, XNp_root);
 	else
 
 	if (S_name == "__plus__")
-		return er_func_internal_plus (XEp_test, XNp_root);
+		return erp_func_internal_plus (XEp_test, XNp_root);
 	else
 
+	if (S_name == "name")
+		return erp_func_name (XEp_test, XNp_root);
+	else
+
+
 	{
+      erp_res = new expression_result;
 		printf ("Function %s not yet implemented\n", S_name . c_str ());
 		assert (false);
-		er_res . v_set_bool (false);
-		return er_res;
+		erp_res -> v_set_bool (false);
+		return erp_res;
 	}
 }
 
@@ -718,7 +925,13 @@ void work_func::v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_ma
 		v_retain_attrib_tree (XNp_node, l_marker);
 	}
 	else
-
+   {
+      expression_result * erp_res;
+      erp_res = erp_compute_predicate (XNp_node -> FirstChildElement (), XNp_node);
+      v_set_result (XNp_node, erp_res);
+      l_marker++;
+   }
+/*
    if (S_name == "name")
    {
       TIXML_STRING S_res;
@@ -754,22 +967,71 @@ void work_func::v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_ma
 
    if (S_name == "count")
    {
-      TIXML_STRING S_res;
-      TiXmlNode * XNp_first;
-      TiXmlComment * XCp_comment;
       int i_res;
-      char ca_val [20];
 
 	   assert (u_nb_arg == 1);
 		wipp_list [0] -> v_apply (XNp_node, cp_name, l_marker);
       i_res = i_count_marked_element (XNp_node -> FirstChildElement (), l_marker);
-      XCp_comment = new TiXmlComment ();
-      sprintf (ca_val, "%d", i_res);
-      XCp_comment -> SetValue (ca_val);
-      XNp_first = XNp_node -> FirstChild ();
-      XNp_node -> InsertAfterChild (XNp_first, * XCp_comment);
+      v_set_int_result (XNp_node, i_res);
+      l_marker++;
+   }
+   else
+
+   if (S_name == "__plus__")
+   {
+      expression_result erp_res;
+      erp_res = er_func_internal_plus (XNp_node -> FirstChildElement(), XNp_node);
+      v_set_result (XNp_node, erp_res);
       l_marker++;
    }
    else
 		assert (false);
+*/
+}
+
+void work_func::v_set_result (TiXmlNode * XNp_node, expression_result * erp_res)
+{
+   switch (erp_res -> e_type)
+   {
+      case e_bool :  
+         v_set_string_result (XNp_node, erp_res -> o_get_bool () ? "true" : "false");
+         break;
+      case e_string :
+         v_set_string_result (XNp_node, erp_res -> cp_get_string ());
+         break;
+      case e_int :
+         v_set_int_result (XNp_node, erp_res -> i_get_int ());
+         break;
+      case e_double :
+         v_set_double_result (XNp_node, erp_res -> d_get_double ());
+         break;
+      case e_node_set :
+      case e_invalid :
+         assert (false);
+   }
+}
+
+void work_func::v_set_int_result (TiXmlNode * XNp_node, int i_res)
+{
+   char ca_res [20];
+   sprintf (ca_res, "%d", i_res);
+   v_set_string_result (XNp_node, ca_res);
+}
+
+void work_func::v_set_double_result (TiXmlNode * XNp_node, double d_res)
+{
+   char ca_res [200];
+   sprintf (ca_res, "%.3f", d_res);
+   v_set_string_result (XNp_node, ca_res);
+}
+
+void work_func::v_set_string_result (TiXmlNode * XNp_node, const char * cp_res)
+{
+   TiXmlNode * XNp_first;
+   TiXmlComment * XCp_comment;
+
+   XCp_comment = new TiXmlComment ();
+   XCp_comment -> SetValue (cp_res);
+   XNp_first = XNp_node -> FirstChild ();
+   XNp_node -> InsertAfterChild (XNp_first, * XCp_comment);
 }
