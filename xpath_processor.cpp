@@ -43,10 +43,15 @@ xpath_processor::xpath_processor (
    const char * cp_xpath_expr)         ///< XPath expression
       : xpath_stream (cp_xpath_expr) 
 {
-   XEp_root = new TiXmlElement ("root");
-   XEp_root -> LinkEndChild ((TiXmlNode *) XNp_source_tree);
+   if (XNp_source_tree && cp_xpath_expr)
+   {
+      XEp_root = new TiXmlElement ("root");
+      XEp_root -> LinkEndChild ((TiXmlNode *) XNp_source_tree);
+      v_order_tree ();
+   }
+   else
+      XEp_root = NULL;
    XEp_context = NULL;
-   v_order_tree ();
 }
 
 /// xpath_processor destructor
@@ -54,10 +59,13 @@ xpath_processor::~ xpath_processor ()
 {
    // we have a problem to delete because XEp_root is ours, 
    // but its children are not
-   TiXmlElementNoDelete * XEp_false_root = (TiXmlElementNoDelete *) XEp_root;
-   XEp_false_root -> v_clean_children ();
-   assert (XEp_root);
-   delete XEp_false_root;
+   if (XEp_root)
+   {
+      TiXmlElementNoDelete * XEp_false_root = (TiXmlElementNoDelete *) XEp_root;
+      XEp_false_root -> v_clean_children ();
+      assert (XEp_root);
+      delete XEp_false_root;
+   }
 }
 
 /// Compute an XPath expression, and return the number of nodes in the resulting node set.
@@ -121,6 +129,10 @@ expression_result xpath_processor::er_compute_xpath ()
 {
    try
    {
+      if (! XEp_root)
+         // no correct initialization of the xpath_processor object
+         throw execution_error ();
+
       // Decode XPath expression
       v_evaluate ();
 

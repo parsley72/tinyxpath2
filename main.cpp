@@ -1,9 +1,14 @@
-#include "tinyxml.h"
+/*
+   This is an example source code and a regression test program for the TinyXPath project
+   We load a very small test.xml file and test the return value of the string variant of 
+   TinyXPath against a known output.
+   The LIBXML_CHECK define may be turned ON if we need to verify the output against libxml 
+   (from the Gnome project).
+*/
 #include "xpath_processor.h"
 #include "htmlutil.h"
 
 static FILE * Fp_out_html;
-
 
 // #define LIBXML_CHECK
 
@@ -90,7 +95,11 @@ int main ()
    TiXmlElement * XEp_main;
 
    XDp_doc = new TiXmlDocument;
-   XDp_doc -> LoadFile ("test.xml");
+   if (! XDp_doc -> LoadFile ("test.xml"))
+   {
+      printf ("Can't find test.xml !\n");
+      return 99;
+   }
 
    #ifdef LIBXML_CHECK
       xmlDoc * Dp_doc;
