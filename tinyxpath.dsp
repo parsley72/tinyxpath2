@@ -39,6 +39,7 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # ADD CPP /nologo /W3 /GX /O2 /I "libxml/include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
@@ -49,7 +50,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib tinyxpath_lib/release/tinyxpath.lib /nologo /subsystem:console /machine:I386
 
 !ELSEIF  "$(CFG)" == "tinyxpath - Win32 Debug"
 
@@ -73,7 +74,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib tinyxpath_lib/debug/tinyxpathd.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 
 !ENDIF 
 
@@ -86,140 +87,16 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\action_store.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\htmlutil.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\lex_util.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\main.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\node_set.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\tokenlist.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\xml_util.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_expression.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_processor.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_stack.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_stream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_syntax.cpp
-# End Source File
-# End Group
-# Begin Group "Header Files"
-
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=.\action_store.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\byte_stream.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\htmlutil.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\lex_token.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\lex_util.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\node_set.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\tokenlist.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\xml_util.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_expression.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_processor.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_stack.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_stream.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\xpath_syntax.h
-# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-# End Group
-# Begin Group "TinyXML"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\tinystr.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\tinystr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\tinyxml.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\tinyxml.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\tinyxmlerror.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\tinyxmlparser.cpp
-# End Source File
 # End Group
 # End Target
 # End Project
