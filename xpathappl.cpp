@@ -140,7 +140,8 @@ void xpath_from_source::v_action (
             case 0 :
                printf ("[5]  Axis specifier with '@'\n");
                wsp_stack -> v_dump ();
-               wsp_stack -> v_push (new work_axis (false, true, NULL));
+               // wsp_stack -> v_push (new work_axis (false, true, NULL));
+               // wsp_stack -> v_dump ();
                break;
             case 1 :
                printf ("[5]  Axis specifier is AxisName ::\n");
@@ -150,6 +151,7 @@ void xpath_from_source::v_action (
                break;
             case 2 :
                printf ("[5]  Axis specifier with no '@'\n");
+               wsp_stack -> v_dump ();
 					// do not push anything here, it's already been made in 
 					// the case xpath_abbreviated_axis_specifier
                break;

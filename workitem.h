@@ -135,6 +135,7 @@ public :
 		return o_at;
 	}
 	virtual bool o_identity () {return u_class == WORK_AXIS;}
+   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, long & l_marker);
 } ;
 
 /// Specialized work_item for expressions
@@ -498,6 +499,7 @@ public :
       wp_next_step = wp_next;
    }
 	virtual bool o_identity () {return u_class == WORK_STEP;}
+   virtual void v_apply (TiXmlNode * , const char * , long & );
 } ;
 
 extern work_item * wip_copy (const work_item * wip_in);

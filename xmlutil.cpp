@@ -39,6 +39,26 @@ void v_clone_children (
    }
 }
 
+void v_mark_node_and_attribute (
+	TiXmlNode * XNp_node, 
+	long l_marker)
+{
+	TiXmlElement * XEp_elem;
+	TiXmlAttribute * XAp_att;
+
+	XNp_node -> SetUserValue (l_marker);
+	XEp_elem = XNp_node -> ToElement ();
+	if (XEp_elem)
+	{
+		XAp_att = XEp_elem -> FirstAttribute ();
+		while (XAp_att)
+		{
+			XAp_att -> SetUserValue (l_marker);
+			XAp_att = XAp_att ->Next ();
+		}
+	}
+}
+
 // Look for all first-level items that have a name, and mark them with
 // the attribute 
 void v_mark_first_level (
@@ -50,7 +70,7 @@ void v_mark_first_level (
    XEp_child = XNp_target -> FirstChildElement ();
    while (XEp_child)
    {
-		XEp_child -> SetUserValue (l_value);
+		v_mark_node_and_attribute (XEp_child, l_value);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
 }
@@ -67,7 +87,7 @@ void v_mark_first_level_name (
    XEp_child = XNp_target -> FirstChildElement (cp_lookup_name);
    while (XEp_child)
    {
-      XEp_child -> SetUserValue (l_value);
+      v_mark_node_and_attribute (XEp_child, l_value);
       XEp_child = XEp_child -> NextSiblingElement (cp_lookup_name);
    }
 }
@@ -94,8 +114,7 @@ void v_mark_all_children (
    XEp_child = XNp_target -> FirstChildElement ();
    while (XEp_child)
    {
-		v_add_attribute_marker (XEp_child, l_id);
-      XEp_child -> SetUserValue (l_id);
+      v_mark_node_and_attribute (XEp_child, l_id);
       v_mark_all_children (XEp_child, l_id);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
@@ -120,7 +139,7 @@ void v_mark_children_name (
          XEp_child_2 = XEp_child -> FirstChildElement (cp_name);
          while (XEp_child_2)
          {
-            XEp_child_2 -> SetUserValue (l_child_value);
+            v_mark_node_and_attribute (XEp_child_2, l_child_value);
             XEp_child_2 = XEp_child_2 -> NextSiblingElement (cp_name);
         }
       }
@@ -223,7 +242,7 @@ void v_mark_children_name_order (
          for (i_child = 0; i_child < i_order && XEp_child_2; i_child++)
             XEp_child_2 = XEp_child_2 -> NextSiblingElement (cp_name);
          if (XEp_child_2)
-            XEp_child_2 -> SetUserValue (l_child_value);
+            v_mark_node_and_attribute (XEp_child_2, l_child_value);
       }
       v_mark_children_name (XEp_child, cp_name, l_mother_value, l_child_value);
       XEp_child = XEp_child -> NextSiblingElement ();
@@ -254,7 +273,7 @@ void v_mark_children_name_last (
             XEp_child_2 = XEp_child_2 -> NextSiblingElement (cp_name);
          }
          if (XEp_to_mark)
-            XEp_to_mark -> SetUserValue (l_child_value);
+            v_mark_node_and_attribute (XEp_to_mark, l_child_value);
       }
       v_mark_children_name (XEp_child, cp_name, l_mother_value, l_child_value);
       XEp_child = XEp_child -> NextSiblingElement ();
