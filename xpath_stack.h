@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -56,7 +56,7 @@ public :
    TIXML_STRING S_pop_string ();
    bool o_pop_bool ();
    node_set ns_pop_node_set ();
-
+   /// Return the stack's size
    unsigned u_get_size () {return u_size;}
    expression_result * erp_previous (unsigned u_nb);
    void v_dump ();

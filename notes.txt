@@ -1,0 +1,34 @@
+/**
+\mainpage TinyXPath documentation
+
+This is the first useful version of TinyXPath.\n
+
+Usage :\n
+In order to use TinyXPath, one need to link all the sourcecode files with every project, except :
+- main.cpp
+- htmlutil.h
+- htmlutil.cpp
+The main.cpp source file is the only one that one shouldn't include. It is mainly there to show a basic usage
+of the XPath processor.\n
+There will be libraries later on.\n
+
+In order to compute an XPath expression, one need to :
+-# instanciate the xpath_processor class, giving the constructor a source (Tiny) XML tree and an XPath expression. 
+-# Call xpath_processor::er_compute_xpath. This delivers the XPath result. 
+
+As an alternative if you know beforehand what result type you're looking for, you can use the following alternate 
+member functions at step 2 :
+- xpath_processor::S_compute_xpath : returns a string
+- xpath_processor::i_compute_xpath : returns a single integer
+- xpath_processor::u_compute_xpath_node_set : returns the number of nodes in the node set. The node set should be retrieved by calls to 
+ - xpath_processor::v_get_xpath_base
+ - xpath_processor::XNp_get_xpath_node
+ or 
+ - xpath_processor::XAp_get_xpath_attribute
+
+once again, the choice of v_get_xpath_base or its two alternates depend if you know whether you know if you 
+wait for an attribute or another type of node, or not.
+
+\n Be aware that the input tree is modified after the call : all user data (TiXmlNode::SetUserData)
+are replaced by the document order (XPath meaning).
+*/

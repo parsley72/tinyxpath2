@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -30,7 +30,7 @@ distribution.
 #include "xpath_stack.h"
 #include "xpath_processor.h"
 
-/// xpath_stack element
+/// xpath_stack element. Derives from expression_result, and also contains a pointer to the next element on the stack
 class result_and_next : public expression_result 
 {
 public :
@@ -51,6 +51,7 @@ protected :
    result_and_next * rnp_next;
 } ;
 
+/// Dump a stack element to stdout
 void result_and_next::v_dump ()
 {
    expression_result::v_dump ();
@@ -70,6 +71,7 @@ xpath_stack::~ xpath_stack ()
       v_pop_one ();
 }
 
+/// Pops the top integer from the stack
 int xpath_stack::i_pop_int ()
 {
    int i_res;
@@ -79,6 +81,7 @@ int xpath_stack::i_pop_int ()
    return i_res;   
 }
 
+/// Pops the top string from the stack
 TIXML_STRING xpath_stack::S_pop_string ()
 {
    TIXML_STRING S_res;
@@ -88,6 +91,7 @@ TIXML_STRING xpath_stack::S_pop_string ()
    return S_res;   
 }
 
+/// Pops the top bool from the stack
 bool xpath_stack::o_pop_bool ()
 {
    bool o_res;
@@ -97,6 +101,7 @@ bool xpath_stack::o_pop_bool ()
    return o_res;
 }
 
+/// Pops the top node_set from the stack
 node_set xpath_stack::ns_pop_node_set ()
 {
    node_set ns_ret;
@@ -106,6 +111,7 @@ node_set xpath_stack::ns_pop_node_set ()
    return ns_ret;
 }
 
+/// Query the top integer
 int xpath_stack::i_top_int ()
 {
    int i_res;
@@ -142,6 +148,7 @@ void xpath_stack::v_push_double (double d_elem)
    v_push (er_res);
 }
 
+/// Push a node_set on the stack
 void xpath_stack::v_push_node_set (node_set * nsp_ptr)
 {
    expression_result er_res;
@@ -214,6 +221,7 @@ void xpath_stack::v_pop (unsigned u_nb)
       v_pop_one ();
 }
 
+/// Dumps the content of the stack to stdout
 void xpath_stack::v_dump ()
 {
    result_and_next * rnp_ptr;
