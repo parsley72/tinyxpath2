@@ -992,6 +992,7 @@ void xpath_processor ::v_execute_step (
    int & i_relative_action,         ///< Path position : -1 if first in a '//' path, 0 if first in a '/' path, > 0 if followers
    bool o_skip_only)
 {
+   bool o_by_name;
    int i_axis_type, i_end_store, i_node_store, i_pred_store;
    unsigned u_nb_node, u_node, u_pred, u_sub, u_variable;
 	xpath_construct xc_action;
@@ -1000,7 +1001,7 @@ void xpath_processor ::v_execute_step (
    TiXmlAttribute * XAp_attrib;
    TiXmlNode * XNp_next, * XNp_parent;
    node_set ns_source, ns_target;
-   
+
    if (! o_skip_only)
    {
       /// Initialize the source node set if it's the first step of a path
@@ -1053,6 +1054,7 @@ void xpath_processor ::v_execute_step (
    if (! o_skip_only)
    {
       S_name = S_pop_string ();
+      o_by_name = ! (S_name == "*");
 
       // Retrieve the archive flag stored by the xpath_axis_specifier rule execution
       // o_attrib_flag = o_pop_bool ();
@@ -1201,7 +1203,7 @@ void xpath_processor ::v_execute_step (
                if (XEp_elem)
                {
                   as_action_store . v_set_position (i_pred_store);
-                  if (o_check_predicate (XEp_elem))
+                  if (o_check_predicate (XEp_elem, o_by_name))
                      ns_after_predicate . v_add_node_in_set (XEp_elem);
                }
             }
@@ -1220,7 +1222,7 @@ void xpath_processor ::v_execute_step (
 /// is equal to the context position and will be converted to false otherwise; if the result 
 /// is not a number, then the result will be converted as if by a call to the boolean function. 
 /// Thus a location path para[3] is equivalent to para[position()=3].
-bool xpath_processor::o_check_predicate (TiXmlElement * XEp_child)
+bool xpath_processor::o_check_predicate (TiXmlElement * XEp_child, bool o_by_name)
 {
    expression_result * erp_top;
    bool o_keep;
@@ -1233,7 +1235,7 @@ bool xpath_processor::o_check_predicate (TiXmlElement * XEp_child)
    {
       case e_double :
       case e_int :
-         o_keep = (erp_top -> i_get_int () == i_xml_cardinality (XEp_child));
+         o_keep = (erp_top -> i_get_int () == i_xml_cardinality (XEp_child, o_by_name));
          break;
       default :
          o_keep = erp_top -> o_get_bool ();
@@ -1515,7 +1517,7 @@ void xpath_processor::v_function_position (
    XEp_context = XEp_get_context ();
    if (! XEp_context)
       throw execution_error ();
-   v_push_int (i_xml_cardinality (XEp_context), "position()");
+   v_push_int (i_xml_cardinality (XEp_context, false), "position()");
 }
 
 /// XPath \b starts-with function

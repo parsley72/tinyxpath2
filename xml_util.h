@@ -34,7 +34,7 @@ distribution.
 
 namespace TinyXPath
 {
-   extern int i_xml_cardinality (const TiXmlElement * XEp_elem);
+   extern int i_xml_cardinality (const TiXmlElement * XEp_elem, bool o_by_name);
    extern int i_xml_family_size (const TiXmlElement * XEp_elem);
 }
 

@@ -34,27 +34,48 @@ namespace TinyXPath
 
 /// Cardinality in the terms of XPath counts from 1 for the first element
 int i_xml_cardinality (
-   const TiXmlElement * XEp_elem)      ///< Base element. Must not be null
+   const TiXmlElement * XEp_elem,      ///< Base element. Must not be null
+   bool o_by_name)                     ///< true if we ask for the cardinality for our name only
 {
 	TiXmlNode * XNp_parent;
 	TiXmlElement * XEp_child;
+   TIXML_STRING S_name; 
 	int i_res;
 
    assert (XEp_elem);
 	XNp_parent = XEp_elem -> Parent ();
 	assert (XNp_parent);
-	XEp_child = XNp_parent -> FirstChildElement ();
-	i_res = 1;
-	while (XEp_child)
-	{
-	   if (XEp_child == XEp_elem)
-			return i_res;
-		else
-		{
-         i_res++;
-			XEp_child = XEp_child -> NextSiblingElement ();
-		}
-	}
+   if (o_by_name)
+   {
+      S_name = XEp_elem -> Value ();
+	   XEp_child = XNp_parent -> FirstChildElement (S_name . c_str ());
+	   i_res = 1;
+	   while (XEp_child)
+	   {
+	      if (XEp_child == XEp_elem)
+			   return i_res;
+		   else
+		   {
+            i_res++;
+			   XEp_child = XEp_child -> NextSiblingElement (S_name . c_str ());
+		   }
+	   }
+   }
+   else
+   {
+	   XEp_child = XNp_parent -> FirstChildElement ();
+	   i_res = 1;
+	   while (XEp_child)
+	   {
+	      if (XEp_child == XEp_elem)
+			   return i_res;
+		   else
+		   {
+            i_res++;
+			   XEp_child = XEp_child -> NextSiblingElement ();
+		   }
+	   }
+   }
 	assert (false);
 	return -1;
 }

@@ -74,7 +74,7 @@ protected :
 
    void v_execute_absolute_path (unsigned u_action_position, bool o_with_rel, bool o_everywhere);
    void v_execute_step (int & i_relative_action, bool o_skip_only);
-   bool o_check_predicate (TiXmlElement * XEp_child);
+   bool o_check_predicate (TiXmlElement * XEp_child, bool o_by_name);
 
    void v_execute_function (TIXML_STRING & S_name, unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_ceiling (unsigned u_nb_arg, expression_result ** erpp_arg);
