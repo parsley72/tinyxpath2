@@ -48,17 +48,23 @@ public :
    {
       return rnp_next;
    }
-   void v_dump ();
+   #ifdef TINYXPATH_STACK_DEBUG
+      void v_dump ();
+   #endif
 protected :
    /// Next element in the stack
    result_and_next * rnp_next;
 } ;
 
-/// Dump a stack element to stdout
-void result_and_next::v_dump ()
-{
-   expression_result::v_dump ();
-}
+#ifdef TINYXPATH_STACK_DEBUG
+   /// Dump a stack element to stdout
+   void result_and_next::v_dump ()
+   {
+      #ifdef TINYXPATH_DEBUG_EXPR
+         expression_result::v_dump ();
+      #endif
+   }
+#endif
 
 /// Constructor
 xpath_stack::xpath_stack () 
@@ -224,19 +230,21 @@ void xpath_stack::v_pop (unsigned u_nb)
       v_pop_one ();
 }
 
-/// Dumps the content of the stack to stdout
-void xpath_stack::v_dump ()
-{
-   result_and_next * rnp_ptr;
-
-   printf ("--- stack start (%d elem) ---\n", u_size);
-   rnp_ptr = rnp_first;
-   while (rnp_ptr)
+#ifdef TINYXPATH_STACK_DEBUG
+   /// Dumps the content of the stack to stdout
+   void xpath_stack::v_dump ()
    {
-      rnp_ptr -> v_dump ();
-      rnp_ptr = rnp_ptr -> rnp_get_next ();
+      result_and_next * rnp_ptr;
+
+      printf ("--- stack start (%d elem) ---\n", u_size);
+      rnp_ptr = rnp_first;
+      while (rnp_ptr)
+      {
+         rnp_ptr -> v_dump ();
+         rnp_ptr = rnp_ptr -> rnp_get_next ();
+      }
+      printf ("--- stack end ---\n");
    }
-   printf ("--- stack end ---\n");
-}
+#endif
 
 }

@@ -28,6 +28,8 @@ distribution.
 #include "tinyxml.h"
 #include "node_set.h"
 
+// #define TINYXPATH_DEBUG_EXPR
+
 namespace TinyXPath
 {
 
@@ -39,7 +41,11 @@ class expression_result
 {
 protected :	
    /// String content
-	TIXML_STRING S_content, S_comment;
+	TIXML_STRING S_content;
+   #ifdef TINYXPATH_DEBUG_EXPR
+      /// Comment. This is for debuging only, for stack dump 
+	   TIXML_STRING S_comment;
+   #endif
    /// bool content
 	bool o_content;
    /// integer content
@@ -87,7 +93,9 @@ public :
             ns_set = er_2 . ns_set;
             break;
       }
-      S_comment = er_2 . S_comment;
+      #ifdef TINYXPATH_DEBUG_EXPR
+         S_comment = er_2 . S_comment;
+      #endif
       return * this;
    }
    /// Set expression_result to a bool
@@ -120,9 +128,12 @@ public :
 		e_type = e_double;
 		d_content = d_in;
 	}
+   /// Set the comment associated with a stack element. This is for debuging
 	void v_set_comment (const char * cp_in)
 	{
-		S_comment = cp_in;
+      #ifdef TINYXPATH_DEBUG_EXPR      
+		   S_comment = cp_in;
+      #endif
 	}
 	int i_get_int ();
 	TIXML_STRING S_get_string ();
@@ -186,7 +197,9 @@ public :
    {
       return & ns_set;
    }
-   void v_dump ();
+   #ifdef TINYXPATH_DEBUG_EXPR
+      void v_dump ();
+   #endif
 } ;
 
 }

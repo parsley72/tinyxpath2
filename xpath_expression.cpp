@@ -124,34 +124,37 @@ bool expression_result::o_get_bool ()
 	return false;
 }	
 
-/// Debug function to print an expression_result to stdout
-void expression_result::v_dump ()
-{
-   switch (e_type)
+#ifdef TINYXPATH_DEBUG_EXPR
+
+   /// Debug function to print an expression_result to stdout
+   void expression_result::v_dump ()
    {
-      case e_bool :
-         printf ("   bool : %s\n", o_content ? "true" : "false");
-         break;
-      case e_string :
-         printf ("   string : %s\n", S_content . c_str ());
-         break;
-      case e_int : 
-         printf ("   int : %d", i_content);
-         if (S_comment . length ())
-            printf (" (%s)", S_comment . c_str ());
-         printf ("\n");
-         break;
-      case e_double : 
-         printf ("   double : %f\n", d_content);
-         break;
-      case e_node_set :
-         printf ("  node set\n");
-         ns_set . v_dump ();
-         break;
-      case e_invalid :
-         printf ("  (invalid)\n");
-         break;
+      switch (e_type)
+      {
+         case e_bool :
+            printf ("   bool : %s\n", o_content ? "true" : "false");
+            break;
+         case e_string :
+            printf ("   string : %s\n", S_content . c_str ());
+            break;
+         case e_int : 
+            printf ("   int : %d", i_content);
+            if (S_comment . length ())
+               printf (" (%s)", S_comment . c_str ());
+            printf ("\n");
+            break;
+         case e_double : 
+            printf ("   double : %f\n", d_content);
+            break;
+         case e_node_set :
+            printf ("  node set\n");
+            ns_set . v_dump ();
+            break;
+         case e_invalid :
+            printf ("  (invalid)\n");
+            break;
+      }
    }
-}
+#endif
 
 }

@@ -30,6 +30,8 @@ distribution.
 #ifndef __XPATH_STACK_H
 #define __XPATH_STACK_H
 
+// #define TINYXPATH_STACK_DEBUG
+
 #include "xpath_expression.h"
 #include "xpath_stream.h"
 
@@ -63,7 +65,9 @@ public :
    /// Return the stack's size
    unsigned u_get_size () {return u_size;}
    expression_result * erp_previous (unsigned u_nb);
-   void v_dump ();
+   #ifdef TINYXPATH_STACK_DEBUG
+      void v_dump ();
+   #endif
 protected :
    /// First element in the stack
    result_and_next * rnp_first;
