@@ -36,6 +36,7 @@ distribution.
 class result_and_next;
 
 /// The XPath execution stack
+/// \n All elements are result_and_next elements
 class xpath_stack 
 {
 public : 

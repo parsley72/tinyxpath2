@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -22,7 +22,7 @@ must not be misrepresented as being the original software.
 distribution.
 */
 /**
-   \file tinyxpstream.h
+   \file xpath_stream.h
    \author Yves Berquin
    Specialized byte stream for the TinyXPath project
 */
@@ -44,7 +44,6 @@ class xpath_stream : public byte_stream
 protected :
    /// List of tokens
    token_syntax_decoder * tlp_list;
-	TIXML_STRING S_expr;
 
 public :
    /// constructor
@@ -212,25 +211,19 @@ public :
    }
 
    /// Evaluate a XPath expression \n
-   /// Right now, it decodes the lexical and syntax contents
+   /// Decodes the lexical and syntax contents. 
    void v_evaluate ()
    {
       v_lexico_decode ();
       tlp_list -> v_syntax_decode ();
    }
 
-   virtual void v_action (xpath_construct , unsigned , unsigned , const char * )
-	{
-		// Must be redefined
-		assert (false);
-	}
+   /// Callback used by token_syntax_decoder::v_syntax_decode to notify of an action to be made. Pure virtual
+   virtual void v_action (xpath_construct , unsigned , unsigned , const char * ) = 0;
 
+   /// Callback used by token_syntax_decoder::v_syntax_decode to know the action counter position. Pure virtual
+   /// \n This can be any kind of nomenclature, provided that the redefinition is coherent
    virtual int i_get_action_counter () = 0;
-
-	const char * cp_get_expr ()
-	{
-		return S_expr . c_str ();
-	}
 } ;     // class xpath_stream
 
 #endif
