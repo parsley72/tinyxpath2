@@ -85,6 +85,10 @@ public :
    {
       ltp_current = ltp_cur;
    }
+   lex_token * ltp_freeze ()
+   {
+      return ltp_current;
+   }
    /// Get next X linear token
    lex_token * ltp_get (int i_offset) 
    {
@@ -114,6 +118,16 @@ public :
       ltp_temp -> ltp_get_prev () -> v_set_next (ltp_temp -> ltp_get_next ());
       ltp_temp -> ltp_get_next () -> v_set_prev (ltp_temp -> ltp_get_prev ());
       ltp_current = ltp_temp -> ltp_get_next ();
+      delete ltp_temp;
+   }
+
+   void v_delete_next ()
+   {
+      lex_token * ltp_temp;
+
+      ltp_temp = ltp_current -> ltp_get_next ();
+      ltp_current -> v_set_next (ltp_temp -> ltp_get_next ());
+      ltp_temp -> ltp_get_next () -> v_set_prev (ltp_current);
       delete ltp_temp;
    }
 } ;

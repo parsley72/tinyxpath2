@@ -35,9 +35,7 @@ void token_simplified_list::v_tokenize_expression ()
             if (ltp_get (1) -> lex_get_value () == lex_colon)
             {
                v_replace_current (lex_2_colon, "::");
-               v_inc_current (1);
-               v_delete_current ();
-               v_inc_current (-1);
+               v_delete_next ();
             }
             else
                v_inc_current (1);
@@ -46,9 +44,7 @@ void token_simplified_list::v_tokenize_expression ()
             if (ltp_get (1) -> lex_get_value () == lex_slash)
             {
                v_replace_current (lex_2_slash, "//");
-               v_inc_current (1);
-               v_delete_current ();
-               v_inc_current (-1);
+               v_delete_next ();
             }
             else
                v_inc_current (1);
@@ -57,9 +53,7 @@ void token_simplified_list::v_tokenize_expression ()
             if (ltp_get (1) -> lex_get_value () == lex_equal)
             {
                v_replace_current (lex_not_equal, "!=");
-               v_inc_current (1);
-               v_delete_current ();
-               v_inc_current (-1);
+               v_delete_next ();
             }
             else
                v_inc_current (1);
@@ -68,9 +62,7 @@ void token_simplified_list::v_tokenize_expression ()
             if (ltp_get (1) -> lex_get_value () == lex_equal)
             {
                v_replace_current (lex_lt_equal, "<=");
-               v_inc_current (1);
-               v_delete_current ();
-               v_inc_current (-1);
+               v_delete_next ();
             }
             else
                v_inc_current (1);
@@ -79,9 +71,7 @@ void token_simplified_list::v_tokenize_expression ()
             if (ltp_get (1) -> lex_get_value () == lex_equal)
             {
                v_replace_current (lex_gt_equal, ">=");
-               v_inc_current (1);
-               v_delete_current ();
-               v_inc_current (-1);
+               v_delete_next ();
             }
             else
                v_inc_current (1);
@@ -90,9 +80,7 @@ void token_simplified_list::v_tokenize_expression ()
             if (ltp_get (1) -> lex_get_value () == lex_dot)
             {
                v_replace_current (lex_2_dot, "..");
-               v_inc_current (1);
-               v_delete_current ();
-               v_inc_current (-1);
+               v_delete_next ();
             }
             else
                v_inc_current (1);

@@ -75,7 +75,8 @@ protected :
    unsigned u_class;
    work_item * wip_next;
 public :
-   work_item () {u_class = WORK_NONE;}
+   work_item () {u_class = WORK_NONE; wip_next = NULL;}
+   virtual ~ work_item () {}
    unsigned u_get_class () {return u_class;}
    void v_set_next (work_item * wip_in_next)
    {
@@ -99,6 +100,11 @@ public :
    {
       value = cp_in;
       u_class = WORK_STRING;
+   }
+   work_string (const work_string & copy)
+   {
+      assert (false);
+      printf ("\n");
    }
    virtual const char * cp_get_value ()
    {
@@ -230,6 +236,10 @@ public :
          S_total += ":*";
       }
    }
+   work_name_test (const work_name_test & copy)
+   {
+      assert (false);
+   }
    virtual const char * cp_get_value ()
    {  
       switch (u_type)
@@ -266,7 +276,7 @@ public :
       u_nb_predicate = 0;
       wipp_list = NULL;
    }
-   work_node_test (const work_node_test & copy)
+   work_node_test (const work_node_test & copy) : work_item ()
    {
       u_type = copy . u_type;
       u_lex = copy . u_lex;
@@ -401,6 +411,10 @@ public :
       }
       u_class = WORK_QNAME;
    }
+   work_qname (const work_qname & copy)
+   {
+      assert (false);
+   }
    virtual const char * cp_get_value ()
    {
       return S_total . c_str ();
@@ -424,17 +438,22 @@ public :
       wp_node_test = new work_node_test (* wp_in_node_test);
       wp_next_step = NULL;
    }
-   work_step (const work_step & copy)
+   work_step (const work_step & copy) : work_item ()
    {
       u_class = WORK_STEP;
       wp_axis = new work_axis (* (copy . wp_axis));
       wp_node_test = new work_node_test (* (copy . wp_node_test));
-      wp_next_step = copy . wp_next_step;
+      if (copy . wp_next_step)
+         wp_next_step = new work_step (* (copy . wp_next_step));
+      else
+         wp_next_step = NULL;
    }
 
    ~ work_step ()
    {
+      assert (wp_axis);
       delete wp_axis;
+      assert (wp_node_test);
       delete wp_node_test;
       if (wp_next_step)
          delete wp_next_step;
@@ -473,7 +492,7 @@ public :
       if (wp_next_step)
          wp_next_step -> v_step_child (XNp_context, i_mark_level);
    }
-   void v_set_next_step (work_step * wp_in_next)
+   void v_set_next_step (const work_step * wp_in_next)
    {
       work_step * wp_next;
       wp_next = new work_step (* wp_in_next);
@@ -558,6 +577,13 @@ public :
       xsp_stream = new xpath_stream (cp_in_expr);
       XNp_source = XNp_source_tree;
       XDp_target = new TiXmlDocument;
+   }
+   ~ xpath_from_source ()
+   {
+      assert (XDp_target);
+      delete XDp_target;
+      assert (xsp_stream);
+      delete xsp_stream;
    }
    void v_apply_rule (action_list * alp_in, TiXmlElement * XEp_out)
    {
@@ -838,13 +864,9 @@ public :
       xsp_stream -> v_evaluate ();
       v_apply_rule (xsp_stream -> alp_get_action_list (), XEp_out);
    }
-   ~ xpath_from_source ()
-   {
-      delete xsp_stream;
-   }
 } ;
 
-static void v_apply_xml (TiXmlDocument * XDp_doc)
+static void v_apply_xml (TiXmlDocument * XDp_doc, const char * cp_out)
 {
    TiXmlElement * XEp_source, * XEp_test, * XEp_out;
    xpath_from_source * xfsp_engine;
@@ -853,7 +875,7 @@ static void v_apply_xml (TiXmlDocument * XDp_doc)
 
    try
    {
-      XDp_out = new TiXmlDocument ("basic_out.xml");
+      XDp_out = new TiXmlDocument (cp_out);
       XDp_out -> Parse ("<?xml version=\"1.0\"><basic_result/>");
       XEp_out = XDp_out -> FirstChildElement ();
       XEp_test = XDp_doc -> FirstChildElement ();
@@ -884,21 +906,21 @@ static void v_apply_xml (TiXmlDocument * XDp_doc)
    }
 }
 
-static void v_apply_1 (const char * cp_file_name)
+static void v_apply_1 (const char * cp_in_file_name, const char * cp_out_file_name)
 {
    TiXmlDocument * XDp_doc;
 
-   XDp_doc = new TiXmlDocument (cp_file_name);
+   XDp_doc = new TiXmlDocument (cp_in_file_name);
    if (! XDp_doc -> LoadFile ())
-      printf ("Can't load %s file !\n", cp_file_name);
+      printf ("Can't load %s file !\n", cp_in_file_name);
    else
-      v_apply_xml (XDp_doc);
+      v_apply_xml (XDp_doc, cp_out_file_name);
    delete XDp_doc;
 }
 
 static void v_apply ()
 {
-   v_apply_1 ("basic_in.xml");
+   v_apply_1 ("basic_in.xml", "basic_out.xml");
 }
 
 void main ()

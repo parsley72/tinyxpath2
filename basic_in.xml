@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- Input for XPath tests -->
 <xpath_test>
-<ignore>
+
    <!-- Example 1 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
 
    <source name="Example 1 / test1" xpath_expr="/AAA">
@@ -28,6 +28,7 @@
          <CCC/>
      </AAA>      
    </source>
+
    <source name="Example 1 / test3" xpath_expr="/AAA/DDD/BBB">
       <AAA>
          <BBB/>
@@ -180,7 +181,7 @@
       </AAA>
    </source>
 
-</ignore>
+
 
 <!-- 
 

@@ -156,7 +156,7 @@ void v_mark_children_name_last (
    int i_child_value)
 {
    TiXmlElement * XEp_child, * XEp_child_2, * XEp_to_mark;
-   int i_child, i_test;
+   int i_test;
 
    XEp_child = XNp_target -> FirstChildElement ();
    while (XEp_child)
