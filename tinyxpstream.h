@@ -27,7 +27,8 @@ distribution.
 #include "tinyutil.h"
 #include "tinybytestream.h"
 #include "tinysyntax.h"
-#include "tinyaction.h"
+#include "tinyxml.h"
+#include "tinystr.h"
 
 /**
    A specialized version of byte_stream for XPath 
@@ -41,11 +42,7 @@ protected :
 
 public :
    /// constructor
-   xpath_stream (const char * cp_in) : byte_stream (cp_in) 
-   {
-		S_expr = cp_in;
-      tlp_list = new token_syntax_decoder;
-   }
+   xpath_stream (const char * cp_in);
    /// destructor
    ~ xpath_stream ()
    {
@@ -224,10 +221,11 @@ public :
       tlp_list -> v_syntax_decode ();
    }
 
-   action_list * alp_get_action_list ()
-   {
-      return tlp_list -> alp_get_action_list ();
-   }
+   virtual void v_action (unsigned , unsigned , unsigned , const char * )
+	{
+		// Must be redefined
+		assert (false);
+	}
 
 	const char * cp_get_expr ()
 	{

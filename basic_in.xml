@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <!-- Input for XPath tests -->
 <xpath_test>
-<ignore>
    <!-- Example 1 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
 
    <source name="test1" detail="Example 1 / test1" xpath_expr="/AAA">
@@ -189,7 +188,7 @@
          <BBB/>
       </AAA>
    </source>
-</ignore>
+<ignore>
    <source name="test12" detail="Example 5 / test12" xpath_expr="//BBB[@name]">
       <AAA>
          <BBB id = "b1"/>
@@ -216,5 +215,6 @@
          <BBB/>
       </AAA>
    </source>
+</ignore>
 
 </xpath_test>

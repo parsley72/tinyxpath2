@@ -636,6 +636,20 @@ public :
    }
 } ;
 
+class xpath_from_source;
+
+class xpath_action : public xpath_stream
+{
+protected :
+	xpath_from_source * xfsp_tool;
+public :
+	xpath_action (const char * cp_in, xpath_from_source * xfsp_in) : xpath_stream (cp_in)
+	{
+		xfsp_tool = xfsp_in;
+	}
+   virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain);
+} ;
+
 /// Top-level object that applies an XPath expression to a source XML tree
 class xpath_from_source
 {
@@ -643,10 +657,21 @@ protected :
    xpath_stream * xsp_stream;
    TiXmlNode * XNp_source;
    TiXmlDocument * XDp_target;
+
+   work_stack * wsp_stack;
+   TIXML_STRING S_name, S_name_2;
+   work_step * wp_step, * wp_step_2;
+   work_node_test * wp_node_test;
+   work_axis * wp_axis;
+   long l_mark_level;
+   TiXmlElement * XEp_root;
+   unsigned u_nb_predicate, u_predicate;
+   work_item ** wipp_list;
+
 public :
    xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr)
    {
-      xsp_stream = new xpath_stream (cp_in_expr);
+      xsp_stream = new xpath_action (cp_in_expr, this);
       XNp_source = XNp_source_tree;
       XDp_target = new TiXmlDocument;
    }
@@ -657,22 +682,248 @@ public :
       assert (xsp_stream);
       delete xsp_stream;
    }
-   void v_apply_rule (
-		action_list * alp_in, 
-		const char * cp_test_name, 
-		FILE * Fp_html)
+   void v_action (
+		unsigned u_rule, 
+		unsigned u_sub, 
+		unsigned u_variable, 
+		const char * cp_explain)
    {
-      const action_item * aip_current;
-      work_stack * wsp_stack;
-      TIXML_STRING S_name, S_name_2;
-      work_step * wp_step, * wp_step_2;
-      work_node_test * wp_node_test;
-      work_axis * wp_axis;
-      long l_mark_level;
-      TiXmlElement * XEp_root;
-      unsigned u_nb_predicate, u_predicate;
-      work_item ** wipp_list;
+      switch (u_rule)
+      {
+         case xpath_absolute_location_path :
+            // [2]
+            switch (u_sub)
+            {
+               case 0 :
+               case 1 :
+                  wp_step = (work_step *) wsp_stack -> wip_top ();
+                  wp_step -> v_step_it (XEp_root, l_mark_level);
+                  wsp_stack -> v_pop ();
+                  break;
+               case 2 :
+                  printf ("[2]  absolute already processed\n");
+                  break;
+            }
+            break;
 
+         case xpath_relative_location_path :
+            // [3]
+            switch (u_sub)
+            {
+               case 0 :
+                  printf ("[3]   RelativeLocationPath / Step\n");
+                  wp_step = (work_step *) wsp_stack -> wip_top ();
+                  wp_step_2 = (work_step *) wsp_stack -> wip_top (1);
+                  wp_step_2 -> v_set_next_step (wp_step);
+                  wsp_stack -> v_pop ();
+                  break;
+               case 1 :
+                  printf ("[3]   RelativeLocationPath // Step\n");
+                  break;
+               case 2 :
+                  printf ("[3]   RelativeLocationPath is simple\n");
+                  break;
+            }
+            break;
+                           
+         case xpath_step :
+            // [4]
+            switch (u_sub)
+            {
+               case 0 :
+                  printf ("[4]   Step is an abbreviated one (. or ..)\n");
+                  break;
+               case 1 :
+						wsp_stack -> v_dump ();
+                  u_nb_predicate = u_variable;
+                  printf ("[4]   Step is \"AxisSpecifier NodeTest Predicate x %d\"\n", 
+                        u_nb_predicate);
+                  wipp_list = NULL;
+                  if (u_nb_predicate)
+                  {
+                     wipp_list = new work_item * [u_nb_predicate];
+                     for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
+                        wipp_list [u_predicate] = wip_copy (wsp_stack -> wip_top (u_predicate));
+                  }
+                  wp_node_test = (work_node_test *) wsp_stack -> wip_top (u_nb_predicate);
+						assert (wp_node_test -> work_node_test::o_identity ());
+                  if (u_nb_predicate)
+                  {
+                     wp_node_test -> v_set_predicate_list (u_nb_predicate, wipp_list);
+							for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
+								delete wipp_list [u_predicate];
+                     delete [] wipp_list;
+                  }
+                  wp_axis = (work_axis *) wsp_stack -> wip_top (u_nb_predicate + 1);
+                  work_item * wip_new = new work_step (wp_axis, wp_node_test);
+                  wsp_stack -> v_pop (u_nb_predicate + 2);
+                  wsp_stack -> v_push (wip_new);
+						wsp_stack -> v_dump ();
+                  break;
+            }
+            break;
+         case xpath_axis_specifier :
+            // [5]
+            switch (u_sub)
+            {
+               case 0 :
+                  printf ("[5]  Axis specifier with '@'\n");
+                  wsp_stack -> v_dump ();
+                  wsp_stack -> v_push (new work_axis (false, true, NULL));
+                  break;
+               case 1 :
+                  printf ("[5]  Axis specifier is AxisName ::\n");
+                  S_name = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  wsp_stack -> v_push (new work_axis (false, false, S_name . c_str ()));
+                  break;
+               case 2 :
+                  printf ("[5]  Axis specifier with no '@'\n");
+						// do not push anything here, it's already been made in 
+						// the case xpath_abbreviated_axis_specifier
+                  break;
+            }
+            break;            
+         case xpath_axis_name :
+            // [6]
+            printf ("[6] Axis name is %s\n", cp_explain);
+            wsp_stack -> v_push (new work_string (cp_explain));
+            break;
+         case xpath_node_test :
+            // [7]
+            switch (u_sub)
+            {
+               case 0 :
+                  printf ("[7] Node type is simple (%d)\n", u_variable);
+                  wsp_stack -> v_push (new work_node_test (0, u_variable));
+                  break;
+               case 1 :
+                  printf ("[7] Node type is processing-instruction ()");
+                  wsp_stack -> v_push (new work_node_test (1, lex_processing_instruction));
+                  break;
+               case 2 :
+                  printf ("[7] Node type is processing-instruction ()");
+                  wsp_stack -> v_push (new work_node_test (2, lex_processing_instruction, cp_explain));
+                  break;
+               case 3 :
+                  S_name = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  printf ("[7] Node type is a name test (%s)\n", S_name . c_str ()); 
+                  wsp_stack -> v_push (new work_node_test (3, 0, S_name . c_str ()));
+                  break;
+            }
+            break;
+
+         case xpath_abbreviated_absolute_location_path :
+            // [10]
+            wp_step = (work_step *) wsp_stack -> wip_top ();
+				XDp_target -> Print (stdout, 0);
+				wsp_stack -> v_dump ();
+            wp_step -> v_step_all (XDp_target, l_mark_level);
+            wsp_stack -> v_pop ();
+            break;
+
+         case xpath_abbreviated_axis_specifier :
+            // [13]
+            switch (u_sub)
+            {
+               case 0 :
+                  wsp_stack -> v_push (new work_axis (true, true));
+                  break;
+               case 1 :
+                  wsp_stack -> v_push (new work_axis (true, false));
+                  break;
+            }
+            break;
+
+         case xpath_primary_expr :
+            switch  (u_sub)
+            {
+               case 0 :
+               case 1 :
+               case 2 :
+               case 3 :
+                  // Houston, we have a number
+                  wsp_stack -> v_push (new work_expr (0, atoi (cp_explain)));
+                  break;
+               case 4 :
+                  // Houston : it's getting worse : we have a function call
+                  S_name = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  wsp_stack -> v_push (new work_expr (1, 0, S_name . c_str ()));
+                  break;
+            }
+            break;
+
+         case xpath_name_test :
+            // [37]
+            switch (u_sub)
+            {
+               case 0 :
+                  // '*' 
+                  wsp_stack -> v_push (new work_name_test (0));
+                  break;
+               case 1 :
+                  // NCName ':' '*' 
+                  S_name = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  wsp_stack -> v_push (new work_name_test (1, S_name . c_str ()));
+                  break;
+               case 2 :
+                  // QName 
+                  S_name = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  wsp_stack -> v_push (new work_name_test (2, S_name . c_str ()));
+                  break;
+            }
+            break;
+
+         case xpath_xml_q_name :
+            // [206]
+            switch (u_sub)
+            {
+               case 0 :
+                  printf ("[206]   QName has a prefix\n");
+                  S_name = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  S_name_2 = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  wsp_stack -> v_push (new work_qname (S_name_2 . c_str (), S_name . c_str ()));
+                  break;
+               case 1 :
+                  printf ("[206]   QName has no prefix\n");
+                  S_name = wsp_stack -> cp_get_top_value ();
+                  wsp_stack -> v_pop ();
+                  wsp_stack -> v_push (new work_qname (NULL, S_name . c_str ()));
+                  break;
+            }
+            break;
+         case xpath_xml_prefix :
+            // [207]
+            printf ("[207]   Prefix is %s\n", cp_explain);
+            wsp_stack -> v_push (new work_string (cp_explain));
+            break;
+         case xpath_xml_local_part :
+            // [208]
+            printf ("[207]   LocalPart is %s\n", cp_explain);
+            wsp_stack -> v_push (new work_string (cp_explain));
+            break;
+			default :
+				printf ("[%d]   Skipping !\n", u_rule);
+				break;
+      }
+   }
+   void v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
+   {
+		v_init ();
+
+      xsp_stream -> v_evaluate ();
+      // v_apply_rule (xsp_stream -> alp_get_action_list (), cp_test_name);
+
+		v_close (Fp_html_out, cp_test_name);
+   }
+	void v_init ()
+	{
       wsp_stack = new work_stack;
       XDp_target -> Parse ("<?xml version=\"1.0\"?><xpath:root/>");
 
@@ -685,231 +936,9 @@ public :
       XDp_target -> Print (stdout);
 
       l_mark_level = 2;
-      while (alp_in -> o_is_valid ())
-      {
-         aip_current = alp_in -> aip_get_current ();
-         alp_in -> v_skip ();
-         switch (aip_current -> u_get_ref ())
-         {
-            case xpath_absolute_location_path :
-               // [2]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                  case 1 :
-                     wp_step = (work_step *) wsp_stack -> wip_top ();
-                     wp_step -> v_step_it (XEp_root, l_mark_level);
-                     wsp_stack -> v_pop ();
-                     break;
-                  case 2 :
-                     printf ("[2]  absolute already processed\n");
-                     break;
-               }
-               break;
-
-            case xpath_relative_location_path :
-               // [3]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                     printf ("[3]   RelativeLocationPath / Step\n");
-                     wp_step = (work_step *) wsp_stack -> wip_top ();
-                     wp_step_2 = (work_step *) wsp_stack -> wip_top (1);
-                     wp_step_2 -> v_set_next_step (wp_step);
-                     wsp_stack -> v_pop ();
-                     break;
-                  case 1 :
-                     printf ("[3]   RelativeLocationPath // Step\n");
-                     break;
-                  case 2 :
-                     printf ("[3]   RelativeLocationPath is simple\n");
-                     break;
-               }
-               break;
-                              
-            case xpath_step :
-               // [4]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                     printf ("[4]   Step is an abbreviated one (. or ..)\n");
-                     break;
-                  case 1 :
-							wsp_stack -> v_dump ();
-                     u_nb_predicate = aip_current -> u_get_var ();
-                     printf ("[4]   Step is \"AxisSpecifier NodeTest Predicate x %d\"\n", 
-                           u_nb_predicate);
-                     wipp_list = NULL;
-                     if (u_nb_predicate)
-                     {
-                        wipp_list = new work_item * [u_nb_predicate];
-                        for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
-                           wipp_list [u_predicate] = wip_copy (wsp_stack -> wip_top (u_predicate));
-                     }
-                     wp_node_test = (work_node_test *) wsp_stack -> wip_top (u_nb_predicate);
-							assert (wp_node_test -> work_node_test::o_identity ());
-                     if (u_nb_predicate)
-                     {
-                        wp_node_test -> v_set_predicate_list (u_nb_predicate, wipp_list);
-								for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
-									delete wipp_list [u_predicate];
-                        delete [] wipp_list;
-                     }
-                     wp_axis = (work_axis *) wsp_stack -> wip_top (u_nb_predicate + 1);
-                     work_item * wip_new = new work_step (wp_axis, wp_node_test);
-                     wsp_stack -> v_pop (u_nb_predicate + 2);
-                     wsp_stack -> v_push (wip_new);
-							wsp_stack -> v_dump ();
-                     break;
-               }
-               break;
-            case xpath_axis_specifier :
-               // [5]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                     printf ("[5]  Axis specifier with '@'\n");
-                     wsp_stack -> v_dump ();
-                     wsp_stack -> v_push (new work_axis (false, true, NULL));
-                     break;
-                  case 1 :
-                     printf ("[5]  Axis specifier is AxisName ::\n");
-                     S_name = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     wsp_stack -> v_push (new work_axis (false, false, S_name . c_str ()));
-                     break;
-                  case 2 :
-                     printf ("[5]  Axis specifier with no '@'\n");
-                     break;
-               }
-               break;            
-            case xpath_axis_name :
-               // [6]
-               printf ("[6] Axis name is %s\n", aip_current -> cp_get_label ());
-               wsp_stack -> v_push (new work_string (aip_current -> cp_get_label ()));
-               break;
-            case xpath_node_test :
-               // [7]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                     printf ("[7] Node type is simple (%d)\n", aip_current -> u_get_var ());
-                     wsp_stack -> v_push (new work_node_test (0, aip_current -> u_get_var ()));
-                     break;
-                  case 1 :
-                     printf ("[7] Node type is processing-instruction ()");
-                     wsp_stack -> v_push (new work_node_test (1, lex_processing_instruction));
-                     break;
-                  case 2 :
-                     printf ("[7] Node type is processing-instruction ()");
-                     wsp_stack -> v_push (new work_node_test (2, lex_processing_instruction, aip_current -> cp_get_label ()));
-                     break;
-                  case 3 :
-                     S_name = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     printf ("[7] Node type is a name test (%s)\n", S_name . c_str ()); 
-                     wsp_stack -> v_push (new work_node_test (3, 0, S_name . c_str ()));
-                     break;
-               }
-               break;
-
-            case xpath_abbreviated_absolute_location_path :
-               // [10]
-               wp_step = (work_step *) wsp_stack -> wip_top ();
-					XDp_target -> Print (stdout, 0);
-					wsp_stack -> v_dump ();
-               wp_step -> v_step_all (XDp_target, l_mark_level);
-               wsp_stack -> v_pop ();
-               break;
-
-            case xpath_abbreviated_axis_specifier :
-               // [13]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                     wsp_stack -> v_push (new work_axis (true, true));
-                     break;
-                  case 1 :
-                     wsp_stack -> v_push (new work_axis (true, false));
-                     break;
-               }
-               break;
-
-            case xpath_primary_expr :
-               switch  (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                  case 1 :
-                  case 2 :
-                  case 3 :
-                     // Houston, we have a number
-                     wsp_stack -> v_push (new work_expr (0, atoi (aip_current -> cp_get_label ())));
-                     break;
-                  case 4 :
-                     // Houston : it's getting worse : we have a function call
-                     S_name = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     wsp_stack -> v_push (new work_expr (1, 0, S_name . c_str ()));
-                     break;
-               }
-               break;
-
-            case xpath_name_test :
-               // [37]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                     // '*' 
-                     wsp_stack -> v_push (new work_name_test (0));
-                     break;
-                  case 1 :
-                     // NCName ':' '*' 
-                     S_name = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     wsp_stack -> v_push (new work_name_test (1, S_name . c_str ()));
-                     break;
-                  case 2 :
-                     // QName 
-                     S_name = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     wsp_stack -> v_push (new work_name_test (2, S_name . c_str ()));
-                     break;
-               }
-               break;
-
-            case xpath_xml_q_name :
-               // [206]
-               switch (aip_current -> u_get_sub ())
-               {
-                  case 0 :
-                     printf ("[206]   QName has a prefix\n");
-                     S_name = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     S_name_2 = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     wsp_stack -> v_push (new work_qname (S_name_2 . c_str (), S_name . c_str ()));
-                     break;
-                  case 1 :
-                     printf ("[206]   QName has no prefix\n");
-                     S_name = wsp_stack -> cp_get_top_value ();
-                     wsp_stack -> v_pop ();
-                     wsp_stack -> v_push (new work_qname (NULL, S_name . c_str ()));
-                     break;
-               }
-               break;
-            case xpath_xml_prefix :
-               // [207]
-               printf ("[207]   Prefix is %s\n", aip_current -> cp_get_label ());
-               wsp_stack -> v_push (new work_string (aip_current -> cp_get_label ()));
-               break;
-            case xpath_xml_local_part :
-               // [208]
-               printf ("[207]   LocalPart is %s\n", aip_current -> cp_get_label ());
-               wsp_stack -> v_push (new work_string (aip_current -> cp_get_label ()));
-               break;
-         }
-      }
-
+	}
+	void v_close (FILE * Fp_html, const char * cp_test_name)
+	{
       XDp_target -> Print (stdout);
 
       v_retain_attrib_tree (XDp_target, l_mark_level);
@@ -930,13 +959,13 @@ public :
 			fprintf (Fp_html, "</p></td></tr></table>\n");
 		}
       delete wsp_stack;
-   }
-   void v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
-   {
-      xsp_stream -> v_evaluate ();
-      v_apply_rule (xsp_stream -> alp_get_action_list (), cp_test_name, Fp_html_out);
-   }
+	}
 } ;
+
+void xpath_action::v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain)
+{
+	xfsp_tool -> v_action (u_rule, u_sub, u_variable, cp_explain);
+}
 
 static void v_apply_xml (TiXmlDocument * XDp_doc)
 {

@@ -101,16 +101,16 @@ SOURCE=.\tinyutil.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\tinyxpstream.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\xmlutil.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=.\tinyaction.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\tinybytestream.h

@@ -52,17 +52,6 @@ void token_syntax_decoder::v_syntax_decode ()
    }
 }
 
-void token_syntax_decoder::v_action (unsigned u_rule, unsigned u_sub, 
-            unsigned u_variable, const char * cp_explain)
-{
-   action_item * aip_new;
-
-   aip_new = new action_item (u_rule, u_sub, u_variable, cp_explain);
-   alp_action_list -> v_add (aip_new);
-   // todo
-   printf ("Rule recognized : [%3d-%3d-%3d] %s\n", u_rule, u_sub, u_variable, cp_explain);
-}
-
 void token_syntax_decoder::v_recognize (xpath_construct xc_current, bool o_final)
 {
    lex_token * ltp_freeze;

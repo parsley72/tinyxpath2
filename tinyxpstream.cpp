@@ -21,54 +21,26 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
-#ifndef __TINYSYNTAX_H
-#define __TINYSYNTAX_H
 
-#include <stdio.h>
-#include "tinysimple.h"
+#include "tinyxpstream.h"
 
-class syntax_error
-{
-public :
-   syntax_error (const char * cp_mess = NULL)
-   {
-      if (cp_mess)
-         strcpy (ca_mess, cp_mess);
-      else
-         ca_mess [0] = 0;
-   }
-   char ca_mess [200];
-} ;
-
-class syntax_backtrack
-{
-public :
-   syntax_backtrack (syntax_error s)
-   {
-      strcpy (ca_mess, s . ca_mess);
-   }
-   char ca_mess [200];
-} ;
-
-class syntax_overflow {} ;
-
-class token_syntax_decoder : public token_simplified_list
+class token_redef : public token_syntax_decoder 
 {
 protected :
-   unsigned u_nb_recurs;
+	xpath_stream * xsp_stream;
 public :
-   token_syntax_decoder () : token_simplified_list ()
-   {
-   }
-   ~ token_syntax_decoder ()
-   {
-   }
-   void v_syntax_decode ();
-   virtual void v_action (unsigned /* u_rule */, unsigned /* u_sub */, 
-		unsigned /* u_variable */ = 0, const char * /* cp_explain */ = "")
+	token_redef (xpath_stream * xsp_in)
 	{
+		xsp_stream = xsp_in;
 	}
-   void v_recognize (xpath_construct xc_current, bool o_final);
+   virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable = 0, const char * cp_explain = "")
+	{
+		xsp_stream -> v_action (u_rule, u_sub, u_variable, cp_explain);
+	}
 } ;
 
-#endif
+xpath_stream ::xpath_stream (const char * cp_in) : byte_stream (cp_in) 
+{
+	S_expr = cp_in;
+   tlp_list = new token_redef (this);
+}
