@@ -42,6 +42,13 @@ void xpath_from_source::v_action (
 	unsigned u_variable, 
 	const char * cp_explain)
 {
+   TIXML_STRING S_name, S_name_2;
+   work_step * wp_step, * wp_step_2;
+   work_node_test * wp_node_test;
+   work_axis * wp_axis;
+   unsigned u_nb_predicate, u_predicate;
+   work_item ** wipp_list;
+
    switch (u_rule)
    {
       case xpath_absolute_location_path :
@@ -51,8 +58,8 @@ void xpath_from_source::v_action (
             case 0 :
             case 1 :
                wp_step = (work_step *) wsp_stack -> wip_top ();
-               wp_step -> v_step_it (XEp_root, l_mark_level);
-               wsp_stack -> v_pop ();
+					wp_step -> v_set_absolute (true);
+               // wsp_stack -> v_pop ();
                break;
             case 2 :
                printf ("[2]  absolute already processed\n");
@@ -88,7 +95,6 @@ void xpath_from_source::v_action (
                printf ("[4]   Step is an abbreviated one (. or ..)\n");
                break;
             case 1 :
-					wsp_stack -> v_dump ();
                u_nb_predicate = u_variable;
                printf ("[4]   Step is \"AxisSpecifier NodeTest Predicate x %d\"\n", 
                      u_nb_predicate);
@@ -112,7 +118,6 @@ void xpath_from_source::v_action (
                work_item * wip_new = new work_step (wp_axis, wp_node_test);
                wsp_stack -> v_pop (u_nb_predicate + 2);
                wsp_stack -> v_push (wip_new);
-					wsp_stack -> v_dump ();
                break;
          }
          break;
@@ -122,9 +127,6 @@ void xpath_from_source::v_action (
          {
             case 0 :
                printf ("[5]  Axis specifier with '@'\n");
-               wsp_stack -> v_dump ();
-               // wsp_stack -> v_push (new work_axis (false, true, NULL));
-               // wsp_stack -> v_dump ();
                break;
             case 1 :
                printf ("[5]  Axis specifier is AxisName ::\n");
@@ -134,7 +136,6 @@ void xpath_from_source::v_action (
                break;
             case 2 :
                printf ("[5]  Axis specifier with no '@'\n");
-               wsp_stack -> v_dump ();
 					// do not push anything here, it's already been made in 
 					// the case xpath_abbreviated_axis_specifier
                break;
@@ -173,10 +174,8 @@ void xpath_from_source::v_action (
       case xpath_abbreviated_absolute_location_path :
          // [10]
          wp_step = (work_step *) wsp_stack -> wip_top ();
-			XDp_target -> Print (stdout, 0);
-			wsp_stack -> v_dump ();
-         wp_step -> v_step_all (XDp_target, l_mark_level);
-         wsp_stack -> v_pop ();
+			wp_step -> v_set_absolute (true);
+			wp_step -> v_set_all (true);
          break;
 
       case xpath_abbreviated_axis_specifier :
@@ -193,6 +192,7 @@ void xpath_from_source::v_action (
          break;
 
       case xpath_primary_expr :
+			// [15]
          switch  (u_sub)
          {
             case 0 :
@@ -270,36 +270,20 @@ void xpath_from_source::v_action (
    }
 }
 
-void xpath_from_source::v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
+void xpath_from_source::v_run (const char * cp_test_name, FILE * Fp_html)
 {
-	v_init ();
-
-   v_evaluate ();
-
-	v_close (Fp_html_out, cp_test_name);
-}
-void xpath_from_source::v_init ()
-{
-   wsp_stack = new work_stack;
-   XDp_target -> Parse ("<?xml version=\"1.0\"?><xpath:root/>");
-
-   XEp_root = XDp_target -> FirstChildElement ();
-   assert (XEp_root);
+   XDp_target -> Print (stdout);
 
    v_clone_children (XNp_source, XEp_root);
+
    v_mark_all_children (XDp_target, 1);
-
-   XDp_target -> Print (stdout);
-
    l_mark_level = 2;
-}
-void xpath_from_source::v_close (FILE * Fp_html, const char * cp_test_name)
-{
-   XDp_target -> Print (stdout);
+
+	wsp_stack -> v_dump ();
+
+   wsp_stack -> wip_top () -> v_apply (XDp_target, "", l_mark_level);
 
    v_retain_attrib_tree (XDp_target, l_mark_level);
-
-   XDp_target -> Print (stdout);
 
 	if (Fp_html)
 	{
@@ -314,5 +298,23 @@ void xpath_from_source::v_close (FILE * Fp_html, const char * cp_test_name)
 		v_out_html (Fp_html, XDp_target -> FirstChildElement (), 0);
 		fprintf (Fp_html, "</p></td></tr></table>\n");
 	}
+}
+
+void xpath_from_source::v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
+{
+	v_init ();
+   v_evaluate ();
+	v_run (cp_test_name, Fp_html_out);
+	v_close ();
+}
+void xpath_from_source::v_init ()
+{
+   wsp_stack = new work_stack;
+   XDp_target -> Parse ("<?xml version=\"1.0\"?><xpath:root/>");
+   XEp_root = XDp_target -> FirstChildElement ();
+   assert (XEp_root);
+}
+void xpath_from_source::v_close ()
+{
    delete wsp_stack;
 }

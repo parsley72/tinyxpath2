@@ -38,22 +38,17 @@ protected :
    TiXmlDocument * XDp_target;
 
    work_stack * wsp_stack;
-   TIXML_STRING S_name, S_name_2;
-   work_step * wp_step, * wp_step_2;
-   work_node_test * wp_node_test;
-   work_axis * wp_axis;
    long l_mark_level;
    TiXmlElement * XEp_root;
-   unsigned u_nb_predicate, u_predicate;
-   work_item ** wipp_list;
+	void v_run (const char * cp_test_name, FILE * Fp_html);
+	void v_init ();
+	void v_close ();
 
 public :
    xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr);
    virtual ~ xpath_from_source ();
    virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain);
    void v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out);
-	void v_init ();
-	void v_close (FILE * Fp_html, const char * cp_test_name);
 } ;
 
 #endif

@@ -330,9 +330,9 @@ public :
    }
 
    // Find all subtree and mark all elements with xpath-selected = i_id
-   void v_find_all (TiXmlDocument * XDp_target, long l_id)
+   void v_find_all (TiXmlNode * XNp_target, long l_id)
    {
-      v_mark_all_children (XDp_target, l_id);
+      v_mark_all_children (XNp_target, l_id);
    }
 
    // Mark all children of a selection with next level
@@ -417,6 +417,7 @@ class work_step : public work_item
    work_axis * wp_axis;
    work_node_test * wp_node_test;
    work_step * wp_next_step;
+	bool o_absolute, o_all;
 public :
    work_step (const work_axis * wp_in_axis, const work_node_test * wp_in_node_test) : work_item ()
    {
@@ -424,6 +425,8 @@ public :
       wp_axis = new work_axis (* wp_in_axis);
       wp_node_test = new work_node_test (* wp_in_node_test);
       wp_next_step = NULL;
+		o_absolute = false;
+		o_all = false;
    }
    work_step (const work_step & copy) : work_item ()
    {
@@ -434,6 +437,8 @@ public :
          wp_next_step = new work_step (* (copy . wp_next_step));
       else
          wp_next_step = NULL;
+		o_absolute = copy . o_absolute;
+		o_all = copy . o_all;
    }
 
    ~ work_step ()
@@ -472,10 +477,10 @@ public :
       if (wp_next_step)
          wp_next_step -> v_step_child (XNp_context, l_mark_level);
    }
-   void v_step_all (TiXmlDocument * XDp_target, long & l_mark_level)
+   void v_step_all (TiXmlNode * XNp_target, long & l_mark_level)
    {
-      wp_node_test -> v_find_all (XDp_target, l_mark_level);
-      v_step_child (XDp_target, l_mark_level);
+      wp_node_test -> v_find_all (XNp_target, l_mark_level);
+      v_step_child (XNp_target, l_mark_level);
    }
    void v_step_child (TiXmlNode * XNp_context, long & l_mark_level)
    {
@@ -500,6 +505,8 @@ public :
    }
 	virtual bool o_identity () {return u_class == WORK_STEP;}
    virtual void v_apply (TiXmlNode * , const char * , long & );
+	void v_set_absolute (bool o_in) {o_absolute = o_in;}
+	void v_set_all (bool o_in) {o_all = o_in;}
 } ;
 
 extern work_item * wip_copy (const work_item * wip_in);
