@@ -33,10 +33,12 @@ distribution.
 namespace TinyXPath
 {
 
-/// Decodes an XPath expression, generating a token list
+/// Decodes an XPath expression, further manipulating a token list
+/// \n On input, we have a list of basic lexical tokens. We only merge here the 
+/// multiple tokens : like '::' or '!='. We also delete whitespace tokens
 void token_list::v_tokenize_expression ()
 {
-   v_set_current (0);
+   v_set_current_top ();
    while (ltp_get (1))
    {
       switch (ltp_get (0) -> lex_get_value ())

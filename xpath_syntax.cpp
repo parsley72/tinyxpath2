@@ -34,13 +34,20 @@ distribution.
 namespace TinyXPath
 {
 
+/// Decodes the syntax of an XPath expression. On entry, the lexical analysis has already
+/// produced a list of basic tokens. 
 void token_syntax_decoder::v_syntax_decode ()
 {
+   // group double tokens ('!=', '::', ...)
    v_tokenize_expression ();
-   v_set_current (0);
+
+   // reset list start
+   v_set_current_top ();
+
    u_nb_recurs = 0;
    try
    {
+      // the XPath expression, well, ..., must be an xpath_expr
       v_recognize (xpath_expr, true);
       #ifdef DUMP_SYNTAX
          if (ltp_get (0))
@@ -64,7 +71,13 @@ void token_syntax_decoder::v_syntax_decode ()
    }
 }
 
-void token_syntax_decoder::v_recognize (xpath_construct xc_current, bool o_final)
+/// Recognize one XPath construction
+/// \n This function throws exceptions every time there's a failure in a backtracking attempt.
+/// This should only happen when o_final is false, otherwise we have a syntax error
+void token_syntax_decoder::v_recognize (
+   xpath_construct xc_current,   ///< XPath construction to recognize
+   bool o_final)                 ///< true if we need to go on, false if it's just a trial 
+                                 /// in the backtracking
 {
    lex_token * ltp_freeze;
    bool o_qname;

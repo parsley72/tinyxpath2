@@ -44,8 +44,14 @@ namespace TinyXPath
 */
 class token_list 
 {
-   /// Pointer to first and last elements
-   lex_token * ltp_first, * ltp_last, * ltp_current;
+protected :
+   /// Pointer to first element
+   lex_token * ltp_first;
+   /// Pointer to last element
+   lex_token * ltp_last;
+   /// Pointer to current element. This is for external usage : we keep track of where it
+   /// is, but it's not needed to manage the list structure
+   lex_token * ltp_current;
 public :
    /// constructor
    token_list () 
@@ -77,28 +83,24 @@ public :
       ltp_last = ltp_new;
    }
 
-   #ifdef TINYXPATH_DEBUG
-      /// (debug) dump the list to stdout
-      void v_dump (const char * cp_title)
-      {
-         printf (" (%s) \n", cp_title);
-         ltp_first -> ltp_get_next () -> v_dump ();
-      }
-   #endif
-
-   /// Set current linear index
-   void v_set_current (int i_absolute)
+   /// Set current to first real element
+   void v_set_current_top ()
    {
-      ltp_current = ltp_first -> ltp_get_next (i_absolute + 1);
+      ltp_current = ltp_first -> ltp_get_next (1);
    }
+
+   /// Set current 
    void v_set_current (lex_token * ltp_cur)
    {
       ltp_current = ltp_cur;
    }
+
+   /// Return the current token
    lex_token * ltp_freeze ()
    {
       return ltp_current;
    }
+
    /// Get next X linear token
    lex_token * ltp_get (int i_offset) 
    {
@@ -106,6 +108,7 @@ public :
          return NULL;
       return ltp_current -> ltp_get_next (i_offset);
    }
+
    /// Increments the linear counter
    void v_inc_current (int i_rel)
    {
@@ -127,6 +130,7 @@ public :
    {
       lex_token * ltp_temp;
 
+      assert (ltp_current);
       ltp_temp = ltp_current;
       ltp_temp -> ltp_get_prev () -> v_set_next (ltp_temp -> ltp_get_next ());
       ltp_temp -> ltp_get_next () -> v_set_prev (ltp_temp -> ltp_get_prev ());
@@ -139,6 +143,7 @@ public :
    {
       lex_token * ltp_temp;
 
+      assert (ltp_current);
       ltp_temp = ltp_current -> ltp_get_next ();
       ltp_current -> v_set_next (ltp_temp -> ltp_get_next ());
       ltp_temp -> ltp_get_next () -> v_set_prev (ltp_current);
