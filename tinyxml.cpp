@@ -25,8 +25,9 @@ distribution.
 #include <ctype.h>
 #include "tinyxml.h"
 
-
-
+#ifdef TIXML_USE_STL
+#include <sstream>
+#endif
 
 bool TiXmlBase::condenseWhiteSpace = true;
 
@@ -123,7 +124,7 @@ TiXmlBase::StringToBuffer::~StringToBuffer()
 // End strange bug fix. -->
 
 
-TiXmlNode::TiXmlNode( NodeType _type )
+TiXmlNode::TiXmlNode( NodeType _type ) : TiXmlBase()
 {
 	parent = 0;
 	type = _type;
@@ -131,7 +132,6 @@ TiXmlNode::TiXmlNode( NodeType _type )
 	lastChild = 0;
 	prev = 0;
 	next = 0;
-	userData = 0;
 }
 
 
@@ -1120,6 +1120,18 @@ TIXML_OSTREAM & operator<< (TIXML_OSTREAM & out, const TiXmlNode & base)
 	base.StreamOut (& out);
 	return out;
 }
+
+
+#ifdef TIXML_USE_STL	
+std::string & operator<< (std::string& out, const TiXmlNode& base )
+{
+   std::ostringstream os_stream( std::ostringstream::out );
+   base.StreamOut( &os_stream );
+   
+   out.append( os_stream.str() );
+   return out;
+}
+#endif
 
 
 TiXmlHandle TiXmlHandle::FirstChild() const

@@ -122,7 +122,7 @@ class TiXmlBase
 	friend class TiXmlDocument;
 
 public:
-	TiXmlBase()								{}
+	TiXmlBase()								{userData = 0;}
 	virtual ~TiXmlBase()					{}
 
 	/**	All TinyXml classes can print themselves to a filestream.
@@ -164,6 +164,10 @@ public:
 	int Row() const			{ return location.row + 1; }
 	int Column() const		{ return location.col + 1; }	///< See Row()
 
+	void  SetUserData( void* user )			{ userData = user; }
+	void* GetUserData()						{ return userData; }
+
+
 protected:
 	// See STL_STRING_BUG
 	// Utility class to overcome a bug.
@@ -200,7 +204,7 @@ protected:
 									const char* endTag,			// what ends this text
 									bool ignoreCase );			// whether to ignore case in the end tag
 
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data ) = 0;
+	virtual const char* Parse( const char* p, TiXmlParsingData* data ) = 0;
 
 	// If an entity has been found, transform it into a character.
 	static const char* GetEntity( const char* in, char* value );
@@ -255,6 +259,9 @@ protected:
 
 	TiXmlCursor location;
 
+    /// Field containing a generic user pointer
+	void*			userData;
+
 private:
 	struct Entity
 	{
@@ -308,7 +315,10 @@ public:
 		    A TiXmlDocument will read nodes until it reads a root element, and
 			all the children of that root element.
 	    */	
-	    friend std::ostream & operator<< (std::ostream& out, const TiXmlNode& base);
+	    friend std::ostream& operator<< (std::ostream& out, const TiXmlNode& base);
+
+		/// Appends the XML node or attribute to a std::string.
+		friend std::string& operator<< (std::string& out, const TiXmlNode& base );
 
 	#else
 	    // Used internally, not part of the public API.
@@ -508,9 +518,6 @@ public:
 
 	virtual TiXmlNode* Clone() const = 0;
 
-	void  SetUserData( void* user )			{ userData = user; }
-	void* GetUserData()						{ return userData; }
-
 protected:
 	TiXmlNode( NodeType type );
 
@@ -537,7 +544,6 @@ protected:
 
 	TiXmlNode*		prev;
 	TiXmlNode*		next;
-	void*			userData;
 };
 
 
@@ -554,7 +560,7 @@ class TiXmlAttribute : public TiXmlBase
 
 public:
 	/// Construct an empty attribute.
-	TiXmlAttribute()
+	TiXmlAttribute() : TiXmlBase()
 	{
 		document = 0;
 		prev = next = 0;
@@ -632,7 +638,7 @@ public:
 		Attribtue parsing starts: first letter of the name
 						 returns: the next char after the value end quote
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth ) const;
@@ -793,13 +799,13 @@ protected:
 		Attribtue parsing starts: next char past '<'
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 
 	/*	[internal use]
 		Reads the "value" of the element -- another element, or text.
 		This should terminate with the current end tag.
 	*/
-	const char* ReadValue( const char* in, const TiXmlParsingData* prevData );
+	const char* ReadValue( const char* in, TiXmlParsingData* prevData );
 
 private:
 	TiXmlAttributeSet attributeSet;
@@ -829,7 +835,7 @@ protected:
 		Attribtue parsing starts: at the ! of the !--
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 };
 
 
@@ -867,7 +873,7 @@ protected :
 			Attribtue parsing starts: First char of the text
 							 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	    virtual void StreamIn( TIXML_ISTREAM * in, TIXML_STRING * tag );
@@ -936,7 +942,7 @@ protected:
 	//	Attribtue parsing starts: next char past '<'
 	//					 returns: next char past '>'
 
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 
 private:
 	TIXML_STRING version;
@@ -969,7 +975,7 @@ protected:
 		Attribute parsing starts: First char of the text
 						 returns: next char past '>'
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data );
 };
 
 
@@ -1024,7 +1030,7 @@ public:
 
 	/** Parse the given null terminated block of xml data.
 	*/
-	virtual const char* Parse( const char* p, const TiXmlParsingData* data = 0 );
+	virtual const char* Parse( const char* p, TiXmlParsingData* data = 0 );
 
 	/** Get the root element -- the only top level element -- of the document.
 		In well formed XML, there should only be one. TinyXml is tolerant of
@@ -1064,8 +1070,7 @@ public:
 
 		The tab size is required for calculating the location of nodes. If not
 		set, the default of 4 is used. The tabsize is set per document. Setting
-		the tabsize to 0 disables row/column tracking (which has a minor performance
-		cost.)
+		the tabsize to 0 disables row/column tracking.
 
 		Note that row and column tracking is not supported when using operator>>.
 
@@ -1098,7 +1103,7 @@ public:
 	// [internal use]
 	virtual void Print( FILE* cfile, int depth = 0 ) const;
 	// [internal use]
-	void SetError( int err, const char* errorLocation, const TiXmlParsingData* prevData );
+	void SetError( int err, const char* errorLocation, TiXmlParsingData* prevData );
 
 protected :
 	virtual void StreamOut ( TIXML_OSTREAM * out) const;
@@ -1235,7 +1240,10 @@ public:
 
 	#ifdef TIXML_USE_STL
 	TiXmlHandle FirstChild( const std::string& _value ) const			{ return FirstChild( _value.c_str() ); }
-	TiXmlHandle Child( const std::string& _value, int index ) const		{ return Child( _value.c_str(), index ); }
+	TiXmlHandle FirstChildElement( const std::string& _value ) const		{ return FirstChildElement( _value.c_str() ); }
+
+	TiXmlHandle Child( const std::string& _value, int index ) const			{ return Child( _value.c_str(), index ); }
+	TiXmlHandle ChildElement( const std::string& _value, int index ) const	{ return ChildElement( _value.c_str(), index ); }
 	#endif
 
 	/// Return the handle as a TiXmlNode. This may return null.
