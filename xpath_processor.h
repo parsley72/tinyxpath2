@@ -130,6 +130,15 @@ protected :
    const TiXmlElement * XEp_context;
    /// The result of the XPath evaluation, for further node retrieving by v_get_xpath_base
    expression_result er_result;
+
+   const TiXmlNode * XNp_caller_parent;
+   const TiXmlNode * XNp_caller_prev;
+   const TiXmlNode * XNp_caller_next;
+   const TiXmlNode * XNp_base;
+
+   void v_build_root ();
+   void v_remove_root ();
+
 } ;
 
 }

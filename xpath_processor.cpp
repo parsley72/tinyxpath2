@@ -38,9 +38,25 @@ class TiXmlElementNoDelete : public TiXmlElement
 {
 public :
    TiXmlElementNoDelete () : TiXmlElement ("") {} // this constructor is never used
-   void v_clean_children () {firstChild=0; lastChild=0;}
+   void v_clean_children () 
+   {
+      firstChild=0; 
+      lastChild=0;
+   }
 } ;
 
+/// Utility class to reset the parent, prev and next pointers of a node
+class TiXmlNodeManip : public TiXmlNode 
+{
+public :
+   TiXmlNodeManip () : TiXmlNode (TiXmlNode::UNKNOWN) {}
+   void v_reset (const TiXmlNode * XNp_parent, const TiXmlNode * XNp_next, const TiXmlNode * XNp_prev)
+   {
+      parent = (TiXmlNode *) XNp_parent;
+      next = (TiXmlNode *) XNp_next;
+      prev = (TiXmlNode *) XNp_prev;
+   }
+} ;
 
 /// xpath_processor constructor
 xpath_processor::xpath_processor (
@@ -50,9 +66,7 @@ xpath_processor::xpath_processor (
 {
    if (XNp_source_tree && cp_xpath_expr)
    {
-      XEp_root = new TiXmlElement ("root");
-      XEp_root -> LinkEndChild ((TiXmlNode *) XNp_source_tree);
-      v_order_tree ();
+      XNp_base = XNp_source_tree;
    }
    else
       XEp_root = NULL;
@@ -62,15 +76,6 @@ xpath_processor::xpath_processor (
 /// xpath_processor destructor
 xpath_processor::~ xpath_processor () 
 {
-   // we have a problem to delete because XEp_root is ours, 
-   // but its children are not
-   if (XEp_root)
-   {
-      TiXmlElementNoDelete * XEp_false_root = (TiXmlElementNoDelete *) XEp_root;
-      XEp_false_root -> v_clean_children ();
-      assert (XEp_root);
-      delete XEp_false_root;
-   }
 }
 
 /// Compute an XPath expression, and return the number of nodes in the resulting node set.
@@ -129,11 +134,45 @@ const TiXmlAttribute * xpath_processor::XAp_get_xpath_attribute (
    return (const TiXmlAttribute *) XBp_res;
 }
 
+void xpath_processor::v_build_root ()
+{
+   // backup the parent, prev and next node pointers
+   // we will restore them in the destructor
+   XNp_caller_parent = XNp_base -> Parent ();
+   XNp_caller_prev = XNp_base -> PreviousSibling ();
+   XNp_caller_next = XNp_base -> NextSibling ();
+
+   // create a new root for it
+   // !!! warning : this actually kills the natural parent and sister relations of the node !!!
+   XEp_root = new TiXmlElement ("root");
+   XEp_root -> LinkEndChild ((TiXmlNode *) XNp_base);
+   v_order_tree ();
+}
+
+/// Remove our fake root, and restore the original relationships of the 
+/// node given to us as argument
+void xpath_processor::v_remove_root ()
+{
+   if (XNp_base && XEp_root)
+   {
+      // reset the original relationships
+      TiXmlNodeManip * XNp_false_node = (TiXmlNodeManip *) XNp_base;
+      XNp_false_node -> v_reset (XNp_caller_parent, XNp_caller_prev, XNp_caller_next);
+
+      TiXmlElementNoDelete * XEp_false_root = (TiXmlElementNoDelete *) XEp_root;
+      XEp_false_root -> v_clean_children ();
+      assert (XEp_root);
+      delete XEp_false_root;
+   }
+}
+
 /// Compute an XPath expression 
 expression_result xpath_processor::er_compute_xpath ()
 {
    try
    {
+      v_build_root ();
+            
       if (! XEp_root)
          // no correct initialization of the xpath_processor object
          throw execution_error ();
@@ -161,6 +200,9 @@ expression_result xpath_processor::er_compute_xpath ()
       expression_result er_null;
       er_result = er_null;
    }
+
+   v_remove_root ();
+
    return er_result;
 }
 
