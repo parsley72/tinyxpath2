@@ -138,7 +138,7 @@ TIXML_STRING node_set::S_get_string_value () const
    {
       if (! op_attrib [u_node])
       {
-         XNp_node = (const TiXmlNode *) vpp_node_set [0];
+         XNp_node = (const TiXmlNode *) vpp_node_set [u_node];
          if (XNp_node -> Type () == TiXmlNode::TEXT)
             S_res += XNp_node -> Value ();
       }
