@@ -26,7 +26,7 @@ distribution.
 
 #include <assert.h>
 #include <stdio.h>
-#include "tinysimple.h"
+#include "tokenlist.h"
 
 class syntax_error
 {
@@ -53,12 +53,12 @@ public :
 
 class syntax_overflow {} ;
 
-class token_syntax_decoder : public token_simplified_list
+class token_syntax_decoder : public token_list
 {
 protected :
    unsigned u_nb_recurs;
 public :
-   token_syntax_decoder () : token_simplified_list ()
+   token_syntax_decoder () : token_list ()
    {
    }
    ~ token_syntax_decoder ()

@@ -89,10 +89,6 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\tinysimple.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\tinysyntax.cpp
 # End Source File
 # Begin Source File
@@ -102,6 +98,10 @@ SOURCE=.\tinyutil.cpp
 # Begin Source File
 
 SOURCE=.\tinyxpstream.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\tokenlist.cpp
 # End Source File
 # Begin Source File
 
@@ -137,15 +137,15 @@ SOURCE=.\tinysyntax.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\tinytokenlist.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\tinyutil.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\tinyxpstream.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\tokenlist.h
 # End Source File
 # Begin Source File
 

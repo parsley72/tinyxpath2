@@ -31,10 +31,9 @@ distribution.
 #include "workstack.h"
 
 /// Top-level object that applies an XPath expression to a source XML tree
-class xpath_from_source
+class xpath_from_source : public xpath_stream
 {
 protected :
-   xpath_stream * xsp_stream;
    TiXmlNode * XNp_source;
    TiXmlDocument * XDp_target;
 
@@ -51,7 +50,7 @@ protected :
 public :
    xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr);
    virtual ~ xpath_from_source ();
-   void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain);
+   virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain);
    void v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out);
 	void v_init ();
 	void v_close (FILE * Fp_html, const char * cp_test_name);

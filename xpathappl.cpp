@@ -24,24 +24,9 @@ distribution.
 
 #include "xpathappl.h"
 
-class xpath_action : public xpath_stream
-{
-protected :
-	xpath_from_source * xfsp_tool;
-public :
-	xpath_action (const char * cp_in, xpath_from_source * xfsp_in) : xpath_stream (cp_in)
-	{
-		xfsp_tool = xfsp_in;
-	}
-   virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain)
-	{
-		xfsp_tool -> v_action (u_rule, u_sub, u_variable, cp_explain);
-	}
-} ;
-
 xpath_from_source::xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr)
+   : xpath_stream (cp_in_expr)
 {
-   xsp_stream = new xpath_action (cp_in_expr, this);
    XNp_source = XNp_source_tree;
    XDp_target = new TiXmlDocument;
 }
@@ -49,8 +34,6 @@ xpath_from_source::~ xpath_from_source ()
 {
    assert (XDp_target);
    delete XDp_target;
-   assert (xsp_stream);
-   delete xsp_stream;
 }
 
 void xpath_from_source::v_action (
@@ -291,8 +274,7 @@ void xpath_from_source::v_apply_xpath (const char * cp_test_name, FILE * Fp_html
 {
 	v_init ();
 
-   xsp_stream -> v_evaluate ();
-   // v_apply_rule (xsp_stream -> alp_get_action_list (), cp_test_name);
+   v_evaluate ();
 
 	v_close (Fp_html_out, cp_test_name);
 }
@@ -322,7 +304,7 @@ void xpath_from_source::v_close (FILE * Fp_html, const char * cp_test_name)
 	if (Fp_html)
 	{
 		fprintf (Fp_html, "<h1>%s</h1>\n", cp_test_name);
-		fprintf (Fp_html, "<table border=1><tr><th colspan=\"2\">XPath expression : %s</th></tr>\n", xsp_stream -> cp_get_expr ());
+		fprintf (Fp_html, "<table border=1><tr><th colspan=\"2\">XPath expression : %s</th></tr>\n", cp_get_expr ());
 		fprintf (Fp_html, "<tr><th>Input</th><th>Output</th></tr>\n");
 		fprintf (Fp_html, "<tr><td valign=\"top\">");
 		fprintf (Fp_html, "<p>\n");

@@ -21,8 +21,8 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
-#ifndef __TINYTOKENLIST_H
-#define __TINYTOKENLIST_H
+#ifndef __TOKENLIST_H
+#define __TOKENLIST_H
 
 #include "tinyutil.h"
 #include "tinylextoken.h"
@@ -130,7 +130,7 @@ public :
       ltp_temp -> ltp_get_next () -> v_set_prev (ltp_current);
       delete ltp_temp;
    }
+   void v_tokenize_expression ();
 } ;
-
 
 #endif

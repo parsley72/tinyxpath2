@@ -66,10 +66,6 @@ distribution.
 
 class test_fail {};
 
-
-class xpath_from_source;
-
-
 static void v_apply_xml (TiXmlDocument * XDp_doc)
 {
    TiXmlElement * XEp_source, * XEp_test;
@@ -81,11 +77,15 @@ static void v_apply_xml (TiXmlDocument * XDp_doc)
    {
 		Fp_html = fopen ("res.html", "wt");
 	   if (Fp_html)
+		{
 			fprintf (Fp_html, "<html><head><title>TinyXPath results</title>"  \
 						"<style type=\"text/css\">"  \
 						" P {font-family:Courier}"   \
 						" B {color:red}"  \
 						"</style>\n</head><body>\n");
+			fprintf (Fp_html, "<a href=\"http://sourceforge.net/projects/tinyxpath\"> "\
+							"<img src=\"http://sourceforge.net/sflogo.php?group_id=53396&type=5\" width='210' height='62' border='0' alt='SourceForge Logo'></a> ");
+		}
       XEp_test = XDp_doc -> FirstChildElement ();
       if (! XEp_test)
          throw test_fail ();
