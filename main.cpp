@@ -227,6 +227,11 @@ int main ()
    v_test_one_string (XEp_main, "name(/a/*[1])", "b");
    v_test_one_string (XEp_main, "name(/a/x[1])", "x");
 
+   // regression test for bug in position()
+   v_test_one_string (XEp_main, "count(/a/b/c[1])", "1");
+   v_test_one_string (XEp_main, "count(/a/b/c[position()=1])", "1");
+   v_test_one_string (XEp_main, "count(/a/b/d[position()=3])", "0");
+
    // regression test for bug in i_compute_xpath
 
    int i_res;

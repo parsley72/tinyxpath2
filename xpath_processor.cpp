@@ -73,11 +73,7 @@ xpath_processor::xpath_processor (
    else
       XNp_base = NULL;
    XEp_context = NULL;
-}
-
-/// xpath_processor destructor
-xpath_processor::~ xpath_processor () 
-{
+   o_is_context_by_name = false;
 }
 
 /// Compute an XPath expression, and return the number of nodes in the resulting node set.
@@ -1247,9 +1243,9 @@ bool xpath_processor::o_check_predicate (TiXmlElement * XEp_child, bool o_by_nam
    expression_result * erp_top;
    bool o_keep;
 
-   v_set_context (XEp_child);
+   v_set_context (XEp_child, o_by_name);
    v_execute_one (xpath_predicate, false);
-   v_set_context (NULL);
+   v_set_context (NULL, false);
    erp_top = xs_stack . erp_top ();
    switch (erp_top -> e_type)
    {
@@ -1537,7 +1533,7 @@ void xpath_processor::v_function_position (
    XEp_context = XEp_get_context ();
    if (! XEp_context)
       throw execution_error ();
-   v_push_int (i_xml_cardinality (XEp_context, false), "position()");
+   v_push_int (i_xml_cardinality (XEp_context, o_is_context_by_name), "position()");
 }
 
 /// XPath \b starts-with function
@@ -2001,4 +1997,13 @@ void xpath_processor::v_order_recurs (TiXmlNode * Np_base, int & i_current)
       v_order_recurs (Np_child, i_current);
       Np_child = Np_child -> NextSibling ();
    }
+}
+
+/// Set the current context node for predicate evaluations
+void xpath_processor::v_set_context (
+   TiXmlElement * XEp_in,     ///< Context node
+   bool o_by_name)            ///< true if the current node search is by name, false if it's a *
+{
+   XEp_context = XEp_in; 
+   o_is_context_by_name = o_by_name;
 }

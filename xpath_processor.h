@@ -52,7 +52,7 @@ class xpath_processor : public xpath_stream
 public :
    /// Constructor
    xpath_processor (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   virtual ~ xpath_processor () ;
+   virtual ~ xpath_processor () {}
    expression_result er_compute_xpath ();
    TIXML_STRING S_compute_xpath ();
    int i_compute_xpath ();
@@ -125,7 +125,7 @@ protected :
    TIXML_STRING S_pop_string () {return xs_stack . S_pop_string ();}
    node_set ns_pop_node_set () {return xs_stack . ns_pop_node_set ();}
 
-   void v_set_context (TiXmlElement * XEp_in) {XEp_context = XEp_in;}
+   void v_set_context (TiXmlElement * XEp_in, bool o_by_name);
    const TiXmlElement * XEp_get_context () {return XEp_context;}
    /// Root, above the XML tree given as parameter to the xpath_processor object
    TiXmlElement * XEp_root;
@@ -133,6 +133,7 @@ protected :
    const TiXmlElement * XEp_context;
    /// The result of the XPath evaluation, for further node retrieving by v_get_xpath_base
    expression_result er_result;
+   bool o_is_context_by_name;
 
    const TiXmlNode * XNp_caller_parent;
    const TiXmlNode * XNp_caller_prev;
