@@ -105,7 +105,15 @@ SOURCE=.\tinyxpstream.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\workitem.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\xmlutil.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\xpathappl.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -141,7 +149,19 @@ SOURCE=.\tinyxpstream.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\workitem.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\workstack.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\xmlutil.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\xpathappl.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -157,7 +177,15 @@ SOURCE=.\tinystr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\tinystr.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\tinyxml.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\tinyxml.h
 # End Source File
 # Begin Source File
 
