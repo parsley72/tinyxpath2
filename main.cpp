@@ -133,11 +133,12 @@ static void v_apply ()
    v_apply_1 ("basic_in.xml");
 }
 
-void main ()
+int main ()
 {
    // v_generate_ascii_htm ();
    #ifdef TEST_SYNTAX
      v_test_syntax ();
    #endif
    v_apply ();
+   return 0;
 }
