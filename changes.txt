@@ -1,3 +1,10 @@
+// ================== 1.2.2 ==================
+
+Bug fixes for 1.2.2
+
+- Bug fix in the position() : it was counting the order of a node within it's brotherhood, which 
+was correct only if the search was like *[position()=3]
+
 // ================== 1.2.1 ==================
 
 Released : January 18th, 2004
