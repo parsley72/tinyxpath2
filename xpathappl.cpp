@@ -23,6 +23,7 @@ distribution.
 */
 
 #include "xpathappl.h"
+#include "htmlutil.h"
 
 xpath_from_source::xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr)
    : xpath_stream (cp_in_expr)
@@ -204,7 +205,11 @@ void xpath_from_source::v_action (
          {
             case 0 :
             case 1 :
+					assert (false);
+					break;
             case 2 :
+					wsp_stack -> v_push (new work_expr (e_work_expr_literal, 0, cp_explain));
+					break;
             case 3 :
                // Houston, we have a number
                wsp_stack -> v_push (new work_expr (e_work_expr_value, atoi (cp_explain)));
@@ -246,6 +251,33 @@ void xpath_from_source::v_action (
 					break;
 			}
 			printf ("Skipping function call !\n");
+			break;
+
+		case xpath_equality_expr :
+			// [23]
+			switch (u_sub)
+			{
+				case 0 : // equal
+				case 1 : // not equal
+					wsp_stack -> v_dump ();
+					wipp_list = new work_item * [2];
+					// we do not take copies, the work_func constructor will copy itself
+					wipp_list [0] = wsp_stack -> wip_top (1);
+					wipp_list [1] = wsp_stack -> wip_top (0);
+					wp_func = new work_func (2, wipp_list);					
+					delete [] wipp_list;
+					if (u_sub == 1)
+					   wp_func -> v_set_func_name ("__not_equal__");
+					else
+					   wp_func -> v_set_func_name ("__equal__");
+					wsp_stack -> v_pop (2);
+					wsp_stack -> v_push (wp_func);
+					printf ("equality expr a = b\n");
+					break;
+				case 2 :
+					// nothing. really
+					break;
+			}
 			break;
 
       case xpath_name_test :

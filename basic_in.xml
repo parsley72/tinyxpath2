@@ -217,4 +217,12 @@
       </AAA>
    </source>
 
+   <source name="test15" detail="Example 6 / test15" xpath_expr="//BBB[@id='b1']">
+      <AAA>
+         <BBB id = "b1"/>
+         <BBB name = " bbb "/>
+         <BBB name = "bbb"/>
+      </AAA>
+   </source>
+
 </xpath_test>

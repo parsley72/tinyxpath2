@@ -75,6 +75,26 @@ void work_node_test::v_set_predicate_list (unsigned u_in_nb_predicate, work_item
       wipp_list = NULL;
 }
 
+void work_node_test::v_apply_predicate (
+	TiXmlNode * XNp_target, 
+	work_item * wp_item, 
+	const char * cp_label, 
+	long & l_marker)
+{
+	TiXmlElement * XEp_child;
+	TIXML_STRING S_ret;
+
+   XEp_child = XNp_target -> FirstChildElement ();
+   while (XEp_child)
+   {
+		if (XEp_child -> GetUserValue () == l_marker)
+			if (wp_item -> o_test_predicate (XEp_child, S_ret))
+				XEp_child -> SetUserValue (l_marker + 1);
+      v_apply_predicate (XEp_child, wp_item, cp_label, l_marker);
+      XEp_child = XEp_child -> NextSiblingElement ();
+   }
+}
+
 void work_step::v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_marker)
 {
 	printf ("work_step::v_apply (%s, %ld)\n", cp_name, l_marker);

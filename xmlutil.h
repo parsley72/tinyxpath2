@@ -82,12 +82,13 @@ extern void v_mark_not_attrib (
    int i_mother_value,
 	int i_attrib_value,
    int i_child_value);
-
-extern void v_out_html (
-	FILE * Fp_out,
-	TiXmlNode * XNp_source,
-	unsigned u_level);
-extern void v_levelize (int i_level, FILE * Fp_out = stdout, bool o_html = false);
+extern void v_keep_if_equal (
+   TiXmlNode * XNp_target,
+   int i_mother_value,
+   int i_child_value,
+	const char * cp_val);
+extern int i_xml_cardinality (TiXmlElement * XEp_elem);
+extern int i_xml_brotherhood (TiXmlElement * XEp_elem);
 
 #endif
 

@@ -402,128 +402,72 @@ void v_mark_not_attrib (
 	int i_child_value)
 {
    TiXmlElement * XEp_child;
-	TiXmlAttribute * XAp_attrib;
-	bool o_found;
 
    XEp_child = XNp_target -> FirstChildElement ();
    while (XEp_child)
    {
 		if (XEp_child -> GetUserValue () == i_mother_value)
-		{
-			o_found = false;
-			XAp_attrib = XEp_child -> FirstAttribute ();
-			while (XAp_attrib)
-			{
-				if (XAp_attrib -> GetUserValue () == i_attrib_value)
-					o_found = true;
-				XAp_attrib = XAp_attrib -> Next ();
-			}
-			if (! o_found)
-				XEp_child -> SetUserValue (i_child_value);
-		}
+			XEp_child -> SetUserValue (i_child_value);
       v_mark_not_attrib (XEp_child, i_mother_value, i_attrib_value, i_child_value);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
 }
 
-void v_levelize (int i_level, FILE * Fp_out, bool o_html)
+void v_keep_if_equal (
+   TiXmlNode * XNp_target,
+   int i_mother_value,
+   int i_child_value,
+	const char * cp_val)
 {
-	int i_loop;
-	for (i_loop = 0; i_loop < i_level; i_loop++)
-		if (o_html)
-   		fprintf (Fp_out, "&nbsp;&nbsp;&nbsp;");
-		else
-	   	fprintf (Fp_out, "   ");
+   TiXmlElement * XEp_child;
+	TiXmlAttribute * XAp_attrib;
+
+   XEp_child = XNp_target -> FirstChildElement ();
+   while (XEp_child)
+   {
+		XAp_attrib = XEp_child -> FirstAttribute ();
+		while (XAp_attrib)
+		{
+			if (XAp_attrib -> GetUserValue () == i_mother_value)
+			{
+				if (! strcmp (XAp_attrib -> Value (), cp_val))
+					XAp_attrib -> SetUserValue (i_child_value);
+			}
+			XAp_attrib = XAp_attrib -> Next ();
+		}
+      v_keep_if_equal (XEp_child, i_mother_value, i_child_value, cp_val);
+      XEp_child = XEp_child -> NextSiblingElement ();
+   }
 }
 
-void v_out_html (
-	FILE * Fp_out,
-	TiXmlNode * XNp_source,
-	unsigned u_level)
+int i_xml_cardinality (TiXmlElement * XEp_elem)
 {
-	TiXmlNode * XNp_child;
-	TiXmlAttribute * XAp_att;
+	TiXmlNode * XNp_parent;
+	TiXmlElement * XEp_child;
+	int i_look;
 
-	XNp_child = XNp_source -> FirstChild ();
-	while (XNp_child)
-	{
-		if (XNp_child -> ToDocument ())
-		{
-			fprintf (Fp_out, "\nStart document\n");
-		}
+	XNp_parent = XEp_elem -> Parent ();
+	assert (XNp_parent);
+	XEp_child = XNp_parent -> FirstChildElement ();
+	for (i_look = 0; XEp_child; i_look++)
+	   if (XEp_child == XEp_elem)
+			return i_look;
 		else
-		if (XNp_child -> ToElement ())
-		{
-			v_levelize ((int) u_level, Fp_out, true);
-			if (XNp_child -> GetUserValue ())
-				fprintf (Fp_out, "<b>");
-			fprintf (Fp_out, "&lt;%s", XNp_child -> ToElement () -> Value ());
-			XAp_att = XNp_child -> ToElement () -> FirstAttribute ();
-			while (XAp_att)
-			{
-				if (XAp_att -> GetUserValue ())
-				   fprintf (Fp_out, "<b>");
-				fprintf (Fp_out, " %s='%s'", XAp_att -> Name (), XAp_att -> Value ());
-				if (XAp_att -> GetUserValue ())
-				   fprintf (Fp_out, "</b>");
-				XAp_att = XAp_att -> Next ();
-			}
-			fprintf (Fp_out, "&gt;");
-			if (XNp_child -> GetUserValue ())
-				fprintf (Fp_out, "</b>");
-			fprintf (Fp_out, "<br>\n");
-		}
-		else
-		if (XNp_child -> ToComment ())
-		{
-			fprintf (Fp_out, "&lt;!-- %s --&gt;<br>\n", XNp_child -> ToComment () -> Value ());
-		}
-		else
-		if (XNp_child -> ToText ())
-		{
-			fprintf (Fp_out, "%s\n", XNp_child -> ToText () -> Value ());
-		}
-		else
-		if (XNp_child -> ToDeclaration ())
-		{
-		}
-		else
-		if (XNp_child -> ToUnknown ())
-		{
-		}
-		else
-			assert (false);
-		v_out_html (Fp_out, XNp_child, u_level + 1);
-		if (XNp_child -> ToDocument ())
-		{
-			fprintf (Fp_out, "\nEnd document\n");
-		}
-		else
-		if (XNp_child -> ToElement ())
-		{
-			v_levelize ((int) u_level, Fp_out, true);
-			if (XNp_child -> GetUserValue ())
-				fprintf (Fp_out, "<b>");
-			fprintf (Fp_out, "&lt;/%s&gt;<br>\n", XNp_child -> ToElement () -> Value ());
-			if (XNp_child -> GetUserValue ())
-				fprintf (Fp_out, "</b>");
-		}
-		else
-		if (XNp_child -> ToComment ())
-		{
-		}
-		else
-		if (XNp_child -> ToText ())
-		{
-		}
-		else
-		if (XNp_child -> ToDeclaration ())
-		{
-		}
-		else
-		if (XNp_child -> ToUnknown ())
-		{
-		}
-		XNp_child = XNp_child -> NextSibling ();
-	}
+			XEp_child = XEp_child -> NextSiblingElement ();
+	assert (false);
+	return -1;
+}
+
+int i_xml_brotherhood (TiXmlElement * XEp_elem)
+{
+	TiXmlNode * XNp_parent;
+	TiXmlElement * XEp_child;
+	int i_look;
+
+	XNp_parent = XEp_elem -> Parent ();
+	assert (XNp_parent);
+	XEp_child = XNp_parent -> FirstChildElement ();
+	for (i_look = 0; XEp_child; i_look++)
+      XEp_child = XEp_child -> NextSiblingElement ();
+	return i_look;
 }
