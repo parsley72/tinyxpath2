@@ -29,6 +29,7 @@ distribution.
 #include "xmlutil.h"
 #include "htmlutil.h"
 #include "tinyutil.h"
+#include "expr.h"
 
 enum WORK_ITEM_ENUM {WORK_NONE, WORK_STRING, WORK_QNAME, WORK_AXIS, WORK_NAME_TEST, WORK_NODE_TEST, WORK_STEP,
       WORK_EXPR, WORK_FUNC};
@@ -67,10 +68,10 @@ public :
    /// Apply an XPath predicate
    virtual void v_apply (TiXmlNode * , const char * , long & ) { assert (false); }
 	virtual bool o_identity () {return false;}
-	virtual bool o_test_predicate (TiXmlElement *, TIXML_STRING & ) 
+	virtual expression_result er_compute_predicate (TiXmlElement *) 
 	{
 	   assert (false);
-		return false;
+		return expression_result ();
 	}
 } ;
 
@@ -212,27 +213,7 @@ public :
       assert (false);
    }
 	virtual bool o_identity () {return u_class == WORK_EXPR;}
-	virtual bool o_test_predicate (TiXmlElement * XEp_element, TIXML_STRING &) 
-	{	
-		switch (u_cat)
-		{
-			case e_work_expr_value :
-			   return (i_xml_cardinality (XEp_element) == i_get_expr_value ());
-			case e_work_expr_func :
-				if (S_value == "last")
-				{
-					return (XEp_element -> NextSiblingElement () == NULL);
-				}
-				else
-				{
-					assert (false);
-					return false;
-				}
-			default :
-				assert (false);
-				return false;
-		}
-	}
+	virtual expression_result er_compute_predicate (TiXmlElement *) ;
 } ;
 
 class work_func : public work_item
@@ -266,60 +247,7 @@ public :
 		assert (false);
 	}
 
-	virtual bool o_test_predicate (TiXmlElement * XEp_test, TIXML_STRING & S_ret) 
-	{
-		TIXML_STRING S_inter;
-		bool o_res;
-		// unsigned u_ret;
-		// char ca_out [10];
-		// const char * cp_lookup;
-
-		S_ret = "";
-		if (S_name == "not")
-		{
-			assert (u_nb_arg == 1);
-			return ! wipp_list [0] -> o_test_predicate (XEp_test, S_inter);
-		}
-		else
-
-		if (S_name == "__equal__")
-		{
-			assert (u_nb_arg == 2);
-			o_res = wipp_list [0] -> o_test_predicate (XEp_test, S_inter);
-			if (! o_res)
-				return false;
-			return S_inter == ((work_expr *) wipp_list [1]) -> cp_get_value ();
-		}
-		else
-
-		if (S_name == "normalize-space")
-		{
-			S_ret = "";
-			assert (u_nb_arg == 1);
-			o_res = wipp_list [0] -> o_test_predicate (XEp_test, S_inter);
-			if (! o_res)
-				return false;
-			S_ret = S_remove_lead_trail (S_inter . c_str ());
-			return true;
-		}
-		else
-	
-		if (S_name == "count")
-		{	
-			assert (u_nb_arg == 1);
-			o_res = wipp_list [0] -> o_test_predicate (XEp_test, S_inter);
-			if (! o_res)
-				return false;
-			S_ret = S_inter;
-			return true;
-		}
-		else
-
-		{
-			assert (false);
-			return false;
-		}
-	}
+	virtual expression_result er_compute_predicate (TiXmlElement *) ;
 } ;     // work_func
 
 /// Specialized work_item for NameTest
@@ -612,7 +540,7 @@ public :
    virtual void v_apply (TiXmlNode * , const char * , long & );
 	void v_set_absolute (bool o_in) {o_absolute = o_in;}
 	void v_set_all (bool o_in) {o_all = o_in;}
-	virtual bool o_test_predicate (TiXmlElement * XEp_elem, TIXML_STRING & S_ret);
+	virtual expression_result er_compute_predicate (TiXmlElement *) ;
 } ;
 
 extern work_item * wip_copy (const work_item * wip_in);

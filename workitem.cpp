@@ -83,13 +83,33 @@ void work_node_test::v_apply_predicate (
 {
 	TiXmlElement * XEp_child;
 	TIXML_STRING S_ret;
+	expression_result er_res ;
+	bool o_mark;
 
    XEp_child = XNp_target -> FirstChildElement ();
    while (XEp_child)
    {
 		if (XEp_child -> GetUserValue () == l_marker)
-			if (wp_item -> o_test_predicate (XEp_child, S_ret))
+		{
+			er_res = wp_item -> er_compute_predicate (XEp_child);
+			o_mark = false;
+			switch (er_res . e_type)
+			{
+				case e_bool :
+					o_mark = er_res . o_get_bool ();
+					break;
+				case e_int :
+					o_mark = i_xml_cardinality (XEp_child) == er_res . i_get_int ();
+					break;
+				case e_string :
+					o_mark = true;
+					// this is the case when we have an attribute as predicate,
+					// because we return the attribute's value
+					break;
+			}
+			if (o_mark)
 				XEp_child -> SetUserValue (l_marker + 1);
+		}
       v_apply_predicate (XEp_child, wp_item, cp_label, l_marker);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
@@ -114,11 +134,10 @@ void work_step::v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_ma
 	}
 }
 
-bool work_step::o_test_predicate (TiXmlElement * XEp_elem, TIXML_STRING & S_ret) 
+expression_result work_step::er_compute_predicate (TiXmlElement * XEp_elem) 
 {
 	const char * cp_ret, * cp_lookup;
-	char ca_ret [10];
-	unsigned u_ret;
+	expression_result er_res;
 
 	// predicates for step ...
 	printf ("Predicate for step\n");
@@ -131,19 +150,15 @@ bool work_step::o_test_predicate (TiXmlElement * XEp_elem, TIXML_STRING & S_ret)
 		if (! strcmp (cp_lookup, "*"))
 		{
 			// looking for any attribute
-			S_ret = "";
-			return (XEp_elem -> FirstAttribute () != NULL);
+			er_res . v_set_bool (XEp_elem -> FirstAttribute () != NULL);
 		}
 		else
 		{
 			cp_ret = XEp_elem -> Attribute (cp_lookup);
 			if (cp_ret)
-			{
-				S_ret = cp_ret;
-				return true;
-			}
-			S_ret = "";
-			return false;
+				er_res . v_set_string (cp_ret);
+			else
+				er_res . v_set_bool (false);
 		}
 	}
 	else
@@ -151,11 +166,182 @@ bool work_step::o_test_predicate (TiXmlElement * XEp_elem, TIXML_STRING & S_ret)
 		// not an attribute
 		if (! strcmp (cp_lookup, "*"))
 			// looking for any child, and counting
-			u_ret = u_count_children (XEp_elem);
+			er_res . v_set_int ((int) u_count_children (XEp_elem));
 		else
-			u_ret = u_count_children (XEp_elem, cp_lookup);
-		sprintf (ca_ret, "%d", u_ret);
-		S_ret = ca_ret;
-		return (u_ret > 0);
+			er_res . v_set_int ((int) u_count_children (XEp_elem, cp_lookup));
 	}
+	return er_res;
+}
+
+expression_result work_expr::er_compute_predicate (TiXmlElement * XEp_element) 
+{
+	expression_result er_res;
+			
+	switch (u_cat)
+	{
+		case e_work_expr_value :
+			// here return (i_xml_cardinality (XEp_element) == i_get_expr_value ());
+			er_res . v_set_int (i_get_expr_value ());
+			break;
+
+		case e_work_expr_func :
+			if (S_value == "last")
+				er_res . v_set_bool (XEp_element -> NextSiblingElement () == NULL);
+			else
+
+			if (S_value == "name")
+				er_res . v_set_string (XEp_element -> Value ());
+			else
+				assert (false);
+			break;
+
+		case e_work_expr_literal :
+			er_res . v_set_string (S_value);
+			break;
+
+		default :
+			assert (false);
+	}
+	return er_res;
+}
+
+expression_result work_func::er_compute_predicate (TiXmlElement * XEp_test) 
+{
+	TIXML_STRING S_first, S_inter, S_second;
+	expression_result er_arg, er_arg_2, er_res;
+
+	if (S_name == "not")
+	{
+		assert (u_nb_arg == 1);
+		er_arg = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_res . v_set_bool (! er_arg . o_get_bool ());
+	}
+	else
+
+	if (S_name == "__equal__")
+	{
+		assert (u_nb_arg == 2);
+		er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_arg = wipp_list [1] -> er_compute_predicate (XEp_test);
+		if (er_arg . e_type != er_arg_2 . e_type)
+			er_res . v_set_bool (false);
+		else
+			switch (er_arg . e_type)
+			{
+				case e_bool :
+					er_res . v_set_bool (er_arg . o_get_bool () == er_arg_2 . o_get_bool ());
+					assert (false);   // the code is here above, but it doesn't make sense
+											// to compare with an equal two booleans, now does it ?
+					break;
+				case e_int :
+					er_res . v_set_bool (er_arg . i_get_int () == er_arg_2 . i_get_int ());
+					break;
+				case e_string :
+					er_res . v_set_bool (! strcmp (er_arg . cp_get_string (), er_arg_2 . cp_get_string ()));
+					break;
+			}
+	}
+	else
+
+	if (S_name == "normalize-space")
+	{
+		assert (u_nb_arg == 1);
+		er_arg = wipp_list [0] -> er_compute_predicate (XEp_test);
+		if (er_arg . e_type == e_string)
+		   er_res . v_set_string (S_remove_lead_trail (er_arg . cp_get_string ()));
+		else
+			er_res . v_set_bool (false);
+	}
+	else
+
+	if (S_name == "count")
+	{	
+		assert (u_nb_arg == 1);
+		er_arg = wipp_list [0] -> er_compute_predicate (XEp_test);
+		// ???
+		er_res = er_arg;
+	}
+	else
+
+	if (S_name == "starts-with")
+	{
+		assert (u_nb_arg == 2);
+		er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_arg = wipp_list [1] -> er_compute_predicate (XEp_test);
+		assert (er_arg . e_type == e_string);
+		assert (er_arg_2 . e_type == e_string);
+		er_res . v_set_bool (! strncmp (er_arg . cp_get_string (), er_arg_2 . cp_get_string (), 
+					strlen (er_arg_2 . cp_get_string ())));
+	}
+	else
+
+	if (S_name == "contains")
+	{
+		assert (u_nb_arg == 2);
+		er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_arg = wipp_list [1] -> er_compute_predicate (XEp_test);
+		assert (er_arg . e_type == e_string);
+		assert (er_arg_2 . e_type == e_string);
+		er_res . v_set_bool (strstr (er_arg . cp_get_string (), er_arg_2 . cp_get_string ()) 
+					? true : false);
+	}
+	else
+
+	if (S_name == "__less__")
+	{
+		assert (u_nb_arg == 2);
+		er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_arg = wipp_list [1] -> er_compute_predicate (XEp_test);
+		assert (er_arg . e_type == e_int);
+		assert (er_arg_2 . e_type == e_int);
+		er_res . v_set_bool (er_arg . i_get_int () < er_arg_2 . i_get_int ());
+	}
+	else
+
+	if (S_name == "__greater__")
+	{
+		assert (u_nb_arg == 2);
+		er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_arg = wipp_list [1] -> er_compute_predicate (XEp_test);
+		assert (er_arg . e_type == e_int);
+		assert (er_arg_2 . e_type == e_int);
+		er_res . v_set_bool (er_arg . i_get_int () > er_arg_2 . i_get_int ());
+	}
+	else
+
+	if (S_name == "__lesseq__")
+	{
+		assert (u_nb_arg == 2);
+		er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_arg = wipp_list [1] -> er_compute_predicate (XEp_test);
+		assert (er_arg . e_type == e_int);
+		assert (er_arg_2 . e_type == e_int);
+		er_res . v_set_bool (er_arg . i_get_int () <= er_arg_2 . i_get_int ());
+	}
+	else
+
+	if (S_name == "__greatereq__")
+	{
+		assert (u_nb_arg == 2);
+		er_arg_2 = wipp_list [0] -> er_compute_predicate (XEp_test);
+		er_arg = wipp_list [1] -> er_compute_predicate (XEp_test);
+		assert (er_arg . e_type == e_int);
+		assert (er_arg_2 . e_type == e_int);
+		er_res . v_set_bool (er_arg . i_get_int () >= er_arg_2 . i_get_int ());
+	}
+	else
+
+	if (S_name == "string-length")
+	{	
+		assert (u_nb_arg == 1);
+		er_arg = wipp_list [0] -> er_compute_predicate (XEp_test);
+		assert (er_arg . e_type == e_string);
+		er_res . v_set_int (er_arg . S_get_string () . length ());
+	}
+	else
+	{
+		printf ("Function %s not yet implemented\n", S_name . c_str ());
+		assert (false);
+	}
+	return er_res;
 }

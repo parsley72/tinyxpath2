@@ -262,8 +262,8 @@ void xpath_from_source::v_action (
 					wsp_stack -> v_dump ();
 					wipp_list = new work_item * [2];
 					// we do not take copies, the work_func constructor will copy itself
-					wipp_list [0] = wsp_stack -> wip_top (1);
-					wipp_list [1] = wsp_stack -> wip_top (0);
+					wipp_list [0] = wsp_stack -> wip_top (0);
+					wipp_list [1] = wsp_stack -> wip_top (1);
 					wp_func = new work_func (2, wipp_list);					
 					delete [] wipp_list;
 					if (u_sub == 1)
@@ -277,6 +277,52 @@ void xpath_from_source::v_action (
 				case 2 :
 					// nothing. really
 					break;
+			}
+			break;
+
+		case xpath_relational_expr :
+			// [24]
+			switch (u_sub)
+			{
+				case 0 : 
+					// <
+				case 1 : 
+					// >
+				case 2 : 
+					// <=
+				case 3 : 
+					// >=
+					wsp_stack -> v_dump ();
+					wipp_list = new work_item * [2];
+					// we do not take copies, the work_func constructor will copy itself
+					wipp_list [0] = wsp_stack -> wip_top (0);
+					wipp_list [1] = wsp_stack -> wip_top (1);
+					wp_func = new work_func (2, wipp_list);					
+					delete [] wipp_list;
+					switch (u_sub)
+					{
+						case 0 :
+							wp_func -> v_set_func_name ("__less__");
+							break;
+						case 1 :
+							wp_func -> v_set_func_name ("__greater__");
+							break;
+						case 2 :
+							wp_func -> v_set_func_name ("__lesseq__");
+							break;
+						case 3 :
+							wp_func -> v_set_func_name ("__greatereq__");
+							break;
+					}
+					wsp_stack -> v_pop (2);
+					wsp_stack -> v_push (wp_func);
+					break;
+
+				case 4 : 
+					// nothing to do : simple relational expression
+					break;
+				default :
+					assert (false);
 			}
 			break;
 
@@ -334,7 +380,7 @@ void xpath_from_source::v_action (
          wsp_stack -> v_push (new work_string (cp_explain));
          break;
 		default :
-			printf ("[%d]   Skipping !\n", u_rule);
+			// printf ("[%d]   Skipping !\n", u_rule);
 			break;
    }
 }

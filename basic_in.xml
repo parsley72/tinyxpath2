@@ -295,4 +295,122 @@
       </AAA>
    </source>
 
+   <!-- Select all elements with name BBB, equivalent with //BBB -->
+   <source name="test21" detail="Example 8 / test21" xpath_expr="//*[name()='BBB']">
+      <AAA>
+         <BCC>
+            <BBB/>
+            <BBB/>
+            <BBB/>
+         </BCC>
+         <DDB>
+            <BBB/>
+            <BBB/>
+         </DDB>
+         <BEC>
+            <CCC/>
+            <DBD/>
+         </BEC>
+      </AAA>
+   </source>
+
+   <!-- Select all elements name of which starts with letter B -->
+   <source name="test22" detail="Example 8 / test22" xpath_expr="//*[starts-with(name(),'B')]">
+      <AAA>
+         <BCC>
+            <BBB/>
+            <BBB/>
+            <BBB/>
+         </BCC>
+         <DDB>
+            <BBB/>
+            <BBB/>
+         </DDB>
+         <BEC>
+            <CCC/>
+            <DBD/>
+         </BEC>
+      </AAA>
+   </source>
+
+   <!-- Select all elements name of which contain letter C -->
+   <source name="test23" detail="Example 8 / test23" xpath_expr="//*[contains(name(),'C')]">
+      <AAA>
+         <BCC>
+            <BBB/>
+            <BBB/>
+            <BBB/>
+         </BCC>
+         <DDB>
+            <BBB/>
+            <BBB/>
+         </DDB>
+         <BEC>
+            <CCC/>
+            <DBD/>
+         </BEC>
+      </AAA>
+   </source>
+
+   <!-- Select elements name of which has one or two characters -->
+   <source name="test24" detail="Example 9 / test24" xpath_expr="//*[string-length(name()) &lt; 3]">
+      <AAA>
+         <Q/>
+         <SSSS/>
+         <BB/>
+         <CCC/>
+         <DDDDDDDD/>
+         <EEEE/>
+      </AAA>
+   </source>
+
+
+   <!-- Select elements with name longer than three characters -->
+   <source name="test25" detail="Example 9 / test25" xpath_expr="//*[string-length(name()) &gt; 3]">
+      <AAA>
+         <Q/>
+         <SSSS/>
+         <BB/>
+         <CCC/>
+         <DDDDDDDD/>
+         <EEEE/>
+      </AAA>
+   </source>
+<ignore>
+     <!-- Select all elements CCC and BBB -->
+   <source name="test26" detail="Example 10 / test26" xpath_expr="//CCC | //BBB">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <DDD>
+            <CCC/>
+         </DDD>
+         <EEE/>
+      </AAA>
+   </source>
+
+     <!-- Select all elements CCC and BBB -->
+   <source name="test27" detail="Example 10 / test27" xpath_expr="/AAA/EEE | //BBB">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <DDD>
+            <CCC/>
+         </DDD>
+         <EEE/>
+      </AAA>
+   </source>
+
+     <!-- Number of combinations is not restricted -->
+   <source name="test28" detail="Example 10 / test28" xpath_expr="/AAA/EEE | //DDD/CCC | /AAA | //BBB">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <DDD>
+            <CCC/>
+         </DDD>
+         <EEE/>
+      </AAA>
+   </source>
+</ignore>
 </xpath_test>

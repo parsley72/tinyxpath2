@@ -232,6 +232,7 @@ void v_retain_attrib_tree (
    }
 }
 
+/// Cardinality in the terms of XPath counts from 1 for the first element
 int i_xml_cardinality (TiXmlElement * XEp_elem)
 {
 	TiXmlNode * XNp_parent;
@@ -243,7 +244,7 @@ int i_xml_cardinality (TiXmlElement * XEp_elem)
 	XEp_child = XNp_parent -> FirstChildElement ();
 	for (i_look = 0; XEp_child; i_look++)
 	   if (XEp_child == XEp_elem)
-			return i_look;
+			return 1 + i_look;
 		else
 			XEp_child = XEp_child -> NextSiblingElement ();
 	assert (false);

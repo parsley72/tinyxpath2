@@ -125,6 +125,10 @@ SOURCE=.\xpathappl.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\expr.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\htmlutil.h
 # End Source File
 # Begin Source File
