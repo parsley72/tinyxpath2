@@ -183,7 +183,7 @@ void xpath_stack::v_push_string (TIXML_STRING S_in)
 expression_result * xpath_stack::erp_top ()
 {
    if (! rnp_first)
-      throw execution_error ();
+      throw execution_error (34);
    return rnp_first;
 }
 
@@ -210,9 +210,9 @@ void xpath_stack::v_pop_one ()
    result_and_next * rnp_old;
 
    if (! u_size)
-      throw execution_error ();
+      throw execution_error (35);
    if (! rnp_first)
-      throw execution_error ();
+      throw execution_error (36);
    rnp_old = rnp_first;
    rnp_first = rnp_first -> rnp_get_next ();
    delete rnp_old;

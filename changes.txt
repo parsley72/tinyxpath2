@@ -1,3 +1,10 @@
+// ================== 1.2.3 ==================
+
+Bug fixes for 1.2.3
+
+- Apr 24th, 2004 : Bug fix in expressions like "//x[text()='sub text']/@target" (Thanks Jonathan Taylor) : text() wasn't recognized
+as a function call in that context
+
 // ================== 1.2.2 ==================
 
 Release : March 13th, 2004

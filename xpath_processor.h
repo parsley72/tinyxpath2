@@ -43,8 +43,8 @@ namespace TinyXPath
 {
 
 /// Exceptions
-class execution_error {};
-class error_not_yet : public execution_error {};
+class execution_error {public : execution_error (int i_) {i=i_;} int i;};
+class error_not_yet : public execution_error {public : error_not_yet () : execution_error (-2){}};
 
 /// XPath execution class
 class xpath_processor : public xpath_stream
@@ -94,6 +94,7 @@ protected :
    void v_function_string_length (unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_substring (unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_sum (unsigned u_nb_arg, expression_result ** erpp_arg);
+   void v_function_text (unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_true (unsigned u_nb_arg, expression_result ** erpp_arg);
 
    void v_function_equal (expression_result ** erpp_arg);

@@ -450,10 +450,26 @@ bool token_syntax_decoder::o_recognize (
 
       case xpath_function_call :
          // [16]   FunctionCall			::=   FunctionName '(' ( Argument ( ',' Argument )* )? ')' 
+         // [35]   FunctionName	      ::=  	QName - NodeType
          if (! ltp_get (0))
             return false;
-         if (! o_recognize (xpath_xml_q_name, o_final))
-            return false;
+         switch (ltp_get (0) -> lex_get_value ())
+         {
+            case lex_comment :
+            case lex_text :
+            case lex_node :
+            case lex_processing_instruction :
+               if (o_final)
+               {
+                  v_action (xpath_xml_local_part, 0, 0, ltp_get (0) -> cp_get_literal ());
+                  v_action (xpath_xml_q_name, xpath_xml_q_name_simple);         
+               }
+               v_inc_current (1);
+               break;
+            default :
+               if (! o_recognize (xpath_xml_q_name, o_final))
+                  return false;
+         }
          if (! ltp_get (0) || ltp_get (0) -> lex_get_value () != lex_oparen)
             return false;
          v_inc_current (1);

@@ -63,7 +63,7 @@ static void v_out_one_line (const char * cp_expr, const char * cp_res, const cha
 
       S_expected = S_xpath_expr (Dp_ptr, cp_expr);
       printf ("-- expr : [%s] --\n", cp_expr);
-      xpath_processor xp_proc (XNp_root, cp_expr);
+      TinyXPath::xpath_processor xp_proc (XNp_root, cp_expr);
       S_res = xp_proc . S_compute_xpath ();
       o_ok = strcmp (S_res . c_str (), S_expected . c_str ()) == 0;
       v_out_one_line (cp_expr, S_res . c_str (), S_expected . c_str (), o_ok);
@@ -93,6 +93,9 @@ int main ()
 {
    TiXmlDocument * XDp_doc;
    TiXmlElement * XEp_main;
+   int i_res;
+   char ca_res [80];
+   bool o_ok;
 
    XDp_doc = new TiXmlDocument;
    if (! XDp_doc -> LoadFile ("test.xml"))
@@ -129,6 +132,7 @@ int main ()
 
    fprintf (Fp_out_html, "<h2>Results</h2>\n");
 
+   v_test_one_string (XEp_main, "//x/text()", "sub text");
    v_test_one_string (XEp_main, "//*/comment()", " -122.0 ");
    v_test_one_string (XEp_main, "count(//*/comment())", "2");
    v_test_one_string (XEp_main, "sum(//@*)", "123");
@@ -221,6 +225,16 @@ int main ()
    v_test_one_string (XEp_main, "substring('12345',2,6)", "2345");
    v_test_one_string (XEp_main, "concat('[',normalize-space('  before and   after      '),']')", "[before and after]");
 
+   // test for u_compute_xpath_node_set
+
+   unsigned u_nb;
+
+   TinyXPath::xpath_processor xp_proc (XEp_main, "//*");    // build the list of all element nodes in the tree
+   u_nb = xp_proc . u_compute_xpath_node_set ();            // retrieve number of nodes 
+   sprintf (ca_res, "%d", u_nb);
+   o_ok = (u_nb == 6);
+   v_out_one_line ("//*", ca_res, "6", o_ok);
+
    // regression test for predicate count bug
    v_test_one_string (XEp_main, "count(/a/x[1])", "1");
    v_test_one_string (XEp_main, "name(/a/*[2])", "x");
@@ -234,13 +248,12 @@ int main ()
 
    // regression test for bug in i_compute_xpath
 
-   int i_res;
-   char ca_res [80];
-   bool o_ok;
-
    i_res = TinyXPath::i_xpath_int (XEp_main, "//*[@val]/@val");
    sprintf (ca_res, "%d", i_res);
    v_out_one_line ("//*[@val]/@val", ca_res, "123", i_res == 123);
+
+   // regression test for bug in text in expressions
+   v_test_one_string (XEp_main, "//x[text()='sub text']/@target", "xyz");
 
    // regression testing for syntax error
 
@@ -257,6 +270,7 @@ int main ()
       sprintf (ca_res, "error %d", xp_proc_2 . e_error);
    }
    v_out_one_line ("//**", ca_res, "syntax error", o_ok);
+
 
    #ifdef LIBXML_CHECK
       xmlFreeDoc (Dp_doc);

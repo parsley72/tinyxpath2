@@ -181,7 +181,7 @@ expression_result xpath_processor::er_compute_xpath ()
             
       if (! XEp_root)
          // no correct initialization of the xpath_processor object
-         throw execution_error ();
+         throw execution_error (1);
 
       // Decode XPath expression
       v_evaluate ();
@@ -215,7 +215,7 @@ expression_result xpath_processor::er_compute_xpath ()
       er_result = er_null;
       e_error = e_error_overflow;
    }
-   catch (execution_error)
+   catch (execution_error e)
    {
       expression_result er_null;
       er_result = er_null;
@@ -330,7 +330,7 @@ void xpath_processor::v_execute_one (
    v_pop_one_action (xc_action, u_sub, u_variable, S_literal);
    // verify it's the rule we were waiting for
    if (xc_action != xc_rule)
-      throw execution_error ();
+      throw execution_error (2);
    switch (xc_action)
    {
       case xpath_expr :
@@ -379,7 +379,7 @@ void xpath_processor::v_execute_one (
                   delete [] erpp_arg;
                }
                if (o_error)
-                  throw execution_error ();
+                  throw execution_error (3);
                break;
          }
          break;
@@ -425,7 +425,7 @@ void xpath_processor::v_execute_one (
                   delete [] erpp_arg;
                }
                if (o_error)
-                  throw execution_error ();
+                  throw execution_error (4);
                break;
          }
          break;
@@ -461,7 +461,7 @@ void xpath_processor::v_execute_one (
                         v_function_not_equal (erpp_arg);
                   }
                }
-               catch (execution_error)
+               catch (execution_error e)
                {
                   o_error = true;
                }
@@ -475,7 +475,7 @@ void xpath_processor::v_execute_one (
                   delete [] erpp_arg;
                }
                if (o_error)
-                  throw execution_error ();
+                  throw execution_error (5);
                break;
          }
          break;
@@ -524,7 +524,7 @@ void xpath_processor::v_execute_one (
                   delete [] erpp_arg;
                }
                if (o_error)
-                  throw execution_error ();
+                  throw execution_error (6);
                break;
             default :
                assert (false);
@@ -576,7 +576,7 @@ void xpath_processor::v_execute_one (
                   delete [] erpp_arg;
                }
                if (o_error)
-                  throw execution_error ();
+                  throw execution_error (7);
                break;
          }
          break;
@@ -624,7 +624,7 @@ void xpath_processor::v_execute_one (
                   delete [] erpp_arg;
                }
                if (o_error)
-                  throw execution_error ();
+                  throw execution_error (8);
                break;
          }
          break;
@@ -652,7 +652,7 @@ void xpath_processor::v_execute_one (
             case xpath_union_expr_union :
                v_execute_one (xpath_union_expr, o_skip_only);
                if (xs_stack . erp_top () -> e_type != e_node_set)
-                  throw execution_error ();
+                  throw execution_error (9);
                // here after is a block, so that the node_set are locals to it
                {
                   node_set ns_1, ns_2;
@@ -746,7 +746,7 @@ void xpath_processor::v_execute_one (
                   if (! o_skip_only)
                   {
                      if (! xs_stack . u_get_size ())
-                        throw execution_error ();
+                        throw execution_error (10);
                      erpp_arg [u_variable - u_arg - 1] = new expression_result (* xs_stack . erp_top ());
                      xs_stack . v_pop ();
                   }
@@ -759,7 +759,7 @@ void xpath_processor::v_execute_one (
                v_execute_function (S_name, u_variable, erpp_arg);
             }
          }
-         catch (execution_error)
+         catch (execution_error e)
          {
             o_error = true;
          }
@@ -773,7 +773,7 @@ void xpath_processor::v_execute_one (
             delete [] erpp_arg;
          }
          if (o_error)
-            throw execution_error ();
+            throw execution_error (11);
          break;
 
       case xpath_xml_q_name :
@@ -929,7 +929,7 @@ void xpath_processor::v_execute_one (
          break;
 
       default :
-         throw execution_error ();
+         throw execution_error (12);
    }
 }
 
@@ -1346,11 +1346,15 @@ void xpath_processor::v_execute_function (
       v_function_sum (u_nb_arg, erpp_arg);
    else
 
+   if (S_name == "text")
+      v_function_text (u_nb_arg, erpp_arg);
+   else
+
    if (S_name == "true")
       v_function_true (u_nb_arg, erpp_arg);
    else
 
-      throw execution_error ();
+      throw execution_error (13);
 }
 
 /// XPath \b ceiling function
@@ -1361,7 +1365,7 @@ void xpath_processor::v_function_ceiling (
    int i_val;
 
    if (u_nb_arg != 1)
-      throw execution_error ();
+      throw execution_error (14);
    switch (erpp_arg [0] -> e_type)
    {
       case e_int :
@@ -1387,7 +1391,7 @@ void xpath_processor::v_function_concat (
    unsigned u_arg;
 
    if (! u_nb_arg)
-      throw execution_error ();
+      throw execution_error (15);
    S_res = erpp_arg [0] -> S_get_string ();
    for (u_arg = 1; u_arg < u_nb_arg; u_arg++)
       S_res += erpp_arg [u_arg] -> S_get_string () . c_str ();
@@ -1402,7 +1406,7 @@ void xpath_processor::v_function_contains (
    TIXML_STRING S_arg_1, S_arg_2;   
 
    if (u_nb_arg != 2)
-      throw execution_error ();
+      throw execution_error (16);
    S_arg_1 = erpp_arg [0] -> S_get_string ();
    S_arg_2 = erpp_arg [1] -> S_get_string ();
    v_push_bool (strstr (S_arg_1 . c_str (), S_arg_2 . c_str ()) ? true : false);
@@ -1416,7 +1420,7 @@ void xpath_processor::v_function_count (
    int i_res;
 
    if (! u_nb_arg)
-      throw execution_error ();
+      throw execution_error (17);
    if (erpp_arg [0] -> e_type != e_node_set)
       i_res = 0;
    else
@@ -1430,7 +1434,7 @@ void xpath_processor::v_function_false (
    expression_result ** erpp_arg)   ///< Argument list
 {
    if (u_nb_arg)
-      throw execution_error ();
+      throw execution_error (18);
    v_push_bool (false);
 }
 
@@ -1442,7 +1446,7 @@ void xpath_processor::v_function_floor (
    int i_val;
 
    if (u_nb_arg != 1)
-      throw execution_error ();
+      throw execution_error (19);
    switch (erpp_arg [0] -> e_type)
    {
       case e_int :
@@ -1467,10 +1471,10 @@ void xpath_processor::v_function_last (
    const TiXmlElement * XEp_context;
 
    if (u_nb_arg)
-      throw execution_error ();
+      throw execution_error (20);
    XEp_context = XEp_get_context ();
    if (! XEp_context)
-      throw execution_error ();
+      throw execution_error (21);
    v_push_int (i_xml_family_size (XEp_context), "last()");
 }
 
@@ -1483,7 +1487,7 @@ void xpath_processor::v_function_name (
    node_set * nsp_set;
 
    if (u_nb_arg != 1)
-      throw execution_error ();
+      throw execution_error (22);
    S_res = "";
    if (erpp_arg [0] -> e_type == e_node_set)
    {
@@ -1505,7 +1509,7 @@ void xpath_processor::v_function_normalize_space (
    TIXML_STRING S_arg, S_res;   
 
    if (u_nb_arg != 1)
-      throw execution_error ();
+      throw execution_error (23);
    S_arg = erpp_arg [0] -> S_get_string ();
    S_res = S_remove_lead_trail (S_arg . c_str ());
    v_push_string (S_res);
@@ -1517,7 +1521,7 @@ void xpath_processor::v_function_not (
    expression_result ** erpp_arg)   ///< Argument list
 {
    if (u_nb_arg != 1)
-      throw execution_error ();
+      throw execution_error (24);
    v_push_bool (! erpp_arg [0] -> o_get_bool ());
 }
 
@@ -1529,10 +1533,10 @@ void xpath_processor::v_function_position (
    const TiXmlElement * XEp_context;
 
    if (u_nb_arg)
-      throw execution_error ();
+      throw execution_error (25);
    XEp_context = XEp_get_context ();
    if (! XEp_context)
-      throw execution_error ();
+      throw execution_error (26);
    v_push_int (i_xml_cardinality (XEp_context, o_is_context_by_name), "position()");
 }
 
@@ -1544,7 +1548,7 @@ void xpath_processor::v_function_starts_with (
    TIXML_STRING S_arg_1, S_arg_2;   
 
    if (u_nb_arg != 2)
-      throw execution_error ();
+      throw execution_error (27);
    S_arg_1 = erpp_arg [0] -> S_get_string ();
    S_arg_2 = erpp_arg [1] -> S_get_string ();
    v_push_bool (! strncmp (S_arg_1 . c_str (), S_arg_2 . c_str (), S_arg_2 . length ()));
@@ -1558,7 +1562,7 @@ void xpath_processor::v_function_string_length (
    TIXML_STRING S_arg;   
 
    if (u_nb_arg != 1)
-      throw execution_error ();
+      throw execution_error (28);
    S_arg = erpp_arg [0] -> S_get_string ();
    v_push_int (S_arg . length (), "string-length");
 }
@@ -1581,7 +1585,7 @@ void xpath_processor::v_function_substring (
    char * cp_work;
 
    if (u_nb_arg != 2 && u_nb_arg != 3)
-      throw execution_error ();
+      throw execution_error (29);
    S_base = erpp_arg [0] -> S_get_string ();
    i_start = erpp_arg [1] -> i_get_int ();
    if (u_nb_arg == 3)
@@ -1629,12 +1633,12 @@ void xpath_processor::v_function_sum (
    bool o_out_double;
 
    if (u_nb_arg != 1)
-      throw execution_error ();
+      throw execution_error (30);
    i_sum = 0;
    d_sum = 0.0;
    o_out_double = false;
    if (erpp_arg [0] -> e_type != e_node_set)
-      throw execution_error ();
+      throw execution_error (31);
    nsp_set = erpp_arg [0] -> nsp_get_node_set ();
    assert (nsp_set);
    if (nsp_set -> u_get_nb_node_in_set () > 1)
@@ -1652,13 +1656,38 @@ void xpath_processor::v_function_sum (
       v_push_int (i_sum, "sum()");
 }
 
+/// XPath \b text function
+void xpath_processor::v_function_text (
+   unsigned u_nb_arg,               ///< Nb of arguments
+   expression_result ** erpp_arg)   ///< Argument list
+{
+   const TiXmlElement * XEp_context;
+   const TiXmlNode * XNp_child;
+   TIXML_STRING S_res;
+
+   if (u_nb_arg)
+      throw execution_error (38);
+   XEp_context = XEp_get_context ();
+   if (! XEp_context)
+      throw execution_error (39);
+   XNp_child = XEp_context -> FirstChild ();
+   while (XNp_child)
+   {
+      if (XNp_child -> Type () == TiXmlNode::TEXT)
+         S_res += XNp_child -> Value ();
+      XNp_child = XNp_child -> NextSibling ();
+   }
+   v_push_string (S_res);
+}
+
+
 /// XPath \b true function
 void xpath_processor::v_function_true (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
    if (u_nb_arg)
-      throw execution_error ();
+      throw execution_error (32);
    v_push_bool (true);
 }
 
@@ -1921,7 +1950,7 @@ void xpath_processor::v_function_mult (expression_result ** erpp_arg, unsigned u
             break;
          case xpath_multiplicative_expr_div :
             if (fabs (d_arg_2) < 1.0e-6)
-               throw execution_error ();
+               throw execution_error (33);
             d_res = d_arg_1 / d_arg_2;
             break;
          case xpath_multiplicative_expr_mod :
