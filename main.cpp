@@ -66,32 +66,45 @@ distribution.
 
 class test_fail {};
 
-enum {WORK_NONE, WORK_STRING, WORK_QNAME, WORK_AXIS, WORK_NAME_TEST, WORK_NODE_TEST, WORK_STEP,
+enum WORK_ITEM_ENUM {WORK_NONE, WORK_STRING, WORK_QNAME, WORK_AXIS, WORK_NAME_TEST, WORK_NODE_TEST, WORK_STEP,
       WORK_EXPR};
 
+/// Working stack virtual item
 class work_item
 {
 protected :
+   /// class : must be one of the WORK_ITEM_ENUM
    unsigned u_class;
+   /// pointer to next item on the stack
    work_item * wip_next;
 public :
+   /// constructor
    work_item () {u_class = WORK_NONE; wip_next = NULL;}
+   /// virtual destructor
    virtual ~ work_item () {}
+   /// Get the class of this work_item
    unsigned u_get_class () {return u_class;}
+   /// Set the next work_item
    void v_set_next (work_item * wip_in_next)
    {
       wip_next = wip_in_next;
    }
+   /// Get the next work_item
    work_item * wip_get_next ()
    {
       return wip_next;
    }
+   /// Get the useful value of an item. By default, this doesn't exist
    virtual const char * cp_get_value () { assert (false); return ""; }
+   /// Prints an item's internal content to stdout
    virtual void v_dump () {}
+   /// Get an expression's value
    virtual int i_get_expr_value () { assert (false); return 0;}
+   /// Apply an XPath predicate
    virtual void v_apply (TiXmlNode * , const char * , int & ) { assert (false); }
 } ;
 
+/// Specialized work_item for strings
 class work_string : public work_item
 {
    TIXML_STRING value;
@@ -116,6 +129,7 @@ public :
    }
 } ;
 
+/// Specialized work_item for axis
 class work_axis : public work_item
 {
    TIXML_STRING value;
@@ -151,6 +165,7 @@ public :
    }
 } ;
 
+/// Specialized work_item for expressions
 class work_expr : public work_item
 {
    int i_value;
@@ -220,6 +235,8 @@ public :
       }
    }
 } ;
+
+/// Specialized work_item for NameTest
 class work_name_test : public work_item
 {
    TIXML_STRING S_value, S_total;
@@ -256,6 +273,7 @@ public :
    }
 } ;
 
+/// Specialized work_item for NodeTest
 class work_node_test : public work_item
 {
    TIXML_STRING S_value, S_total;
@@ -389,6 +407,7 @@ public :
    }
 } ;
 
+/// Specialized work_item for QName
 class work_qname : public work_item
 {
    TIXML_STRING S_local, S_prefix, S_total;
@@ -425,6 +444,7 @@ public :
    }
 } ;
 
+/// Specialized work_item for Step
 class work_step : public work_item
 {
    work_axis * wp_axis;
@@ -500,6 +520,8 @@ public :
    }
 } ;
 
+
+/// Work stack : list of work_items
 class work_stack 
 {
    work_item * wip_top_stack;
@@ -565,6 +587,7 @@ public :
    }
 } ;
 
+/// Top-level object that applies an XPath expression to a source XML tree
 class xpath_from_source
 {
 protected :
@@ -628,14 +651,8 @@ public :
                {
                   case 0 :
                   case 1 :
-                     wsp_stack -> v_dump ();
                      wp_step = (work_step *) wsp_stack -> wip_top ();
-
-                     XDp_target -> Print (stdout);
                      wp_step -> v_step_it (XEp_root, i_mark_level);
-
-                     XDp_target -> Print (stdout);
-
                      wsp_stack -> v_pop ();
                      break;
                   case 2 :
@@ -646,7 +663,6 @@ public :
 
             case xpath_relative_location_path :
                // [3]
-               wsp_stack -> v_dump ();
                switch (aip_current -> u_get_sub ())
                {
                   case 0 :
@@ -655,7 +671,6 @@ public :
                      wp_step_2 = (work_step *) wsp_stack -> wip_top (1);
                      wp_step_2 -> v_set_next_step (wp_step);
                      wsp_stack -> v_pop ();
-                     wsp_stack -> v_dump ();
                      break;
                   case 1 :
                      printf ("[3]   RelativeLocationPath // Step\n");
@@ -682,7 +697,6 @@ public :
                      {
                         // predicate : don't know what to do with them yet
                         printf ("Predicates !\n");
-                        wsp_stack -> v_dump ();
                         wipp_list = new work_item * [u_nb_predicate];
                         for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
                            wipp_list [u_predicate] = wsp_stack -> wip_top (u_predicate);
@@ -706,10 +720,13 @@ public :
                {
                   case 0 :
                      printf ("[5]  Axis specifier with '@'\n");
+                     wsp_stack -> v_dump ();
+                     wsp_stack -> v_push (new work_axis (false, true, NULL));
                      break;
                   case 1 :
                      printf ("[5]  Axis specifier is AxisName ::\n");
                      S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
                      wsp_stack -> v_push (new work_axis (false, false, S_name . c_str ()));
                      break;
                   case 2 :
@@ -749,12 +766,8 @@ public :
 
             case xpath_abbreviated_absolute_location_path :
                // [10]
-               wsp_stack -> v_dump ();
                wp_step = (work_step *) wsp_stack -> wip_top ();
                wp_step -> v_step_all (XDp_target, i_mark_level);
-
-               XDp_target -> Print (stdout);
-
                wsp_stack -> v_pop ();
                break;
 
@@ -783,7 +796,6 @@ public :
                      break;
                   case 4 :
                      // Houston : it's getting worse : we have a function call
-                     wsp_stack -> v_dump ();
                      S_name = wsp_stack -> cp_get_top_value ();
                      wsp_stack -> v_pop ();
                      wsp_stack -> v_push (new work_expr (1, 0, S_name . c_str ()));
