@@ -6,8 +6,8 @@ TinyXPath is an XPath processor, building another brick on top of the TinyXML pa
 <h2>Usage</h2>
 In order to use TinyXPath, one need to include the xpath_processor.h file and link with the tinyxpath code.
 - Under Windows :
- - You first have to generate the debug and/or release library bit compiling the tinyxpath_lib project
- - You can then link with the debug or release library that will be generated in tinyxpath_lib/debug and tinyxpath_lib/release
+ - You first have to generate the debug and/or release library by compiling the tinyxpath_lib project
+ - You can then link with the debug or release library that has been generated in tinyxpath_lib/debug and tinyxpath_lib/release
 - Under Linux, there's no library yet. You will need to build all .cpp files (except main.cpp and htmlutil.cpp) in your project. There is 
 a <b>build</b> script for the example program in the distribution.
 \n

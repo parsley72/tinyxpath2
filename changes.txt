@@ -1,9 +1,13 @@
-Bug fixes for 1.3
+// ================== 1.2.1 ==================
+
+Released : January 18th, 2004
+
+Bug fixes for 1.2.1
 
 - Bug fix in predicate evaluation : the [n] count was always the childhood element number, whether the
 axis was a '*' or a name
 
-Structural changes for 1.3
+Structural changes for 1.2.1
 
 - No more syntax_backtrack exception : a syntactically correct expression doesn't yield any exception anymore
 - Added static functions for simpler API (xpath_static.h and xpath_static.cpp)
