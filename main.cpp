@@ -113,7 +113,8 @@ int main ()
    fprintf (Fp_out_html, "em{color: red;}</style>\n");
    fprintf (Fp_out_html, "</head><body>\n");
 
-   fprintf (Fp_out_html, "Input XML tree :<br /><br />\n");
+   fprintf (Fp_out_html, "<h1>TinyXPath examples / regression tests</h1>\n");
+   fprintf (Fp_out_html, "<h2>Input XML tree</h2>\n");
    v_out_html (Fp_out_html, XDp_doc, 0);
    fprintf (Fp_out_html, "<br /><br />\n");
    fprintf (Fp_out_html, "<table border='1'><tr><th>Expression</th><th>Result</th><th>Expected (%s)</th></tr>\n",
@@ -125,6 +126,8 @@ int main ()
          );
 
    XEp_main = XDp_doc -> RootElement ();
+
+   fprintf (Fp_out_html, "<h2>Results</h2>\n");
 
    v_test_one_string (XEp_main, "//*/comment()", " -122.0 ");
    v_test_one_string (XEp_main, "count(//*/comment())", "2");
@@ -250,13 +253,48 @@ int main ()
    }
    v_out_one_line ("//**", ca_res, "syntax error", o_ok);
 
-   fprintf (Fp_out_html, "</table>\n");
-   fprintf (Fp_out_html, "</body></html>\n");
-   fclose (Fp_out_html);
-
    #ifdef LIBXML_CHECK
       xmlFreeDoc (Dp_doc);
    #endif
    delete XDp_doc;
+
+   fprintf (Fp_out_html, "</table>\n");
+
+   fprintf (Fp_out_html, "<h2>RSS feed examples</h2>\n");
+   fprintf (Fp_out_html, "These examples show how to decode a typical XML file : the <a href='http://sourceforge.net/export/rss2_projnews.php?group_id=53396&rss_fulltext=1'>TinyXPath RSS feed</a><br /><br />");
+
+   XDp_doc = new TiXmlDocument;
+   if (! XDp_doc -> LoadFile ("rss2_projnews.xml"))
+   {
+      printf ("Can't find rss2_projnews.xml !\n");
+      return 99;
+   }
+
+   const char * cp_rss_count = "count(/rss/channel/item)";
+   const char * cp_rss_ver = "/rss/@version";
+
+   int i_nb_news, i_news;
+   char ca_expr [1000];
+
+   i_nb_news = TinyXPath::i_xpath_int (XDp_doc -> RootElement (), cp_rss_count);
+   fprintf (Fp_out_html, "RSS version (XPath expr : <b>%s</b>) : %s<br />\n", 
+            cp_rss_ver, TinyXPath::S_xpath_string (XDp_doc -> RootElement (), cp_rss_ver) . c_str ());
+   fprintf (Fp_out_html, "Nb of news messages (XPath expr : <b>%s</b>) : %d<br />\n", 
+            cp_rss_count, i_nb_news);
+   fprintf (Fp_out_html, "<br /><table border='1'><tr><th>Xpath expr</th><th>value</th></tr>\n");
+   for (i_news = 0; i_news < i_nb_news; i_news++)
+   {
+      sprintf (ca_expr, "concat(/rss/channel/item[%d]/pubDate/text(),' : ',/rss/channel/item[%d]/title/text())",
+               i_news + 1, i_news + 1);
+      fprintf (Fp_out_html, "<tr><td>%s</td><td>%s</td></tr>\n",
+               ca_expr, TinyXPath::S_xpath_string (XDp_doc -> RootElement (), ca_expr) . c_str ());
+   }
+   fprintf (Fp_out_html, "</table>\n");
+
+   delete XDp_doc;
+   fprintf (Fp_out_html, "<br />&nbsp;<br /></body></html>\n");
+   fclose (Fp_out_html);
+
+
    return 0;
 }
