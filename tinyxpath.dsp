@@ -153,27 +153,19 @@ SOURCE=.\xmlutil.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\tinyxml\tinystr.cpp
+SOURCE=.\tinystr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\tinyxml\tinystr.h
+SOURCE=.\tinyxml.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\tinyxml\tinyxml.cpp
+SOURCE=.\tinyxmlerror.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\tinyxml\tinyxml.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\tinyxml\tinyxmlerror.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\tinyxml\tinyxmlparser.cpp
+SOURCE=.\tinyxmlparser.cpp
 # End Source File
 # End Group
 # Begin Source File

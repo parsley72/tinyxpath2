@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- Input for XPath tests -->
 <xpath_test>
-
+<ignore>
    <!-- Example 1 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
 
    <source name="Example 1 / test1" xpath_expr="/AAA">
@@ -176,6 +176,29 @@
          <BBB/>
          <BBB/>
          <BBB/>
+         <BBB/>
+      </AAA>
+   </source>
+
+</ignore>
+
+<!-- 
+
+From the example, we understand (aargh) that our trick to use
+attributes to mark selected nodes in the TinyXML tree will not be usable for attributes themselves
+How can we do this ?
+Solution can be :
+1. To change TiXmlBase class to make it accept a numerical signature. 
+This would be available at once for TiXmlElement and TiXmlAttribute
+2. Add some selection attribute like tinyxpath-attribute-name="1"
+
+ -->
+
+   <source name="Example 5 / test11" xpath_expr="//@id">
+      <AAA>
+         <BBB id = "b1"/>
+         <BBB id = "b2"/>
+         <BBB name = "bbb"/>
          <BBB/>
       </AAA>
    </source>
