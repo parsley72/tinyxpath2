@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<!-- Input for XPath tests -->
+<xpath_test>
+
+   <!-- Example 1 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
+
+   <source name="Example 1 / test1" xpath_expr="/AAA">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <BBB/>
+         <BBB/>
+         <DDD>
+            <BBB/>
+         </DDD>
+         <CCC/>
+     </AAA>      
+   </source>
+   <source name="Example 1 / test2" xpath_expr="/AAA/CCC">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <BBB/>
+         <BBB/>
+         <DDD>
+            <BBB/>
+         </DDD>
+         <CCC/>
+     </AAA>      
+   </source>
+   <source name="Example 1 / test3" xpath_expr="/AAA/DDD/BBB">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <BBB/>
+         <BBB/>
+         <DDD>
+            <BBB/>
+         </DDD>
+         <CCC/>
+     </AAA>      
+   </source>
+
+   <!-- Example 2 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
+
+   <source name="Example 2 / test4" xpath_expr="//BBB">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <BBB/>
+         <DDD>
+            <BBB/>
+         </DDD>
+         <CCC>
+            <DDD>
+               <BBB/>
+               <BBB/>
+            </DDD>
+         </CCC>
+      </AAA>
+   </source>
+   <source name="Example 2 / test5" xpath_expr="//DDD/BBB">
+      <AAA>
+         <BBB/>
+         <CCC/>
+         <BBB/>
+         <DDD>
+            <BBB/>
+         </DDD>
+         <CCC>
+            <DDD>
+               <BBB/>
+               <BBB/>
+            </DDD>
+         </CCC>
+      </AAA>
+   </source>
+
+   <!-- Example 3 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
+
+   <source name="Example 3 / test6" xpath_expr="/AAA/CCC/DDD/*">
+      <AAA>
+         <XXX>
+            <DDD>
+               <BBB/>
+               <BBB/>
+               <EEE/>
+               <FFF/>
+            </DDD>
+         </XXX>
+         <CCC>
+            <DDD>
+               <BBB/>
+               <BBB/>
+               <EEE/>
+               <FFF/>
+            </DDD>
+         </CCC>
+         <CCC>
+            <BBB>
+               <BBB>
+                  <BBB/>
+               </BBB>
+            </BBB>
+         </CCC>
+      </AAA>
+   </source>
+
+   <source name="Example 3 / test7" xpath_expr="/*/*/*/BBB">
+      <AAA>
+         <XXX>
+            <DDD>
+               <BBB/>
+               <BBB/>
+               <EEE/>
+               <FFF/>
+            </DDD>
+         </XXX>
+         <CCC>
+            <DDD>
+               <BBB/>
+               <BBB/>
+               <EEE/>
+               <FFF/>
+            </DDD>
+         </CCC>
+         <CCC>
+            <BBB>
+               <BBB>
+                  <BBB/>
+               </BBB>
+            </BBB>
+         </CCC>
+      </AAA>
+   </source>
+
+   <source name="Example 3 / test8" xpath_expr="//*">
+      <AAA>
+         <XXX>
+            <DDD>
+               <BBB/>
+               <BBB/>
+               <EEE/>
+               <FFF/>
+            </DDD>
+         </XXX>
+         <CCC>
+            <DDD>
+               <BBB/>
+               <BBB/>
+               <EEE/>
+               <FFF/>
+            </DDD>
+         </CCC>
+         <CCC>
+            <BBB>
+               <BBB>
+                  <BBB/>
+               </BBB>
+            </BBB>
+         </CCC>
+      </AAA>
+   </source>
+
+   <source name="Example 4 / test9" xpath_expr="/AAA/BBB[1]">
+      <AAA>
+         <BBB/>
+         <BBB/>
+         <BBB/>
+         <BBB/>
+      </AAA>
+   </source>
+
+   <source name="Example 4 / test10" xpath_expr="/AAA/BBB[last()]">
+      <AAA>
+         <BBB/>
+         <BBB/>
+         <BBB/>
+         <BBB/>
+      </AAA>
+   </source>
+
+</xpath_test>

@@ -1,0 +1,887 @@
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#include "tinyxml.h"
+#include "tinystr.h"
+#include "tinyxpstream.h"
+
+#include "xmlutil.h"
+
+#define CA_WORK "xpath-work"
+#define CA_FINAL "xpath-final"
+
+#ifdef TEST_SYNTAX
+   static void v_decode (const char * cp_in)
+   {
+      xpath_stream xs (cp_in);
+
+      printf ("Decoding --> %s <--\n", cp_in);
+      xs . v_evaluate ();
+      printf ("(end)\n");
+   }
+
+   static void v_test_syntax ()
+   {
+      FILE * Fp_in;
+      char ca_s [202];
+
+      Fp_in = fopen ("xpath_in.txt", "rt");
+      if (! Fp_in)
+         return;
+      fgets (ca_s, 200, Fp_in);
+      while (! feof (Fp_in))
+      {
+         ca_s [strlen (ca_s) - 1] = 0;
+         v_decode (ca_s);
+         fgets (ca_s, 200, Fp_in);
+      }
+      fclose (Fp_in);
+   }
+#endif
+
+class test_fail {};
+
+enum {WORK_NONE, WORK_STRING, WORK_QNAME, WORK_AXIS, WORK_NAME_TEST, WORK_NODE_TEST, WORK_STEP,
+      WORK_EXPR};
+
+class work_item
+{
+protected :
+   unsigned u_class;
+   work_item * wip_next;
+public :
+   work_item () {u_class = WORK_NONE;}
+   unsigned u_get_class () {return u_class;}
+   void v_set_next (work_item * wip_in_next)
+   {
+      wip_next = wip_in_next;
+   }
+   work_item * wip_get_next ()
+   {
+      return wip_next;
+   }
+   virtual const char * cp_get_value () { assert (false); return ""; }
+   virtual void v_dump () {}
+   virtual int i_get_expr_value () { assert (false); return 0;}
+   virtual void v_apply (TiXmlNode * , const char * , int & ) { assert (false); }
+} ;
+
+class work_string : public work_item
+{
+   TIXML_STRING value;
+public :
+   work_string (const char * cp_in)
+   {
+      value = cp_in;
+      u_class = WORK_STRING;
+   }
+   virtual const char * cp_get_value ()
+   {
+      return value . c_str ();
+   }
+   virtual void v_dump ()
+   {
+      printf ("   string \"%s\"\n", cp_get_value ());
+   }
+} ;
+
+class work_axis : public work_item
+{
+   TIXML_STRING value;
+   bool o_at;
+   bool o_abbrev;
+public :
+   work_axis (bool o_abbreviated, bool o_in_at, const char * cp_in = "") : work_item ()
+   {
+      o_at = o_in_at;
+      o_abbrev = o_abbreviated;
+      value = cp_in;
+      u_class = WORK_AXIS;
+   }
+   work_axis (const work_axis & copy) : work_item ()
+   {
+      o_at = copy . o_at;
+      o_abbrev = copy . o_abbrev;
+      value = copy . value;
+      u_class = WORK_AXIS;
+   }
+   virtual const char * cp_get_value ()
+   {  
+      if (o_abbrev)
+         if (o_at)
+            return "@";
+         else
+            return "";
+      return value . c_str ();
+   }
+   virtual void v_dump ()
+   {
+      printf ("   axis \"%s\"\n", cp_get_value ());
+   }
+} ;
+
+class work_expr : public work_item
+{
+   int i_value;
+   TIXML_STRING S_value;
+   unsigned u_cat;
+public :
+   work_expr (unsigned u_in_cat, int i_in_value, const char * cp_in_func = NULL) : work_item ()
+   {
+      u_cat = u_in_cat;
+      switch (u_cat)
+      {
+         case 0:
+            i_value = i_in_value;   
+            char ca_s [20];
+            sprintf (ca_s, "%d", i_value);
+            S_value = ca_s;
+            break;
+         case 1 :
+            S_value = cp_in_func;
+            i_value = 0;
+            break;
+      }
+      u_class = WORK_EXPR;
+   }
+   work_expr (const work_expr & copy) : work_item ()
+   {
+      u_cat = copy . u_cat;
+      i_value = copy . i_value;
+      S_value = copy . S_value;
+      u_class = WORK_EXPR;
+   }
+   virtual const char * cp_get_value ()
+   {
+      return S_value . c_str ();
+   }
+   virtual void v_dump ()
+   {
+      printf ("   expr (%d)\n", i_value);
+   }
+   virtual int i_get_expr_value () 
+   {
+      if (u_cat)
+         assert (false);
+      return i_value;
+   }
+   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, int & i_marker)
+   {
+      switch (u_cat)
+      {
+         case 0 :
+            v_mark_children_name_order (XNp_target, CA_WORK, cp_name, i_get_expr_value (), 
+               i_marker, i_marker + 1); 
+            i_marker += 1;
+            break;
+         case 1 :
+            if (S_value == "last")
+            {
+               v_mark_children_name_last (XNp_target, CA_WORK, cp_name, i_marker, i_marker + 1); 
+               i_marker += 1;
+            }
+            else
+               assert (false);
+            break;
+         default :
+            assert (false);
+            break;
+      }
+   }
+} ;
+class work_name_test : public work_item
+{
+   TIXML_STRING S_value, S_total;
+   unsigned u_type;
+public :
+   work_name_test (unsigned u_in_type, const char * cp_in = "") : work_item ()
+   {
+      u_type = u_in_type;
+      S_value = cp_in;
+      u_class = WORK_NAME_TEST;
+      if (u_type == 1)
+      {
+         S_total = cp_in;
+         S_total += ":*";
+      }
+   }
+   virtual const char * cp_get_value ()
+   {  
+      switch (u_type)
+      {
+         case 0 : return "*";
+         case 1 : return S_total . c_str ();
+         case 2 : return S_value . c_str ();
+      }
+      return "????";
+   }
+   virtual void v_dump ()
+   {
+      printf ("   name_test \"%s\"\n", cp_get_value ());
+   }
+} ;
+
+class work_node_test : public work_item
+{
+   TIXML_STRING S_value, S_total;
+   unsigned u_type, u_lex, u_nb_predicate;
+   work_item ** wipp_list;
+public :
+   work_node_test (unsigned u_in_type, unsigned u_in_lex, const char * cp_in = "") : work_item ()
+   {
+      u_type = u_in_type;
+      u_lex = u_in_lex;
+      S_value = cp_in;
+      u_class = WORK_NODE_TEST;
+      if (u_type == 1)
+      {
+         S_total = cp_in;
+         S_total += ":*";
+      }
+      u_nb_predicate = 0;
+      wipp_list = NULL;
+   }
+   work_node_test (const work_node_test & copy)
+   {
+      u_type = copy . u_type;
+      u_lex = copy . u_lex;
+      S_value = copy . S_value;
+      u_class = WORK_NODE_TEST;
+      v_set_predicate_list (copy . u_nb_predicate, copy . wipp_list);
+      if (u_type == 1)
+      {
+         S_total = S_value;
+         S_total += ":*";
+      }
+   }
+   virtual ~ work_node_test ()
+   {
+      unsigned u_pre;
+
+      if (wipp_list)
+      {
+         for (u_pre = 0; u_pre < u_nb_predicate; u_pre++)
+            delete wipp_list [u_pre];
+         delete [] wipp_list;
+      }
+   }
+   void v_set_predicate_list (unsigned u_in_nb_predicate, work_item ** wipp_in_list)
+   {
+      unsigned u_predicate;
+
+      u_nb_predicate = u_in_nb_predicate;
+      if (u_nb_predicate)
+      {
+         wipp_list = new work_item * [u_nb_predicate];
+         for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
+         {
+            switch (wipp_in_list [u_predicate] -> u_get_class ())
+            {
+               case WORK_EXPR :
+                  wipp_list [u_predicate] = new 
+                        work_expr (* (work_expr *) wipp_in_list [u_predicate]);
+                  break;
+               default :
+                  assert (false);
+            }
+         }
+      }
+      else
+         wipp_list = NULL;
+   }
+   virtual const char * cp_get_value ()
+   {  
+      TIXML_STRING S_ret;
+      switch (u_type)
+      {
+         case 0 : return cp_disp_class_lex ((lexico) u_lex);
+         case 1 : return "processing-instruction()";
+         case 2 : 
+            S_ret = "processing-instruction(";
+            S_ret += S_value;
+            S_ret += ")";
+            return S_ret . c_str ();
+         case 3 :
+            return S_value . c_str ();
+      }
+      return "????";
+   }
+   virtual void v_dump ()
+   {
+      printf ("   node_test \"%s\"\n", cp_get_value ());
+   }
+
+   // Look for all first-level items that have the S_value name, and mark them with
+   // the attribute xpath-selected=i_id
+   void v_find_node (TiXmlNode * XNp_target, int i_id)
+   {
+      if (S_value == "*")
+         v_mark_first_level (XNp_target, CA_WORK, i_id);      
+      else
+         v_mark_first_level_name (XNp_target, S_value . c_str (), CA_WORK, i_id);      
+   }
+
+   // Find all subtree and mark all elements with xpath-selected = i_id
+   void v_find_all (TiXmlDocument * XDp_target, int i_id)
+   {
+      v_mark_all_children (XDp_target, CA_WORK, i_id);
+   }
+
+   // Mark all children of a selection with next level
+   void v_find_child (TiXmlNode * XNp_target, int & i_id)
+   {
+      if (S_value == "*")
+      {
+         v_mark_children_inside (XNp_target, CA_WORK, i_id, i_id + 1);
+         i_id += 1;
+      }
+      else
+      {
+         switch (u_nb_predicate)
+         {
+            case 0 :
+               v_mark_children_name (XNp_target, CA_WORK, S_value . c_str (), i_id, i_id + 1); 
+               i_id += 1;
+               break;
+            case 1 :
+               wipp_list [0] -> v_apply (XNp_target, S_value . c_str (), i_id);
+               break;
+            default :
+               assert (false);  // don't know how to process more than 1 predicate
+               break;
+         }
+      }
+   }
+} ;
+
+class work_qname : public work_item
+{
+   TIXML_STRING S_local, S_prefix, S_total;
+public :
+   work_qname (const char * cp_in_prefix, const char * cp_in_local) : work_item ()
+   {
+      if (cp_in_prefix)
+      {
+         S_prefix = cp_in_prefix;
+         S_local = cp_in_local;
+         S_total = S_prefix;
+         S_total += '.';
+         S_total += S_local;
+      }
+      else
+      {
+         S_prefix = "";
+         S_local = cp_in_local;
+         S_total = cp_in_local;
+      }
+      u_class = WORK_QNAME;
+   }
+   virtual const char * cp_get_value ()
+   {
+      return S_total . c_str ();
+   }
+   virtual void v_dump ()
+   {
+      printf ("   qname \"%s\"\n", cp_get_value ());
+   }
+} ;
+
+class work_step : public work_item
+{
+   work_axis * wp_axis;
+   work_node_test * wp_node_test;
+   work_step * wp_next_step;
+public :
+   work_step (const work_axis * wp_in_axis, const work_node_test * wp_in_node_test) : work_item ()
+   {
+      u_class = WORK_STEP;
+      wp_axis = new work_axis (* wp_in_axis);
+      wp_node_test = new work_node_test (* wp_in_node_test);
+      wp_next_step = NULL;
+   }
+   work_step (const work_step & copy)
+   {
+      u_class = WORK_STEP;
+      wp_axis = new work_axis (* (copy . wp_axis));
+      wp_node_test = new work_node_test (* (copy . wp_node_test));
+      wp_next_step = copy . wp_next_step;
+   }
+
+   ~ work_step ()
+   {
+      delete wp_axis;
+      delete wp_node_test;
+      if (wp_next_step)
+         delete wp_next_step;
+   }
+   virtual const char * cp_get_value ()
+   {
+      return " (pointers to axis and node_test)";
+   }
+   virtual void v_dump ()
+   {
+      printf ("   step %s\n", cp_get_value ());
+      printf ("    |-- axis : "); 
+      wp_axis -> v_dump ();
+      printf ("    |-- node_test : "); 
+      wp_node_test -> v_dump ();
+      if (wp_next_step)
+      {
+         printf ("    |-- next step : ");
+         wp_next_step -> v_dump ();
+      }
+   }
+   void v_step_it (TiXmlNode * XNp_context, int & i_mark_level)
+   {
+      wp_node_test -> v_find_node (XNp_context, i_mark_level);
+      if (wp_next_step)
+         wp_next_step -> v_step_child (XNp_context, i_mark_level);
+   }
+   void v_step_all (TiXmlDocument * XDp_target, int & i_mark_level)
+   {
+      wp_node_test -> v_find_all (XDp_target, i_mark_level);
+      v_step_child (XDp_target, i_mark_level);
+   }
+   void v_step_child (TiXmlNode * XNp_context, int & i_mark_level)
+   {
+      wp_node_test -> v_find_child (XNp_context, i_mark_level);
+      if (wp_next_step)
+         wp_next_step -> v_step_child (XNp_context, i_mark_level);
+   }
+   void v_set_next_step (work_step * wp_in_next)
+   {
+      work_step * wp_next;
+      wp_next = new work_step (* wp_in_next);
+      wp_next_step = wp_next;
+   }
+} ;
+
+class work_stack 
+{
+   work_item * wip_top_stack;
+public :
+   work_stack ()
+   {
+      wip_top_stack = NULL;
+   }
+   ~ work_stack ()
+   {
+      while (wip_top ())
+         v_pop ();
+   }
+   void v_push (work_item * wip_new)
+   {
+      wip_new -> v_set_next (wip_top_stack);
+      wip_top_stack = wip_new;
+   }
+   void v_pop ()
+   {
+      work_item * wip_temp;
+      wip_temp = wip_top_stack;
+      wip_top_stack = wip_top_stack -> wip_get_next ();
+      delete wip_temp;
+   }
+   void v_pop (unsigned u_nb)
+   {
+      unsigned u_pop;
+      for (u_pop = 0; u_pop < u_nb; u_pop++)
+         v_pop ();
+   }
+   work_item * wip_top ()
+   {
+      return wip_top_stack;
+   }
+   work_item * wip_top (unsigned u_forward)
+   {
+      work_item * wip_ret;
+      unsigned u_loop;
+
+      wip_ret = wip_top_stack;
+      for (u_loop = 0; u_loop < u_forward;  u_loop++)
+         if (wip_ret)
+            wip_ret = wip_ret -> wip_get_next ();
+      return wip_ret;
+   }
+   virtual const char * cp_get_top_value ()
+   {
+      return wip_top () -> cp_get_value ();
+   }
+   void v_dump ()
+   {
+      work_item * wip_cur;
+
+      printf ("[Work Stack dump]\n");
+      wip_cur = wip_top ();
+      while (wip_cur)
+      {
+         wip_cur -> v_dump ();
+         wip_cur = wip_cur -> wip_get_next ();
+      }
+      printf ("[end Work Stack dump]\n");
+   }
+} ;
+
+class xpath_from_source
+{
+protected :
+   xpath_stream * xsp_stream;
+   TiXmlNode * XNp_source;
+   TiXmlDocument * XDp_target;
+public :
+   xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr)
+   {
+      xsp_stream = new xpath_stream (cp_in_expr);
+      XNp_source = XNp_source_tree;
+      XDp_target = new TiXmlDocument;
+   }
+   void v_apply_rule (action_list * alp_in, TiXmlElement * XEp_out)
+   {
+      const action_item * aip_current;
+      work_stack * wsp_stack;
+      TIXML_STRING S_name, S_name_2;
+      work_step * wp_step, * wp_step_2;
+      work_node_test * wp_node_test;
+      work_axis * wp_axis;
+      int i_mark_level;
+      TiXmlElement * XEp_root;
+      TiXmlComment * XCp_comment;
+      unsigned u_nb_predicate, u_predicate;
+      work_item ** wipp_list;
+
+      wsp_stack = new work_stack;
+      XDp_target -> Parse ("<?xml version=\"1.0\"?><xpath:root/>");
+
+      XCp_comment = new TiXmlComment ();
+      XCp_comment -> SetValue (" Output of XPath ");
+      XDp_target -> InsertEndChild (* XCp_comment);
+      delete XCp_comment;
+
+      XEp_root = XDp_target -> FirstChildElement ();
+      assert (XEp_root);
+
+      v_clone_children (XNp_source, XEp_root);
+      v_mark_all_children (XDp_target, CA_WORK, 1);
+
+      XDp_target -> Print (stdout);
+
+      i_mark_level = 2;
+      while (alp_in -> o_is_valid ())
+      {
+         aip_current = alp_in -> aip_get_current ();
+         alp_in -> v_skip ();
+         switch (aip_current -> u_get_ref ())
+         {
+            case xpath_absolute_location_path :
+               // [2]
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                  case 1 :
+                     wsp_stack -> v_dump ();
+                     wp_step = (work_step *) wsp_stack -> wip_top ();
+
+                     XDp_target -> Print (stdout);
+                     wp_step -> v_step_it (XEp_root, i_mark_level);
+
+                     XDp_target -> Print (stdout);
+
+                     wsp_stack -> v_pop ();
+                     break;
+                  case 2 :
+                     printf ("[2]  absolute already processed\n");
+                     break;
+               }
+               break;
+
+            case xpath_relative_location_path :
+               // [3]
+               wsp_stack -> v_dump ();
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                     printf ("[3]   RelativeLocationPath / Step\n");
+                     wp_step = (work_step *) wsp_stack -> wip_top ();
+                     wp_step_2 = (work_step *) wsp_stack -> wip_top (1);
+                     wp_step_2 -> v_set_next_step (wp_step);
+                     wsp_stack -> v_pop ();
+                     wsp_stack -> v_dump ();
+                     break;
+                  case 1 :
+                     printf ("[3]   RelativeLocationPath // Step\n");
+                     break;
+                  case 2 :
+                     printf ("[3]   RelativeLocationPath is simple\n");
+                     break;
+               }
+               break;
+                              
+            case xpath_step :
+               // [4]
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                     printf ("[4]   Step is an abbreviated one (. or ..)\n");
+                     break;
+                  case 1 :
+                     u_nb_predicate = aip_current -> u_get_var ();
+                     printf ("[4]   Step is \"AxisSpecifier NodeTest Predicate x %d\"\n", 
+                           u_nb_predicate);
+                     wipp_list = NULL;
+                     if (u_nb_predicate)
+                     {
+                        // predicate : don't know what to do with them yet
+                        printf ("Predicates !\n");
+                        wsp_stack -> v_dump ();
+                        wipp_list = new work_item * [u_nb_predicate];
+                        for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
+                           wipp_list [u_predicate] = wsp_stack -> wip_top (u_predicate);
+                     }
+                     wp_node_test = (work_node_test *) wsp_stack -> wip_top (u_nb_predicate);
+                     if (u_nb_predicate)
+                     {
+                        wp_node_test -> v_set_predicate_list (u_nb_predicate, wipp_list);
+                        delete [] wipp_list;
+                     }
+                     wp_axis = (work_axis *) wsp_stack -> wip_top (u_nb_predicate + 1);
+                     work_item * wip_new = new work_step (wp_axis, wp_node_test);
+                     wsp_stack -> v_pop (u_nb_predicate + 2);
+                     wsp_stack -> v_push (wip_new);
+                     break;
+               }
+               break;
+            case xpath_axis_specifier :
+               // [5]
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                     printf ("[5]  Axis specifier with '@'\n");
+                     break;
+                  case 1 :
+                     printf ("[5]  Axis specifier is AxisName ::\n");
+                     S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_push (new work_axis (false, false, S_name . c_str ()));
+                     break;
+                  case 2 :
+                     printf ("[5]  Axis specifier with no '@'\n");
+                     break;
+               }
+               break;            
+            case xpath_axis_name :
+               // [6]
+               printf ("[6] Axis name is %s\n", aip_current -> cp_get_label ());
+               wsp_stack -> v_push (new work_string (aip_current -> cp_get_label ()));
+               break;
+            case xpath_node_test :
+               // [7]
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                     printf ("[7] Node type is simple (%d)\n", aip_current -> u_get_var ());
+                     wsp_stack -> v_push (new work_node_test (0, aip_current -> u_get_var ()));
+                     break;
+                  case 1 :
+                     printf ("[7] Node type is processing-instruction ()");
+                     wsp_stack -> v_push (new work_node_test (1, lex_processing_instruction));
+                     break;
+                  case 2 :
+                     printf ("[7] Node type is processing-instruction ()");
+                     wsp_stack -> v_push (new work_node_test (2, lex_processing_instruction, aip_current -> cp_get_label ()));
+                     break;
+                  case 3 :
+                     S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
+                     printf ("[7] Node type is a name test (%s)\n", S_name . c_str ()); 
+                     wsp_stack -> v_push (new work_node_test (3, 0, S_name . c_str ()));
+                     break;
+               }
+               break;
+
+            case xpath_abbreviated_absolute_location_path :
+               // [10]
+               wsp_stack -> v_dump ();
+               wp_step = (work_step *) wsp_stack -> wip_top ();
+               wp_step -> v_step_all (XDp_target, i_mark_level);
+
+               XDp_target -> Print (stdout);
+
+               wsp_stack -> v_pop ();
+               break;
+
+            case xpath_abbreviated_axis_specifier :
+               // [13]
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                     wsp_stack -> v_push (new work_axis (true, true));
+                     break;
+                  case 1 :
+                     wsp_stack -> v_push (new work_axis (true, false));
+                     break;
+               }
+               break;
+
+            case xpath_primary_expr :
+               switch  (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                  case 1 :
+                  case 2 :
+                  case 3 :
+                     // Houston, we have a number
+                     wsp_stack -> v_push (new work_expr (0, atoi (aip_current -> cp_get_label ())));
+                     break;
+                  case 4 :
+                     // Houston : it's getting worse : we have a function call
+                     wsp_stack -> v_dump ();
+                     S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
+                     wsp_stack -> v_push (new work_expr (1, 0, S_name . c_str ()));
+                     break;
+               }
+               break;
+
+            case xpath_name_test :
+               // [37]
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                     // '*' 
+                     wsp_stack -> v_push (new work_name_test (0));
+                     break;
+                  case 1 :
+                     // NCName ':' '*' 
+                     S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
+                     wsp_stack -> v_push (new work_name_test (1, S_name . c_str ()));
+                     break;
+                  case 2 :
+                     // QName 
+                     S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
+                     wsp_stack -> v_push (new work_name_test (2, S_name . c_str ()));
+                     break;
+               }
+               break;
+
+            case xpath_xml_q_name :
+               // [206]
+               switch (aip_current -> u_get_sub ())
+               {
+                  case 0 :
+                     printf ("[206]   QName has a prefix\n");
+                     S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
+                     S_name_2 = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
+                     wsp_stack -> v_push (new work_qname (S_name_2 . c_str (), S_name . c_str ()));
+                     break;
+                  case 1 :
+                     printf ("[206]   QName has no prefix\n");
+                     S_name = wsp_stack -> cp_get_top_value ();
+                     wsp_stack -> v_pop ();
+                     wsp_stack -> v_push (new work_qname (NULL, S_name . c_str ()));
+                     break;
+               }
+               break;
+            case xpath_xml_prefix :
+               // [207]
+               printf ("[207]   Prefix is %s\n", aip_current -> cp_get_label ());
+               wsp_stack -> v_push (new work_string (aip_current -> cp_get_label ()));
+               break;
+            case xpath_xml_local_part :
+               // [208]
+               printf ("[207]   LocalPart is %s\n", aip_current -> cp_get_label ());
+               wsp_stack -> v_push (new work_string (aip_current -> cp_get_label ()));
+               break;
+         }
+      }
+
+      XDp_target -> Print (stdout);
+
+      v_retain_attrib_tree (XDp_target, CA_WORK, i_mark_level, CA_FINAL, 1);
+
+      XDp_target -> Print (stdout);
+
+      // printf ("\nResult is : \n");
+      XEp_out -> InsertEndChild (* XDp_target -> FirstChildElement ());
+      // XDp_target -> Print (stdout, 0);
+      // printf ("\n");
+      delete wsp_stack;
+   }
+   void v_apply_xpath (TiXmlElement * XEp_out)
+   {
+      xsp_stream -> v_evaluate ();
+      v_apply_rule (xsp_stream -> alp_get_action_list (), XEp_out);
+   }
+   ~ xpath_from_source ()
+   {
+      delete xsp_stream;
+   }
+} ;
+
+static void v_apply_xml (TiXmlDocument * XDp_doc)
+{
+   TiXmlElement * XEp_source, * XEp_test, * XEp_out;
+   xpath_from_source * xfsp_engine;
+   const char * cp_test_name, * cp_expr;
+   TiXmlDocument * XDp_out;
+
+   try
+   {
+      XDp_out = new TiXmlDocument ("basic_out.xml");
+      XDp_out -> Parse ("<?xml version=\"1.0\"><basic_result/>");
+      XEp_out = XDp_out -> FirstChildElement ();
+      XEp_test = XDp_doc -> FirstChildElement ();
+      if (! XEp_test)
+         throw test_fail ();
+      XEp_source = XEp_test -> FirstChildElement ("source");
+      while (XEp_source)
+      {
+         XDp_out -> FirstChildElement () -> InsertEndChild (* XEp_source);
+         cp_test_name = XEp_source -> Attribute ("name");
+         if (! cp_test_name)
+            throw test_fail ();
+         cp_expr = XEp_source -> Attribute ("xpath_expr");
+         if (! cp_expr)
+            throw test_fail ();
+         printf ("\nXPath expr --> %s <--\n\n", cp_expr);
+         xfsp_engine = new xpath_from_source (XEp_source, cp_expr);
+         xfsp_engine -> v_apply_xpath (XEp_out);
+         delete xfsp_engine;
+         XEp_source = XEp_source -> NextSiblingElement ("source");
+      }
+      XDp_out -> SaveFile ();
+      delete XDp_out;
+   }
+   catch (test_fail)
+   {
+      printf ("test fail !\n");
+   }
+}
+
+static void v_apply_1 (const char * cp_file_name)
+{
+   TiXmlDocument * XDp_doc;
+
+   XDp_doc = new TiXmlDocument (cp_file_name);
+   if (! XDp_doc -> LoadFile ())
+      printf ("Can't load %s file !\n", cp_file_name);
+   else
+      v_apply_xml (XDp_doc);
+   delete XDp_doc;
+}
+
+static void v_apply ()
+{
+   v_apply_1 ("basic_in.xml");
+}
+
+void main ()
+{
+   // v_generate_ascii_htm ();
+   #ifdef TEST_SYNTAX
+     v_test_syntax ();
+   #endif
+   v_apply ();
+}

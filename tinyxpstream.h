@@ -1,0 +1,208 @@
+#ifndef __TINYXPSTREAM_H
+#define __TINYXPSTREAM_H
+
+#include "tinyutil.h"
+#include "tinybytestream.h"
+#include "tinysyntax.h"
+#include "tinyaction.h"
+
+/**
+   A specialized version of byte_stream for XPath 
+*/
+class xpath_stream : public byte_stream 
+{
+protected :
+   /// List of tokens
+   token_syntax_decoder * tlp_list;
+
+public :
+   /// constructor
+   xpath_stream (const char * cp_in) : byte_stream (cp_in) 
+   {
+      tlp_list = new token_syntax_decoder;
+   }
+   /// destructor
+   ~ xpath_stream ()
+   {
+      delete tlp_list;
+   }
+   /// Decode the byte stream, and construct the lexical list
+   void v_lexico_decode ()
+   {
+      enum {s_init, s_ncname, s_number, s_literal_1, s_literal_2, s_end} state;
+      lexico lex_new, lex_next;
+      unsigned u_size;
+      bool o_dot_in_number;
+
+      u_size = 0;            
+      o_dot_in_number = false;
+      state = s_init;
+      while (state != s_end)
+      {
+         lex_next = lex_get_class (b_top ());
+         switch (state)
+         {
+            case s_init :
+               switch (lex_next)
+               {
+                  case lex_bchar :
+                  case lex_under :
+                     // [XML:4] NCName	::= (Letter | '_') (NCNameChar)* 
+
+                     u_size = 1;
+                     state = s_ncname;
+                     b_pop ();
+                     break;
+                  case lex_null :
+                     state = s_end;
+                     break;
+                  case lex_digit :
+                     u_size = 1;
+                     state = s_number;
+                     o_dot_in_number = false;
+                     b_pop ();
+                     break;
+                  case lex_dot :
+                     if (lex_get_class (b_forward (1)) == lex_digit)
+                     {
+                        // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits 
+                        // [31]   Digits				::=   [0-9]+ 
+                        u_size = 1;
+                        state = s_number;
+                        o_dot_in_number = true;
+                        b_pop ();
+                     }
+                     else
+                     {
+                        tlp_list -> v_add_token (lex_next, bp_get_backward (1), 1);                 
+                        b_pop ();
+                     }
+                     break;
+
+                  case lex_1_quote :
+                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+                     u_size = 0;
+                     b_pop ();
+                     state = s_literal_1;
+                     break;
+
+                  case lex_2_quote :
+                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+                     u_size = 0;
+                     b_pop ();
+                     state = s_literal_2;
+                     break;
+
+                  default :
+                     tlp_list -> v_add_token (lex_next, bp_get_backward (1), 1);                 
+                     b_pop ();
+                     break;
+               }
+               break;
+            case s_literal_1 :
+               // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+               switch (lex_next)
+               {
+                  case lex_1_quote :
+                     tlp_list -> v_add_token (lex_literal, bp_get_backward (u_size + 1), u_size);                 
+                     b_pop ();
+                     state = s_init;
+                     break;
+                  default :
+                     u_size++;
+                     b_pop ();
+                     break;
+               }
+               break;
+            case s_literal_2 :
+               // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+               switch (lex_next)
+               {
+                  case lex_2_quote :
+                     tlp_list -> v_add_token (lex_literal, bp_get_backward (u_size + 1), u_size);                 
+                     b_pop ();
+                     state = s_init;
+                     break;
+                  default :
+                     u_size++;
+                     b_pop ();
+                     break;
+               }
+               break;
+            case s_ncname :
+               switch (lex_next)
+               {
+                  // [XML:5] NCNameChar ::= Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
+                  case lex_bchar :
+                  case lex_digit :
+                  case lex_dot :
+                  case lex_minus :
+                  case lex_under :
+                  case lex_extend :
+                     u_size++;
+                     b_pop ();
+                     break;
+                  default :
+                     lex_new = lex_test_id (bp_get_backward (u_size + 1), u_size);
+                     tlp_list -> v_add_token (lex_new, bp_get_backward (u_size + 1), u_size);
+                     state = s_init;
+                     break;
+               }
+               break;
+            case s_number :
+               switch (lex_next)
+               {
+                  // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits 
+                  // [31]   Digits				::=   [0-9]+ 
+                  case lex_dot :
+                     if (o_dot_in_number)
+                     {
+                        tlp_list -> v_add_token (lex_number, bp_get_backward (u_size + 1), u_size);
+                        state = s_init;
+                     }
+                     else
+                     {
+                        o_dot_in_number = true;
+                        u_size++;
+                        b_pop ();
+                     }
+                     break;
+                  case lex_digit :
+                     u_size++;
+                     b_pop ();
+                     break;
+                  default :
+                     tlp_list -> v_add_token (lex_number, bp_get_backward (u_size + 1), u_size);
+                     state = s_init;
+                     break;
+               }
+               break;
+         }
+         if (lex_next == lex_null)
+            state = s_end;
+      }
+   }
+
+   #ifdef TINYXPATH_DEBUG
+      /// (debug) dump the lexical list
+      void v_lexico_dump (const char * cp_title)
+      {
+         tlp_list -> v_dump (cp_title);
+      }
+   #endif
+
+   /// Evaluate a XPath expression \n
+   /// Right now, it decodes the lexical and syntax contents and dump it
+   void v_evaluate ()
+   {
+      v_lexico_decode ();
+      tlp_list -> v_syntax_decode ();
+   }
+
+   action_list * alp_get_action_list ()
+   {
+      return tlp_list -> alp_get_action_list ();
+   }
+} ;     // class xpath_stream
+
+#endif
