@@ -80,7 +80,7 @@ public :
    /// virtual destructor
    virtual ~ work_item () {}
    /// Get the class of this work_item
-   unsigned u_get_class () {return u_class;}
+   unsigned u_get_class () const {return u_class;}
    /// Set the next work_item
    void v_set_next (work_item * wip_in_next)
    {
@@ -99,6 +99,7 @@ public :
    virtual int i_get_expr_value () { assert (false); return 0;}
    /// Apply an XPath predicate
    virtual void v_apply (TiXmlNode * , const char * , long & ) { assert (false); }
+	virtual bool o_identity () {return false;}
 } ;
 
 /// Specialized work_item for strings
@@ -125,6 +126,7 @@ public :
 		v_levelize (i_level);
       printf ("string \"%s\"\n", cp_get_value ());
    }
+	virtual bool o_identity () {return u_class == WORK_STRING;}
 } ;
 
 /// Specialized work_item for axis
@@ -166,6 +168,7 @@ public :
 	{
 		return o_at;
 	}
+	virtual bool o_identity () {return u_class == WORK_AXIS;}
 } ;
 
 /// Specialized work_item for expressions
@@ -238,6 +241,7 @@ public :
             break;
       }
    }
+	virtual bool o_identity () {return u_class == WORK_EXPR;}
 } ;
 
 /// Specialized work_item for NameTest
@@ -276,6 +280,7 @@ public :
 		v_levelize (i_level);
       printf ("name_test \"%s\"\n", cp_get_value ());
    }
+	virtual bool o_identity () {return u_class == WORK_NAME_TEST;}
 } ;
 
 /// Specialized work_item for NodeTest
@@ -323,30 +328,7 @@ public :
          delete [] wipp_list;
       }
    }
-   void v_set_predicate_list (unsigned u_in_nb_predicate, work_item ** wipp_in_list)
-   {
-      unsigned u_predicate;
-
-      u_nb_predicate = u_in_nb_predicate;
-      if (u_nb_predicate)
-      {
-         wipp_list = new work_item * [u_nb_predicate];
-         for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
-         {
-            switch (wipp_in_list [u_predicate] -> u_get_class ())
-            {
-               case WORK_EXPR :
-                  wipp_list [u_predicate] = new 
-                        work_expr (* (work_expr *) wipp_in_list [u_predicate]);
-                  break;
-               default :
-                  assert (false);
-            }
-         }
-      }
-      else
-         wipp_list = NULL;
-   }
+   void v_set_predicate_list (unsigned u_in_nb_predicate, work_item ** wipp_in_list);
    virtual const char * cp_get_value ()
    {  
       TIXML_STRING S_ret;
@@ -420,6 +402,7 @@ public :
 		XNp_target -> Print (stdout, 0);
       l_id += 1;
    }
+	virtual bool o_identity () {return u_class == WORK_NODE_TEST;}
 } ;
 
 /// Specialized work_item for QName
@@ -458,6 +441,7 @@ public :
 		v_levelize (i_level);
       printf ("qname \"%s\"\n", cp_get_value ());
    }
+	virtual bool o_identity () {return u_class == WORK_QNAME;}
 } ;
 
 /// Specialized work_item for Step
@@ -547,7 +531,43 @@ public :
       wp_next = new work_step (* wp_in_next);
       wp_next_step = wp_next;
    }
+	virtual bool o_identity () {return u_class == WORK_STEP;}
 } ;
+
+work_item * wip_copy (const work_item * wip_in)
+{
+	work_item * wip_ret;
+
+	wip_ret = NULL;
+   switch (wip_in -> u_get_class ())
+   {
+      case WORK_EXPR :
+         wip_ret = new work_expr (* (work_expr *) wip_in);
+         break;
+		case WORK_STEP :
+			// we can have a predicate which is a step //BBB[@name]
+         wip_ret = new work_step (* (work_step *) wip_in);
+			break;
+      default :
+         assert (false);
+   }
+	return wip_ret;
+}
+
+void work_node_test::v_set_predicate_list (unsigned u_in_nb_predicate, work_item ** wipp_in_list)
+{
+   unsigned u_predicate;
+
+   u_nb_predicate = u_in_nb_predicate;
+   if (u_nb_predicate)
+   {
+      wipp_list = new work_item * [u_nb_predicate];
+      for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
+         wipp_list [u_predicate] = wip_copy (wipp_in_list [u_predicate]);
+   }
+   else
+      wipp_list = NULL;
+}
 
 
 /// Work stack : list of work_items
@@ -715,28 +735,31 @@ public :
                      printf ("[4]   Step is an abbreviated one (. or ..)\n");
                      break;
                   case 1 :
+							wsp_stack -> v_dump ();
                      u_nb_predicate = aip_current -> u_get_var ();
                      printf ("[4]   Step is \"AxisSpecifier NodeTest Predicate x %d\"\n", 
                            u_nb_predicate);
                      wipp_list = NULL;
                      if (u_nb_predicate)
                      {
-                        // predicate : don't know what to do with them yet
-                        printf ("Predicates !\n");
                         wipp_list = new work_item * [u_nb_predicate];
                         for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
-                           wipp_list [u_predicate] = wsp_stack -> wip_top (u_predicate);
+                           wipp_list [u_predicate] = wip_copy (wsp_stack -> wip_top (u_predicate));
                      }
                      wp_node_test = (work_node_test *) wsp_stack -> wip_top (u_nb_predicate);
+							assert (wp_node_test -> work_node_test::o_identity ());
                      if (u_nb_predicate)
                      {
                         wp_node_test -> v_set_predicate_list (u_nb_predicate, wipp_list);
+								for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
+									delete wipp_list [u_predicate];
                         delete [] wipp_list;
                      }
                      wp_axis = (work_axis *) wsp_stack -> wip_top (u_nb_predicate + 1);
                      work_item * wip_new = new work_step (wp_axis, wp_node_test);
                      wsp_stack -> v_pop (u_nb_predicate + 2);
                      wsp_stack -> v_push (wip_new);
+							wsp_stack -> v_dump ();
                      break;
                }
                break;

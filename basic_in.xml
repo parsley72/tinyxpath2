@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- Input for XPath tests -->
 <xpath_test>
-
+<ignore>
    <!-- Example 1 from http://www.zvon.org/xxl/XPathTutorial/General/examples.html -->
 
    <source name="test1" detail="Example 1 / test1" xpath_expr="/AAA">
@@ -181,24 +181,34 @@
       </AAA>
    </source>
 
-
-
-<!-- 
-
-From the example, we understand (aargh) that our trick to use
-attributes to mark selected nodes in the TinyXML tree will not be usable for attributes themselves
-How can we do this ?
-Solution can be :
-1. To change TiXmlBase class to make it accept a numerical signature. 
-This would be available at once for TiXmlElement and TiXmlAttribute
-2. Add some selection attribute like tinyxpath-attribute-name="1"
-3. Mark every attribute value on input with a prefix containing an integer like "[0]old value"
-
-Currently preferred method : 3
-
- -->
-
    <source name="test11" detail="Example 5 / test11" xpath_expr="//@id">
+      <AAA>
+         <BBB id = "b1"/>
+         <BBB id = "b2"/>
+         <BBB name = "bbb"/>
+         <BBB/>
+      </AAA>
+   </source>
+</ignore>
+   <source name="test12" detail="Example 5 / test12" xpath_expr="//BBB[@name]">
+      <AAA>
+         <BBB id = "b1"/>
+         <BBB id = "b2"/>
+         <BBB name = "bbb"/>
+         <BBB/>
+      </AAA>
+   </source>
+
+   <source name="test13" detail="Example 5 / test13" xpath_expr="//BBB[@*]">
+      <AAA>
+         <BBB id = "b1"/>
+         <BBB id = "b2"/>
+         <BBB name = "bbb"/>
+         <BBB/>
+      </AAA>
+   </source>
+
+   <source name="test14" detail="Example 5 / test14" xpath_expr="//BBB[not(@*)]">
       <AAA>
          <BBB id = "b1"/>
          <BBB id = "b2"/>
