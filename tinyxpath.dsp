@@ -102,5 +102,9 @@ SOURCE=.\main.cpp
 
 SOURCE=.\changes.txt
 # End Source File
+# Begin Source File
+
+SOURCE=.\notes.txt
+# End Source File
 # End Target
 # End Project
