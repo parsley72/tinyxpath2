@@ -198,17 +198,32 @@ expression_result xpath_processor::er_compute_xpath ()
       {
          er_result = * xs_stack . erp_top ();
          xs_stack . v_pop ();
+         e_error = e_no_error;
       }
       else
       {
          expression_result er_null;
          er_result = er_null;
+         e_error = e_error_stack;
       }
+   }
+   catch (syntax_error)
+   {
+      expression_result er_null;
+      er_result = er_null;
+      e_error = e_error_syntax;
+   }
+   catch (syntax_overflow)
+   {
+      expression_result er_null;
+      er_result = er_null;
+      e_error = e_error_overflow;
    }
    catch (execution_error)
    {
       expression_result er_null;
       er_result = er_null;
+      e_error = e_error_execution;
    }
 
    v_remove_root ();

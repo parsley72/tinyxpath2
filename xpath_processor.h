@@ -60,6 +60,7 @@ public :
    void v_get_xpath_base (unsigned u_order, const TiXmlBase * & XBp_res, bool & o_attribute);
    const TiXmlNode * XNp_get_xpath_node (unsigned u_order);
    const TiXmlAttribute * XAp_get_xpath_attribute (unsigned u_order);
+   enum {e_no_error, e_error_syntax, e_error_overflow, e_error_execution, e_error_stack} e_error;
 
 protected :
    virtual void v_action (xpath_construct , unsigned , unsigned , const char * );

@@ -52,17 +52,6 @@ public :
    char ca_mess [200];
 } ;
 
-/// Exception class for a syntax backtracking
-class syntax_backtrack
-{
-public :
-   syntax_backtrack (syntax_error s)
-   {
-      strcpy (ca_mess, s . ca_mess);
-   }
-   char ca_mess [200];
-} ;
-
 /// Exception class for an overflow in syntax decoding
 class syntax_overflow {} ;
 
@@ -73,6 +62,7 @@ class token_syntax_decoder : public token_list
 protected :
    /// Nb of recursions
    unsigned u_nb_recurs;
+   bool o_recognize (xpath_construct xc_current, bool o_final);
 public :
    token_syntax_decoder () : token_list ()   {}
    virtual ~ token_syntax_decoder ()   {}
@@ -81,7 +71,6 @@ public :
    virtual void v_action (xpath_construct xc_rule, unsigned u_sub, 
 		unsigned u_variable = 0, const char * cp_literal = "") = 0;
    virtual int i_get_action_counter () = 0;
-   void v_recognize (xpath_construct xc_current, bool o_final);
 } ;
 
 }

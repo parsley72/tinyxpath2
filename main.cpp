@@ -223,11 +223,28 @@ int main ()
 
    int i_res;
    char ca_res [80];
+   bool o_ok;
 
    TinyXPath::xpath_processor xp_proc (XEp_main, "//*[@val]/@val");
    i_res = xp_proc . i_compute_xpath ();
    sprintf (ca_res, "%d", i_res);
    v_out_one_line ("//*[@val]/@val", ca_res, "123", i_res == 123);
+
+   // regression testing for syntax error
+
+   TinyXPath::xpath_processor xp_proc_2 (XEp_main, "//**");
+   i_res = xp_proc_2 . i_compute_xpath ();
+   if (xp_proc_2 . e_error == TinyXPath::xpath_processor::e_error_syntax)
+   {
+      o_ok = true;
+      strcpy (ca_res, "syntax error");
+   }
+   else
+   {
+      o_ok = false;
+      sprintf (ca_res, "error %d", xp_proc . e_error);
+   }
+   v_out_one_line ("//**", ca_res, "syntax error", o_ok);
 
    fprintf (Fp_out_html, "</table>\n");
    fprintf (Fp_out_html, "</body></html>\n");

@@ -1,0 +1,20 @@
+Structural changes for 1.3
+
+- No more syntax_backtrack exception : a syntactically correct expression doesn't yield any exception anymore
+
+// ================== 1.2 ==================
+
+Released : January 9th, 2004
+
+Bug fixes for 1.2
+
+- Bug fix : passing a node in the middle of a tree did destroy it's parent and siblings relationships
+- Bug fix : the integer value of a node set was 0
+- Missing processing for text() and node() node tests
+
+Structural changes for 1.2
+
+- Group all TinyXPath definitions in a TinyXPath namespace
+- New configuration header for global #defines (tinyxpath_conf.h) and exclude debuging member functions with ifdefs
+- Windows : Project with libraries (debug and release)
+- Update to latest TinyXML code, where user data are defined on the TiXmlBase level
