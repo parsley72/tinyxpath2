@@ -173,7 +173,7 @@ public :
                      b_pop ();
                      break;
                   default :
-                     lex_new = lex_test_id (bp_get_backward (u_size + 1), u_size);
+                     lex_new = lex_test_id (bp_get_backward (u_size + 1), u_size, lex_next);
                      tlp_list -> v_add_token (lex_new, bp_get_backward (u_size + 1), u_size);
                      state = s_init;
                      break;

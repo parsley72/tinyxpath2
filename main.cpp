@@ -133,6 +133,12 @@ int main ()
 
    fprintf (Fp_out_html, "<h2>Results</h2>\n");
 
+   TiXmlElement * XEp_sub = XEp_main -> FirstChildElement ("b");
+
+   v_test_one_string (XEp_sub, "@val", "123" ); 
+
+   // v_test_one_string (XEp_main, "//x/y/text()", "inner text" ); 
+   // v_test_one_string (XEp_main, "//x[/y/text()='inner text']/@target", "123" ); 
    v_test_one_string (XEp_main, "//x/text()", "sub text");
    v_test_one_string (XEp_main, "//*/comment()", " -122.0 ");
    v_test_one_string (XEp_main, "count(//*/comment())", "2");
@@ -285,6 +291,25 @@ int main ()
    }
    v_out_one_line ("//**", ca_res, "syntax error", o_ok);
 
+   // regression test for bug in "text" being an element
+   fprintf (Fp_out_html, "</table>\n");
+
+   delete XDp_doc;
+   XDp_doc = new TiXmlDocument ();
+   XDp_doc -> Parse ("<xml><text>within</text></xml>");
+   XEp_main = XDp_doc -> RootElement ();
+   fprintf (Fp_out_html, "<h2>Input XML tree</h2>\n");
+   v_out_html (Fp_out_html, XDp_doc, 0);
+   fprintf (Fp_out_html, "<br /><br />\n");
+   fprintf (Fp_out_html, "<table border='1'><tr><th>Expression</th><th>Result</th><th>Expected (%s)</th></tr>\n",
+      #ifdef LIBXML_CHECK
+         "libXML"
+      #else
+         "compiled"
+      #endif
+         );
+   v_test_one_string (XEp_main, "/xml/text/text()", "within" ); 
+   
 
    #ifdef LIBXML_CHECK
       xmlFreeDoc (Dp_doc);

@@ -160,7 +160,7 @@ bool o_is_axis_name (lexico lex_test)
 
 /// Check if an ID maps an existing keyword
 /// \n Returns the new lexical element or lex_ncname if not found
-lexico lex_test_id (const _byte_ * bp_str, unsigned u_size)
+lexico lex_test_id (const _byte_ * bp_str, unsigned u_size, lexico lex_next)
 {
    char * cp_equi;
    unsigned u_lex;
@@ -170,10 +170,12 @@ lexico lex_test_id (const _byte_ * bp_str, unsigned u_size)
    cp_equi [u_size] = 0;
    for (u_lex = lex_start_keyword; u_lex <= lex_end_keyword; u_lex++)
       if (! strcmp (cp_equi, cp_disp_class_lex (lexico (u_lex))))
-      {
-         delete [] cp_equi;
-         return lexico (u_lex);
-      }
+         // DO not recognize the text keyword unless it is followed by an open parenthesis
+         if ((u_lex != lex_text) || (lex_next == lex_oparen))
+         {
+            delete [] cp_equi;
+            return lexico (u_lex);
+         }
    delete [] cp_equi;
    return lex_ncname;
 }
