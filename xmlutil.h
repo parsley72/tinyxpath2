@@ -25,7 +25,7 @@ distribution.
 #define __XMLUTIL_H
 
 #include "tinyxml.h"
-const l_select_value = 0x10000L, l_select_mask = 0xffff0000, l_value_mask = 0xffff;
+const long l_select_value = 0x10000L, l_select_mask = 0xffff0000, l_value_mask = 0xffff;
 
 
 extern void v_clone_children (
