@@ -44,25 +44,10 @@ extern void v_mark_children_attrib (
    const char * cp_name,
    long l_mother_value, 
    long l_child_value);
-extern void v_mark_children_any_attrib (
-   TiXmlNode * XNp_target, 
-   long l_mother_value, 
-   long l_child_value);
 extern void v_mark_children_name (
    TiXmlNode * XNp_target, 
    const char * cp_name,
    long l_mother_value, 
-   long l_child_value);
-extern void v_mark_children_name_order (
-   TiXmlNode * XNp_target, 
-   const char * cp_name,
-   int i_order,
-   long l_mother_value, 
-   long l_child_value);
-extern void v_mark_children_name_last (
-   TiXmlNode * XNp_target, 
-   const char * cp_name,
-   long _mother_value, 
    long l_child_value);
 extern void v_mark_children_inside (
    TiXmlNode * XNp_target,
@@ -71,24 +56,9 @@ extern void v_mark_children_inside (
 extern void v_retain_attrib_tree (
    TiXmlNode * XNp_target,
    long l_source_value);
-extern void v_mark_by_order (
-   TiXmlNode * XNp_target,
-   const char * cp_source_attrib,
-   int i_order,
-   int i_mother_value,
-   int i_child_value);
-extern void v_mark_not_attrib (
-   TiXmlNode * XNp_target,
-   int i_mother_value,
-	int i_attrib_value,
-   int i_child_value);
-extern void v_keep_if_equal (
-   TiXmlNode * XNp_target,
-   int i_mother_value,
-   int i_child_value,
-	const char * cp_val);
 extern int i_xml_cardinality (TiXmlElement * XEp_elem);
-extern int i_xml_brotherhood (TiXmlElement * XEp_elem);
+extern unsigned u_count_children (TiXmlElement * XEp_elem, const char * cp_elem);
+extern unsigned u_count_children (TiXmlElement * XEp_elem);
 
 #endif
 

@@ -182,3 +182,22 @@ lexico lex_test_id (const _byte_ * bp_str, unsigned u_size)
    delete [] cp_equi;
    return lex_ncname;
 }
+
+TIXML_STRING S_remove_lead_trail (const char * cp_in)
+{	
+	TIXML_STRING S_ret;
+	char * cp_start, * cp_end;
+	char * cp_new;
+
+	cp_new = new char [strlen (cp_in) + 1];
+	strcpy (cp_new, cp_in);
+	cp_start = cp_new;
+	while (* cp_start == ' ' || * cp_start == '\t')
+		cp_start++;
+	cp_end = cp_start + strlen (cp_start) - 1;
+	while (cp_end >= cp_start && (* cp_end == ' ' || * cp_end == '\t'))
+		* cp_end-- = 0;
+	S_ret = cp_start;
+	delete [] cp_new;
+	return S_ret;
+}

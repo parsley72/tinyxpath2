@@ -225,4 +225,74 @@
       </AAA>
    </source>
 
+   <source name="test16" detail="Example 6 / test16" xpath_expr="//BBB[@name='bbb']">
+      <AAA>
+         <BBB id = "b1"/>
+         <BBB name = " bbb "/>
+         <BBB name = "bbb"/>
+      </AAA>
+   </source>
+
+   <source name="test17" detail="Example 6 / test17" xpath_expr="//BBB[normalize-space(@name)='bbb']">
+      <AAA>
+         <BBB id = "b1"/>
+         <BBB name = " bbb "/>
+         <BBB name = "bbb"/>
+      </AAA>
+   </source>
+
+   <source name="test18" detail="Example 7 / test18" xpath_expr="//*[count(BBB)=2]">
+      <AAA>
+         <CCC>
+            <BBB/>
+            <BBB/>
+            <BBB/>
+         </CCC>
+         <DDD>
+            <BBB/>
+            <BBB/>
+         </DDD>
+         <EEE>
+            <CCC/>
+            <DDD/>
+         </EEE>
+      </AAA>
+   </source>
+
+   <source name="test19" detail="Example 7 / test19" xpath_expr="//*[count(*)=2]">
+      <AAA>
+         <CCC>
+            <BBB/>
+            <BBB/>
+            <BBB/>
+         </CCC>
+         <DDD>
+            <BBB/>
+            <BBB/>
+         </DDD>
+         <EEE>
+            <CCC/>
+            <DDD/>
+         </EEE>
+      </AAA>
+   </source>
+
+   <source name="test20" detail="Example 7 / test20" xpath_expr="//*[count(*)=3]">
+      <AAA>
+         <CCC>
+            <BBB/>
+            <BBB/>
+            <BBB/>
+         </CCC>
+         <DDD>
+            <BBB/>
+            <BBB/>
+         </DDD>
+         <EEE>
+            <CCC/>
+            <DDD/>
+         </EEE>
+      </AAA>
+   </source>
+
 </xpath_test>

@@ -114,17 +114,48 @@ void work_step::v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_ma
 	}
 }
 
-void work_axis::v_apply (TiXmlNode * XNp_node, const char * cp_label, long & l_marker)
+bool work_step::o_test_predicate (TiXmlElement * XEp_elem, TIXML_STRING & S_ret) 
 {
-	printf ("Applying axis");
-	if (o_at)
+	const char * cp_ret, * cp_lookup;
+	char ca_ret [10];
+	unsigned u_ret;
+
+	// predicates for step ...
+	printf ("Predicate for step\n");
+	assert (wp_axis);
+   cp_lookup = wp_node_test -> cp_get_value ();
+	if (wp_axis -> o_is_at ())
 	{
-		if (! strcmp (cp_label, "*"))
-			v_mark_children_any_attrib (XNp_node, l_marker, l_marker + 1);
+		// it's an attribute lookup
+		printf ("Predicate is the attribute %s\n", cp_lookup);
+		if (! strcmp (cp_lookup, "*"))
+		{
+			// looking for any attribute
+			S_ret = "";
+			return (XEp_elem -> FirstAttribute () != NULL);
+		}
 		else
-			v_mark_children_attrib (XNp_node, cp_label, l_marker, l_marker + 1);
-		l_marker++;
+		{
+			cp_ret = XEp_elem -> Attribute (cp_lookup);
+			if (cp_ret)
+			{
+				S_ret = cp_ret;
+				return true;
+			}
+			S_ret = "";
+			return false;
+		}
 	}
 	else
-		assert (false);
+	{
+		// not an attribute
+		if (! strcmp (cp_lookup, "*"))
+			// looking for any child, and counting
+			u_ret = u_count_children (XEp_elem);
+		else
+			u_ret = u_count_children (XEp_elem, cp_lookup);
+		sprintf (ca_ret, "%d", u_ret);
+		S_ret = ca_ret;
+		return (u_ret > 0);
+	}
 }

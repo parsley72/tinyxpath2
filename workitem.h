@@ -139,7 +139,10 @@ public :
 		return o_at;
 	}
 	virtual bool o_identity () {return u_class == WORK_AXIS;}
-   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, long & l_marker);
+   virtual void v_apply (TiXmlNode * , const char * , long & )
+	{
+		assert (false);
+	}
 } ;
 
 enum {e_work_expr_value, e_work_expr_func, e_work_expr_literal};
@@ -204,28 +207,9 @@ public :
          assert (false);
       return i_value;
    }
-   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, long & l_marker)
+   virtual void v_apply (TiXmlNode * , const char * , long & )
    {
-      switch (u_cat)
-      {
-         case e_work_expr_value :
-            v_mark_children_name_order (XNp_target, cp_name, i_get_expr_value (), 
-               l_marker, l_marker + 1); 
-            l_marker += 1;
-            break;
-         case e_work_expr_func :
-            if (S_value == "last")
-            {
-               v_mark_children_name_last (XNp_target, cp_name, l_marker, l_marker + 1); 
-               l_marker += 1;
-            }
-            else
-               assert (false);
-            break;
-         default :
-            assert (false);
-            break;
-      }
+      assert (false);
    }
 	virtual bool o_identity () {return u_class == WORK_EXPR;}
 	virtual bool o_test_predicate (TiXmlElement * XEp_element, TIXML_STRING &) 
@@ -277,37 +261,18 @@ public :
 		v_levelize (i_level);
 		printf ("work_func (%s)(%d arguments)\n", S_name . c_str (), u_nb_arg);
 	}
-   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, long & l_marker)
+   virtual void v_apply (TiXmlNode * , const char * , long & )
 	{
-		work_expr * wp_expr;
-
-		if (S_name == "not")
-		{
-			assert (u_nb_arg == 1);
-			wipp_list [0] -> v_apply (XNp_target, cp_name, l_marker);
-			v_mark_not_attrib (XNp_target, l_marker - 1, l_marker, l_marker + 1);
-			l_marker++;
-		}
-		else
-
-		if (S_name == "__equal__")
-		{
-			assert (u_nb_arg == 2);
-			wipp_list [0] -> v_apply (XNp_target, cp_name, l_marker);
-			wp_expr = (work_expr *) (wipp_list [1]);
-			assert (wp_expr -> o_identity ());
-			v_keep_if_equal (XNp_target, l_marker, l_marker + 1, wp_expr -> cp_get_value ());
-			l_marker++;
-		}
-		else
-		{
-			assert (false);
-		}
+		assert (false);
 	}
+
 	virtual bool o_test_predicate (TiXmlElement * XEp_test, TIXML_STRING & S_ret) 
 	{
 		TIXML_STRING S_inter;
 		bool o_res;
+		// unsigned u_ret;
+		// char ca_out [10];
+		// const char * cp_lookup;
 
 		S_ret = "";
 		if (S_name == "not")
@@ -324,6 +289,29 @@ public :
 			if (! o_res)
 				return false;
 			return S_inter == ((work_expr *) wipp_list [1]) -> cp_get_value ();
+		}
+		else
+
+		if (S_name == "normalize-space")
+		{
+			S_ret = "";
+			assert (u_nb_arg == 1);
+			o_res = wipp_list [0] -> o_test_predicate (XEp_test, S_inter);
+			if (! o_res)
+				return false;
+			S_ret = S_remove_lead_trail (S_inter . c_str ());
+			return true;
+		}
+		else
+	
+		if (S_name == "count")
+		{	
+			assert (u_nb_arg == 1);
+			o_res = wipp_list [0] -> o_test_predicate (XEp_test, S_inter);
+			if (! o_res)
+				return false;
+			S_ret = S_inter;
+			return true;
 		}
 		else
 
@@ -460,26 +448,21 @@ public :
    void v_find_child (TiXmlNode * XNp_target, long & l_id)
    {
       if (S_value == "*")
-      {
          v_mark_children_inside (XNp_target, l_id, l_id + 1);
-         l_id++;
-      }
-      else
-      {
+		else
          v_mark_children_name (XNp_target, S_value . c_str (), l_id, l_id + 1); 
-         l_id++;
-         switch (u_nb_predicate)
-         {
-            case 0 :
-               break;
-            case 1 :
-					v_apply_predicate (XNp_target, wipp_list [0], S_value . c_str (), l_id);
-					l_id++;
-               break;
-            default :
-               assert (false);  // don't know how to process more than 1 predicate
-               break;
-         }
+      l_id++;
+      switch (u_nb_predicate)
+      {
+         case 0 :
+            break;
+         case 1 :
+				v_apply_predicate (XNp_target, wipp_list [0], S_value . c_str (), l_id);
+				l_id++;
+            break;
+         default :
+            assert (false);  // don't know how to process more than 1 predicate
+            break;
       }
    }
 
@@ -629,34 +612,7 @@ public :
    virtual void v_apply (TiXmlNode * , const char * , long & );
 	void v_set_absolute (bool o_in) {o_absolute = o_in;}
 	void v_set_all (bool o_in) {o_all = o_in;}
-	virtual bool o_test_predicate (TiXmlElement * XEp_elem, TIXML_STRING & S_ret) 
-	{
-		const char * cp_ret;
-
-		// predicates for step ...
-		printf ("Predicate for step\n");
-		assert (wp_axis);
-		assert (wp_axis -> o_is_at ());
-		// it's an attribute lookup
-		printf ("Predicate is the attribute %s\n", wp_node_test -> cp_get_value ());
-		if (! strcmp (wp_node_test -> cp_get_value (), "*"))
-		{
-			// looking for any attribute
-			S_ret = "";
-			return (XEp_elem -> FirstAttribute () != NULL);
-		}
-		else
-		{
-			cp_ret = XEp_elem -> Attribute (wp_node_test -> cp_get_value ());
-			if (cp_ret)
-			{
-				S_ret = cp_ret;
-				return true;
-			}
-			S_ret = "";
-			return false;
-		}
-	}
+	virtual bool o_test_predicate (TiXmlElement * XEp_elem, TIXML_STRING & S_ret);
 } ;
 
 extern work_item * wip_copy (const work_item * wip_in);

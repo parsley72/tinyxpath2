@@ -24,6 +24,8 @@ distribution.
 #ifndef __TINYUTIL_H
 #define __TINYUTIL_H
 
+#include "tinyxml.h"
+
 #ifdef _MSC_VER
    #pragma warning (disable : 4514)  
 #endif
@@ -101,5 +103,6 @@ extern bool o_is_axis_name (lexico lex_test);
 extern lexico lex_get_class (_byte_ b_in);
 extern void v_generate_ascii_htm ();
 extern lexico lex_test_id (const _byte_ * bp_str, unsigned u_size);
+extern TIXML_STRING S_remove_lead_trail (const char * cp_in);
 
 #endif
