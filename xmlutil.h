@@ -25,7 +25,7 @@ distribution.
 #define __XMLUTIL_H
 
 #include "tinyxml.h"
-const long l_select_value = 0x10000L, l_select_mask = 0xffff0000, l_value_mask = 0xffff;
+const l_select_value = 0x10000L, l_select_mask = 0xffff0000, l_value_mask = 0xffff;
 
 
 extern void v_clone_children (
@@ -92,6 +92,17 @@ extern void v_mark_self (
 	TiXmlNode * XNp_target, 
 	const char * cp_label, 
 	long l_mother, long l_target);
+extern int i_get_first_marked (
+   TiXmlNode * XNp_node,
+   long l_source_value,
+   TiXmlNode * & XNp_out,
+   TiXmlAttribute * & XAp_out);
+extern TIXML_STRING S_get_all_text_content (TiXmlNode * XNp_source);
+extern int i_count_marked_element (TiXmlNode * XNp_node, long l_source_value);
+extern void v_mark_node_and_attribute (
+	TiXmlNode * XNp_node, 
+	long l_marker);
+
 extern void v_initialize_all_children (TiXmlNode * XNp_target);
 extern void v_set_user_value (TiXmlNode * XNp_node, long l_value);
 extern void v_set_user_value (TiXmlAttribute * XAp_att, long l_value);
@@ -102,6 +113,9 @@ extern int i_xml_cardinality (TiXmlElement * XEp_elem);
 extern int i_xml_valid_sibling (TiXmlElement * XEp_elem);
 extern unsigned u_count_children (TiXmlElement * XEp_elem, const char * cp_elem);
 extern unsigned u_count_children (TiXmlElement * XEp_elem);
+extern TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root);
+extern TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root, const char * cp_lookup);
+extern TIXML_STRING S_string_value (const TiXmlElement * XEp_elem);
 
 #endif
 

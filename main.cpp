@@ -35,35 +35,6 @@ distribution.
 #include "workstack.h"
 #include "xpathappl.h"
 
-#ifdef TEST_SYNTAX
-   static void v_decode (const char * cp_in)
-   {
-      xpath_stream xs (cp_in);
-
-      printf ("Decoding --> %s <--\n", cp_in);
-      xs . v_evaluate ();
-      printf ("(end)\n");
-   }
-
-   static void v_test_syntax ()
-   {
-      FILE * Fp_in;
-      char ca_s [202];
-
-      Fp_in = fopen ("xpath_in.txt", "rt");
-      if (! Fp_in)
-         return;
-      fgets (ca_s, 200, Fp_in);
-      while (! feof (Fp_in))
-      {
-         ca_s [strlen (ca_s) - 1] = 0;
-         v_decode (ca_s);
-         fgets (ca_s, 200, Fp_in);
-      }
-      fclose (Fp_in);
-   }
-#endif
-
 class test_fail {};
 
 static void v_apply_xml (TiXmlDocument * XDp_doc)
@@ -72,6 +43,7 @@ static void v_apply_xml (TiXmlDocument * XDp_doc)
    xpath_from_source * xfsp_engine;
    const char * cp_test_name, * cp_expr;
 	FILE * Fp_html;
+   TIXML_STRING S_res;
 
    try
    {
@@ -100,7 +72,7 @@ static void v_apply_xml (TiXmlDocument * XDp_doc)
             throw test_fail ();
          printf ("\nXPath expr --> %s <--\n\n", cp_expr);
          xfsp_engine = new xpath_from_source (XEp_source, cp_expr);
-         xfsp_engine -> v_apply_xpath (cp_test_name, Fp_html);
+         S_res = xfsp_engine -> S_apply_xpath (cp_test_name, Fp_html);
          delete xfsp_engine;
          XEp_source = XEp_source -> NextSiblingElement ("source");
       }
@@ -116,7 +88,7 @@ static void v_apply_xml (TiXmlDocument * XDp_doc)
    }
 }
 
-static void v_apply_1 (const char * cp_in_file_name)
+static void v_apply (const char * cp_in_file_name)
 {
    TiXmlDocument * XDp_doc;
 
@@ -128,17 +100,7 @@ static void v_apply_1 (const char * cp_in_file_name)
    delete XDp_doc;
 }
 
-static void v_apply ()
+void main ()
 {
-   v_apply_1 ("basic_in.xml");
-}
-
-int main ()
-{
-   // v_generate_ascii_htm ();
-   #ifdef TEST_SYNTAX
-     v_test_syntax ();
-   #endif
-   v_apply ();
-   return 0;
+   v_apply ("basic_in.xml");
 }

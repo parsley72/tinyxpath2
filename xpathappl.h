@@ -40,7 +40,8 @@ protected :
    work_stack * wsp_stack;
    long l_mark_level;
    TiXmlElement * XEp_root;
-	void v_run (const char * cp_test_name, FILE * Fp_html);
+	TIXML_STRING S_run (const char * cp_test_name, FILE * Fp_html);
+   TIXML_STRING S_evaluate_xpath_string (long l_mark_level);
 	void v_init ();
 	void v_close ();
 
@@ -48,7 +49,7 @@ public :
    xpath_from_source (TiXmlNode * XNp_source_tree, const char * cp_in_expr);
    virtual ~ xpath_from_source ();
    virtual void v_action (unsigned u_rule, unsigned u_sub, unsigned u_variable, const char * cp_explain);
-   void v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out);
+   TIXML_STRING S_apply_xpath (const char * cp_test_name, FILE * Fp_html_out);
 } ;
 
 #endif

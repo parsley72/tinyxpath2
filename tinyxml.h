@@ -26,8 +26,6 @@ distribution.
 #ifndef TINYXML_INCLUDED
 #define TINYXML_INCLUDED
 
-#define TINYXPATH 1
-
 #pragma warning( disable : 4530 )
 #pragma warning( disable : 4786 )
 

@@ -68,7 +68,7 @@ public :
    /// Apply an XPath predicate
    virtual void v_apply (TiXmlNode * , const char * , long & ) { assert (false); }
 	virtual bool o_identity () {return false;}
-	virtual expression_result er_compute_predicate (TiXmlElement *) 
+	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * ) 
 	{
 	   assert (false);
 		return expression_result ();
@@ -229,7 +229,7 @@ public :
       assert (false);
    }
 	virtual bool o_identity () {return u_class == WORK_EXPR;}
-	virtual expression_result er_compute_predicate (TiXmlElement *) ;
+	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
 } ;
 
 class work_func : public work_item
@@ -258,21 +258,29 @@ public :
 		v_levelize (i_level);
 		printf ("work_func (%s)(%d arguments)\n", S_name . c_str (), u_nb_arg);
 	}
-   virtual void v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_marker)
-	{
-		if (S_name == "__or__")
-		{
+   virtual void v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_marker);
+	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
 
-			wipp_list [0] -> v_apply (XNp_node, cp_name, l_marker);
-			v_retain_attrib_tree (XNp_node, l_marker);
-			wipp_list [1] -> v_apply (XNp_node, cp_name, l_marker);
-			v_retain_attrib_tree (XNp_node, l_marker);
-		}
-		else
-			assert (false);
-	}
+protected :
 
-	virtual expression_result er_compute_predicate (TiXmlElement *) ;
+	expression_result er_func_not (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_internal_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_normalize_space (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_count (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_starts_with (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_contains (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_internal_less (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result er_func_internal_greater (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result er_func_internal_less_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result er_func_internal_greater_or_equal (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result er_func_string_length (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_modulo (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result er_func_floor (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result er_func_internal_plus (TiXmlElement * XEp_test, TiXmlNode * XNp_root); 
+	expression_result er_func_internal_div (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_ceiling (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_internal_or (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
+	expression_result er_func_concat (TiXmlElement * XEp_test, TiXmlNode * XNp_root);
 } ;     // work_func
 
 /// Specialized work_item for NameTest
@@ -571,7 +579,7 @@ public :
    virtual void v_apply (TiXmlNode * , const char * , long & );
 	void v_set_absolute (bool o_in) {o_absolute = o_in;}
 	void v_set_all (bool o_in) {o_all = o_in;}
-	virtual expression_result er_compute_predicate (TiXmlElement *) ;
+	virtual expression_result er_compute_predicate (TiXmlElement *, TiXmlNode * XNp_root) ;
 } ;
 
 extern work_item * wip_copy (const work_item * wip_in);

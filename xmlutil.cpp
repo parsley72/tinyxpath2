@@ -326,26 +326,72 @@ void v_retain_attrib_tree (
    }
 }
 
-/*
-/// Cardinality in the terms of XPath counts from 1 for the first element
-int i_xml_cardinality (TiXmlElement * XEp_elem)
+/// Return 0 if nothing found, 1 if an element/comment/..., 2 if an attribute
+int i_get_first_marked (
+   TiXmlNode * XNp_node,
+   long l_source_value,
+   TiXmlNode * & XNp_out,
+   TiXmlAttribute * & XAp_out)
 {
-	TiXmlNode * XNp_parent;
-	TiXmlElement * XEp_child;
-	int i_look;
+   TiXmlNode * XNp_child;
+   TiXmlAttribute * XAp_att;
+   long l_test;
+   int i_res;
 
-	XNp_parent = XEp_elem -> Parent ();
-	assert (XNp_parent);
-	XEp_child = XNp_parent -> FirstChildElement ();
-	for (i_look = 0; XEp_child; i_look++)
-	   if (XEp_child == XEp_elem)
-			return 1 + i_look;
-		else
-			XEp_child = XEp_child -> NextSiblingElement ();
-	assert (false);
-	return -1;
+   XNp_out = NULL;
+   XAp_out = NULL;
+   XNp_child = XNp_node -> FirstChildElement ();
+   while (XNp_child)
+   {
+		l_test = l_get_user_value (XNp_child);
+      if (l_test == l_source_value)
+      {
+         XNp_out = XNp_child;
+         return 1;
+		}
+
+      if (XNp_child -> ToElement ())
+      {
+	      XAp_att = XNp_child -> ToElement () -> FirstAttribute ();
+	      while (XAp_att)
+	      {
+		      l_test = l_get_user_value (XAp_att);
+		      if (l_test == l_source_value)
+            {
+               XAp_out = XAp_att;
+               return 2;
+			   }
+		      XAp_att = XAp_att -> Next ();
+	      }
+      }
+
+      i_res = i_get_first_marked (XNp_child, l_source_value, XNp_out, XAp_out);
+      if (i_res)
+         return i_res;
+      XNp_child = XNp_child -> NextSiblingElement ();
+   }
+   return NULL;
 }
-*/
+
+/// Count the number of marked elements
+int i_count_marked_element (TiXmlNode * XNp_node, long l_source_value)
+{
+   TiXmlNode * XNp_child;
+   long l_test;
+   int i_sum;
+
+   i_sum = 0;
+   XNp_child = XNp_node -> FirstChildElement ();
+   while (XNp_child)
+   {
+		l_test = l_get_user_value (XNp_child);
+      if (l_test == l_source_value)
+         i_sum++;
+      i_sum += i_count_marked_element (XNp_child, l_source_value);
+      XNp_child = XNp_child -> NextSiblingElement ();
+   }
+   return i_sum;
+}
 
 /// Cardinality in the terms of XPath counts from 1 for the first element
 int i_xml_cardinality (TiXmlElement * XEp_elem)
@@ -733,5 +779,93 @@ void v_mark_preceding (
 		v_mark_preceding (XEp_child, cp_label, l_mother, l_target);
       XEp_child = XEp_child -> NextSiblingElement ();
    }
+}
+
+/// Generates a new tree which collects all the selected elements in the 
+/// XNp_root tree
+TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root)
+{
+	TiXmlNode * XNp_res;
+	TiXmlElement * XEp_child;
+
+	XNp_res = new TiXmlElement ("root");
+	XEp_child = XNp_root -> FirstChildElement ();
+	while (XEp_child)
+	{
+   	XNp_res -> InsertEndChild (* XEp_child);
+		XEp_child = XEp_child -> NextSiblingElement ();
+	}
+	return XNp_res;
+}
+
+/// Generates a new tree which collects all the selected elements in the 
+/// XNp_root tree
+TiXmlNode * XNp_copy_selected_node (TiXmlNode * XNp_root, const char * cp_lookup)
+{
+	TiXmlNode * XNp_res;
+	TiXmlElement * XEp_child;
+
+	XNp_res = new TiXmlElement ("root");
+	XEp_child = XNp_root -> FirstChildElement (cp_lookup);
+	while (XEp_child)
+	{
+   	XNp_res -> InsertEndChild (* XEp_child);
+		XEp_child = XEp_child -> NextSiblingElement (cp_lookup);
+	}
+	return XNp_res;
+}
+
+/// Computes the string() value of an element, that is, the concatenated value of all
+/// element's descendants, in document order. Usually, this means the text value of 
+/// the single descendant
+TIXML_STRING S_string_value (const TiXmlElement * XEp_elem)
+{
+	TIXML_STRING S_res, S_to_add;
+	TiXmlNode * XNp_child;
+
+	S_res = "";
+	XNp_child = XEp_elem -> FirstChild ();
+	while (XNp_child)
+	{
+		switch (XNp_child -> Type ())
+		{
+			case TiXmlNode::TEXT : 
+				S_res += XNp_child -> Value ();
+				break;
+			case TiXmlNode::ELEMENT :
+				S_to_add = S_string_value (XNp_child -> ToElement ());
+				S_res += S_to_add;
+				break;
+			default :
+				break;
+		}
+		XNp_child = XNp_child -> NextSibling ();
+	}
+	return S_res;
+}
+
+
+/// Return the concatenation of all texts under the node
+TIXML_STRING S_get_all_text_content (TiXmlNode * XNp_source)
+{
+   TIXML_STRING S_res;
+   TiXmlNode * XNp_child;
+
+   S_res = "";
+   XNp_child = XNp_source -> FirstChild ();
+   while (XNp_child)
+   {
+      switch (XNp_child -> Type ())
+      {
+         case TiXmlNode::ELEMENT :
+            S_res += S_get_all_text_content (XNp_child) . c_str ();
+            break;
+         case TiXmlNode::TEXT :
+            S_res += XNp_child -> Value ();
+            break;
+      }
+      XNp_child = XNp_child -> NextSibling ();
+   }
+   return S_res;
 }
 

@@ -224,5 +224,9 @@ SOURCE=.\res.html
 
 SOURCE=.\syntax.txt
 # End Source File
+# Begin Source File
+
+SOURCE=.\todo.xml
+# End Source File
 # End Target
 # End Project

@@ -26,8 +26,9 @@ distribution.
 #define __EXPR_H
 
 #include "tinyxml.h"
+#include "xmlutil.h"
 
-typedef enum {e_bool, e_string, e_int, e_double, e_invalid} e_expression_type;
+typedef enum {e_bool, e_string, e_int, e_double, e_node_set, e_invalid} e_expression_type;
 
 class expression_result
 {
@@ -36,6 +37,7 @@ protected :
 	bool o_content;
 	int i_content;
 	double d_content;
+	TiXmlNode * XNp_node_set;
 
 public :
 	e_expression_type e_type;
@@ -73,7 +75,7 @@ public :
 		assert (e_type == e_int);
 		return i_content;
 	}	
-	TIXML_STRING S_get_string ()
+	TIXML_STRING & S_get_string ()
 	{
 		assert (e_type == e_string);
 		return S_content;
@@ -99,6 +101,20 @@ public :
 		}
 		assert (false);
 		return 0;
+	}
+	void v_set_node_set (TiXmlNode * XNp_root)
+	{
+		e_type = e_node_set;
+		XNp_node_set = XNp_copy_selected_node (XNp_root);
+	}
+	void v_set_node_set (TiXmlNode * XNp_root, const char * cp_lookup)
+	{
+		e_type = e_node_set;
+		XNp_node_set = XNp_copy_selected_node (XNp_root, cp_lookup);
+	}
+	const TiXmlNode * XNp_get_node_set ()
+	{
+		return XNp_node_set;
 	}
 } ;
 

@@ -476,9 +476,58 @@ void xpath_from_source::v_action (
    }
 }
 
-void xpath_from_source::v_run (const char * cp_test_name, FILE * Fp_html)
+/// If we don't have an XPath string result yet, let's compute it now
+TIXML_STRING xpath_from_source::S_evaluate_xpath_string (long l_mark_level)
 {
-   XDp_target -> Print (stdout);
+   TiXmlNode * XNp_out, * XNp_top;
+   TiXmlAttribute * XAp_out;
+   TIXML_STRING S_res;
+   int i_res;
+
+   XNp_top = XDp_target -> FirstChild ();
+   while (XNp_top)
+   {
+      if (XNp_top -> ToComment ())
+      {
+         S_res = XNp_top -> ToComment () -> Value ();
+         return S_res;
+      }
+      XNp_top = XNp_top -> NextSibling ();
+   }
+   // Cfr page 147 of XSLT & XPath
+   i_res = i_get_first_marked (XDp_target, l_mark_level, XNp_out, XAp_out);
+   switch (i_res)
+   {
+      case 0 :
+         S_res = "";
+         break;
+      case 1 :
+         switch (XNp_out -> Type ())
+         {
+            case TiXmlNode::DOCUMENT :
+            case TiXmlNode::ELEMENT :
+               S_res = S_get_all_text_content (XNp_out);
+               break;
+            case TiXmlNode::COMMENT :
+            case TiXmlNode::TEXT :
+               S_res = XNp_out -> Value ();
+               break;
+            default :
+               assert (false);
+         }
+         break;
+      case 2 :
+         S_res = XAp_out -> Value ();
+         break;
+      default :
+         assert (false);
+   }
+   return S_res;
+}
+
+TIXML_STRING xpath_from_source::S_run (const char * cp_test_name, FILE * Fp_html)
+{
+   TIXML_STRING S_xpath_res;
 
    v_clone_children (XNp_source, XEp_root);
 
@@ -491,10 +540,13 @@ void xpath_from_source::v_run (const char * cp_test_name, FILE * Fp_html)
 
    v_retain_attrib_tree (XDp_target, l_mark_level);
 
+   S_xpath_res = S_evaluate_xpath_string (l_mark_level);
+
 	if (Fp_html)
 	{
 		fprintf (Fp_html, "<h1>%s</h1>\n", cp_test_name);
 		fprintf (Fp_html, "<table border=1><tr><th colspan=\"2\">XPath expression : %s</th></tr>\n", cp_get_expr ());
+      fprintf (Fp_html, "<tr><th colspan='2'>XPath result : <b>%s</b></th></tr>\n", S_xpath_res . c_str ());
 		fprintf (Fp_html, "<tr><th>Input</th><th>Output</th></tr>\n");
 		fprintf (Fp_html, "<tr><td valign=\"top\">");
 		fprintf (Fp_html, "<p>\n");
@@ -504,15 +556,20 @@ void xpath_from_source::v_run (const char * cp_test_name, FILE * Fp_html)
 		v_out_html (Fp_html, XDp_target -> FirstChildElement (), 0);
 		fprintf (Fp_html, "</p></td></tr></table>\n");
 	}
+   return S_xpath_res;
 }
 
-void xpath_from_source::v_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
+TIXML_STRING xpath_from_source::S_apply_xpath (const char * cp_test_name, FILE * Fp_html_out)
 {
+   TIXML_STRING S_res;
+
 	v_init ();
    v_evaluate ();
-	v_run (cp_test_name, Fp_html_out);
+	S_res = S_run (cp_test_name, Fp_html_out);
 	v_close ();
+   return S_res;
 }
+
 void xpath_from_source::v_init ()
 {
    wsp_stack = new work_stack;
@@ -520,6 +577,7 @@ void xpath_from_source::v_init ()
    XEp_root = XDp_target -> FirstChildElement ();
    assert (XEp_root);
 }
+
 void xpath_from_source::v_close ()
 {
    delete wsp_stack;
