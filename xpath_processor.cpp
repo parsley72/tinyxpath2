@@ -103,7 +103,7 @@ void xpath_processor::v_get_xpath_base (
 }
 
 /// Retrieves an XPath node from the node set. This assumes you know it's not an attribute
-const TiXmlNode * xpath_processor::XNp_get_xpath_node (
+TiXmlNode * xpath_processor::XNp_get_xpath_node (
    unsigned u_order)    ///< Order of the node. Must be between 0 and the number of nodes - 1
 {
    bool o_attrib;
@@ -114,11 +114,11 @@ const TiXmlNode * xpath_processor::XNp_get_xpath_node (
    v_get_xpath_base (u_order, XBp_res, o_attrib);
    if (o_attrib)
       return NULL;
-   return (const TiXmlNode *) XBp_res;
+   return (TiXmlNode *) XBp_res;
 }
 
 /// Retrieves an XPath attribute from the node set. This assumes you know it's an attribute
-const TiXmlAttribute * xpath_processor::XAp_get_xpath_attribute (
+TiXmlAttribute * xpath_processor::XAp_get_xpath_attribute (
    unsigned u_order)    ///< Order of the node. Must be between 0 and the number of nodes - 1
 {
    bool o_attrib;
@@ -129,7 +129,7 @@ const TiXmlAttribute * xpath_processor::XAp_get_xpath_attribute (
    v_get_xpath_base (u_order, XBp_res, o_attrib);
    if (! o_attrib)
       return NULL;
-   return (const TiXmlAttribute *) XBp_res;
+   return (TiXmlAttribute *) XBp_res;
 }
 
 void xpath_processor::v_build_root ()

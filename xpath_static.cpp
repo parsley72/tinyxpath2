@@ -60,7 +60,7 @@ namespace TinyXPath
    }
 
    /// Static function to compute a node XPath expression, without an error check
-   const TiXmlNode * XNp_xpath_node (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr)
+   TiXmlNode * XNp_xpath_node (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr)
    {
       unsigned u_nb;
 
@@ -72,7 +72,7 @@ namespace TinyXPath
    }
 
    /// Static function to compute an attribute XPath expression, without an error check
-   const TiXmlAttribute * XAp_xpath_attribute (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr)
+   TiXmlAttribute * XAp_xpath_attribute (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr)
    {
       unsigned u_nb;
 

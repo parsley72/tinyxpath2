@@ -5,6 +5,11 @@ Bug fixes for 1.2.2
 - Bug fix in the position() : it was counting the order of a node within it's brotherhood, which 
 was correct only if the search was like *[position()=3]
 
+Structural changes for 1.2.2
+
+- The interface functions returning nodes should not return const pointers : there's no reason to
+forbid the user from chaning it's own structure
+
 // ================== 1.2.1 ==================
 
 Released : January 18th, 2004

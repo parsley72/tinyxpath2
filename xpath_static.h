@@ -39,8 +39,8 @@ namespace TinyXPath
    extern double d_xpath_double (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
    extern bool o_xpath_bool (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
    extern TIXML_STRING S_xpath_string (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   extern const TiXmlNode * XNp_xpath_node (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   extern const TiXmlAttribute * XAp_xpath_attribute (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
+   extern TiXmlNode * XNp_xpath_node (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
+   extern TiXmlAttribute * XAp_xpath_attribute (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
 
    // check static functions
    extern bool o_xpath_int (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr, int & i_res);
