@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -36,6 +36,9 @@ distribution.
 #ifdef _MSC_VER
    #pragma warning (disable : 4514)  
 #endif
+
+namespace TinyXPath
+{
 
 typedef unsigned char _byte_;
 
@@ -176,5 +179,7 @@ extern TIXML_STRING S_remove_lead_trail (const char * cp_in);
 extern void v_assign_int_to_string (TIXML_STRING & S_string, int i_val);
 extern void v_assign_double_to_string (TIXML_STRING & S_string, double d_val);
 extern const char * cp_disp_construct (xpath_construct xc);
+
+}
 
 #endif

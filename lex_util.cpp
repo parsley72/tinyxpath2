@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -32,6 +32,9 @@ distribution.
 #include <stdio.h>
 
 #include "lex_util.h"
+
+namespace TinyXPath
+{
 
 /// Mapping of all the byte values into elementary lexical items
 static lexico lex_char_map [256] =
@@ -288,4 +291,6 @@ const char * cp_disp_construct (xpath_construct xc)
       case xpath_xml_local_part : return "xpath_xml_local_part";
    }
    return "";
+}
+
 }

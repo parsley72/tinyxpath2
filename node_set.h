@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -26,6 +26,9 @@ distribution.
 #define __NODE_SET_H
 
 #include "tinyxml.h"
+
+namespace TinyXPath
+{
 
 /// Node set class. A node set is an unordered collection of node
 class node_set
@@ -164,6 +167,6 @@ protected :
    bool * op_attrib;
 } ;
 
+}
+
 #endif
-
-

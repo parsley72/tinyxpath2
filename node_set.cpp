@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -23,6 +23,9 @@ distribution.
 */
 
 #include "node_set.h"
+
+namespace TinyXPath
+{
 
 /// Copy constructor
 node_set::node_set (const node_set & ns2)
@@ -316,3 +319,4 @@ void node_set::v_dump ()
    printf ("-- end node set --\n");
 }
 
+}

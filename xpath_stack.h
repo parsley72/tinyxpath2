@@ -33,6 +33,9 @@ distribution.
 #include "xpath_expression.h"
 #include "xpath_stream.h"
 
+namespace TinyXPath
+{
+
 class result_and_next;
 
 /// The XPath execution stack
@@ -68,5 +71,7 @@ protected :
    unsigned u_size;
    void v_pop_one ();
 } ;
+
+}
 
 #endif

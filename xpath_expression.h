@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -27,6 +27,9 @@ distribution.
 
 #include "tinyxml.h"
 #include "node_set.h"
+
+namespace TinyXPath
+{
 
 /// Expression types
 typedef enum {e_bool, e_string, e_int, e_double, e_node_set, e_invalid} e_expression_type;
@@ -186,6 +189,6 @@ public :
    void v_dump ();
 } ;
 
+}
+
 #endif
-
-

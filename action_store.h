@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -31,6 +31,9 @@ distribution.
 #define __ACTION_STORE_H
 
 #include "tinyxml.h"
+
+namespace TinyXPath
+{
 
 /// Action item for the XPath action placeholder
 /// \n Able to store 1 quadruplet (3 integers and a string)
@@ -91,5 +94,7 @@ protected :
    /// Pointers to the allocated elements
    action_item ** aipp_list;
 } ;
+
+}
 
 #endif

@@ -36,6 +36,9 @@ distribution.
 #include "tinyxml.h"
 #include "tinystr.h"
 
+namespace TinyXPath
+{
+
 /**
    A specialized version of byte_stream for XPath 
 */
@@ -225,5 +228,7 @@ public :
    /// \n This can be any kind of nomenclature, provided that the redefinition is coherent
    virtual int i_get_action_counter () = 0;
 } ;     // class xpath_stream
+
+}
 
 #endif

@@ -27,6 +27,9 @@ distribution.
 #include <string.h>
 #include "lex_util.h"
 
+namespace TinyXPath
+{
+
 /**
    A Byte stream class, very crude. The only purpose of this class is to walk in a byte stream,
    available at construction time.
@@ -97,5 +100,7 @@ public :
       return bp_current - u_amount + 1;
    }
 } ;
+
+}
 
 #endif

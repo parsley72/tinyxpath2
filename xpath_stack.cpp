@@ -30,6 +30,9 @@ distribution.
 #include "xpath_stack.h"
 #include "xpath_processor.h"
 
+namespace TinyXPath
+{
+
 /// xpath_stack element. Derives from expression_result, and also contains a pointer to the next element on the stack
 class result_and_next : public expression_result 
 {
@@ -234,4 +237,6 @@ void xpath_stack::v_dump ()
       rnp_ptr = rnp_ptr -> rnp_get_next ();
    }
    printf ("--- stack end ---\n");
+}
+
 }

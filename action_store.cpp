@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -28,6 +28,9 @@ distribution.
 */
 
 #include "action_store.h"
+
+namespace TinyXPath
+{
 
 /// Allocation unit
 const int i_alloc_size = 100;
@@ -82,4 +85,6 @@ void action_store::v_get (int i_entry, int & i_1, int & i_2, int & i_3, TIXML_ST
    assert (i_entry >= 0 && i_entry < i_size);
    assert (aipp_list [i_entry]);
    aipp_list [i_entry] -> v_get (i_1, i_2, i_3, S_out);
+}
+
 }

@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -23,13 +23,16 @@ distribution.
 */
 
 /**
-   \file tinysyntax.cpp
+   \file xpath_syntax.cpp
    \author Yves Berquin
    XPath Syntax analyzer for TinyXPath project
 */
 
 #include <stdio.h>
 #include "xpath_syntax.h"
+
+namespace TinyXPath
+{
 
 void token_syntax_decoder::v_syntax_decode ()
 {
@@ -872,3 +875,5 @@ void token_syntax_decoder::v_recognize (xpath_construct xc_current, bool o_final
       throw;
    }
 }     // v_recognize ()
+
+}

@@ -73,7 +73,7 @@ static void v_test_one_string_tiny (const TiXmlNode * XNp_root, const char * cp_
 
    printf ("-- expr : [%s] --\n", cp_expr);
    fprintf (Fp_out_html, "<tr><td>%s</td>", cp_expr);
-   xpath_processor xp_proc (XNp_root, cp_expr);
+   TinyXPath::xpath_processor xp_proc (XNp_root, cp_expr);
    S_res = xp_proc . S_compute_xpath ();
    o_ok = strcmp (S_res . c_str (), cp_expected) == 0;
    if (o_ok)
@@ -222,7 +222,7 @@ int main ()
    const TiXmlAttribute * XAp_attrib;
    unsigned u_res;
 
-   xpath_processor xp_proc (XEp_main, "//*[@val]/@val");
+   TinyXPath::xpath_processor xp_proc (XEp_main, "//*[@val]/@val");
    u_res = xp_proc . u_compute_xpath_node_set ();
    if (u_res)
    {

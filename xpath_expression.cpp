@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -24,6 +24,9 @@ distribution.
 
 #include "xpath_expression.h"
 #include "lex_util.h"
+
+namespace TinyXPath
+{
 
 /// Get the expression_result as an int
 int expression_result::i_get_int ()
@@ -149,4 +152,6 @@ void expression_result::v_dump ()
          printf ("  (invalid)\n");
          break;
    }
+}
+
 }

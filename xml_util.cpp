@@ -29,6 +29,9 @@ distribution.
 
 #include "xml_util.h"
 
+namespace TinyXPath
+{
+
 /// Cardinality in the terms of XPath counts from 1 for the first element
 int i_xml_cardinality (
    const TiXmlElement * XEp_elem)      ///< Base element. Must not be null
@@ -75,4 +78,6 @@ int i_xml_family_size (
 		XEp_child = XEp_child -> NextSiblingElement ();
 	}
 	return i_res;
+}
+
 }

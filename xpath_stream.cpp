@@ -31,6 +31,9 @@ distribution.
 #include "xpath_syntax.h"
 #include "xpath_stream.h"
 
+namespace TinyXPath
+{
+
 /// Redefinition of a token_syntax_decoder, with an xpath_stream pointer
 /// \n We could have made this a double dependency on token_syntax_decoder and xpath_stream, 
 /// but this is not good pratice IMHO
@@ -59,4 +62,6 @@ public :
 xpath_stream::xpath_stream (const char * cp_in) : byte_stream (cp_in) 
 {
    tlp_list = new token_redef (this);
+}
+
 }

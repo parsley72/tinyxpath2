@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -28,6 +28,9 @@ distribution.
 #include <string.h>
 
 #include "lex_util.h"
+
+namespace TinyXPath
+{
 
 /**
    A lexical token stream, part of a single linked list 
@@ -126,5 +129,7 @@ public :
    /// check if the lexical element is valid
    bool o_is_valid () const {return (l_enum != lex_null);}
 } ;
+
+}
 
 #endif

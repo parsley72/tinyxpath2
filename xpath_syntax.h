@@ -1,6 +1,6 @@
 /*
 www.sourceforge.net/projects/tinyxpath
-Copyright (c) 2002 Yves Berquin (yvesb@users.sourceforge.net)
+Copyright (c) 2002-2004 Yves Berquin (yvesb@users.sourceforge.net)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -23,7 +23,7 @@ distribution.
 */
 
 /**
-   \file tinysyntax.h
+   \file xpath_syntax.h
    \author Yves Berquin
    XPath Syntax analyzer for TinyXPath project
 */
@@ -34,6 +34,9 @@ distribution.
 #include <assert.h>
 #include <stdio.h>
 #include "tokenlist.h"
+
+namespace TinyXPath
+{
 
 /// Exception class for a syntax error
 class syntax_error
@@ -79,5 +82,7 @@ public :
    virtual int i_get_action_counter () = 0;
    void v_recognize (xpath_construct xc_current, bool o_final);
 } ;
+
+}
 
 #endif
