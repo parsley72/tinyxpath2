@@ -12,6 +12,15 @@ static FILE * Fp_out_html;
 
 // #define LIBXML_CHECK
 
+static void v_out_one_line (const char * cp_expr, const char * cp_res, const char * cp_expected, bool o_ok)
+{  
+   fprintf (Fp_out_html, "<tr><td>%s</td>", cp_expr);
+   if (o_ok)
+      fprintf (Fp_out_html, "<td>%s</td><td>%s</td></tr>\n", cp_res, cp_expected);
+   else
+      fprintf (Fp_out_html, "<td><em>%s</em></td><td><em>%s</em></td></tr>\n", cp_res, cp_expected);
+}
+
 #ifdef LIBXML_CHECK
    #include "libxml/tree.h"
    #include "libxml/xpath.h"
@@ -54,14 +63,10 @@ static FILE * Fp_out_html;
 
       S_expected = S_xpath_expr (Dp_ptr, cp_expr);
       printf ("-- expr : [%s] --\n", cp_expr);
-      fprintf (Fp_out_html, "<tr><td>%s</td>", cp_expr);
       xpath_processor xp_proc (XNp_root, cp_expr);
       S_res = xp_proc . S_compute_xpath ();
       o_ok = strcmp (S_res . c_str (), S_expected . c_str ()) == 0;
-      if (o_ok)
-         fprintf (Fp_out_html, "<td>%s</td><td>%s</td></tr>\n", S_res . c_str (), S_expected . c_str ());
-      else
-         fprintf (Fp_out_html, "<td><em>%s</em></td><td><em>%s</em></td></tr>\n", S_res . c_str (), S_expected . c_str ());
+      v_out_one_line (cp_expr, S_res . c_str (), S_expected . c_str (), o_ok);
    }
 
 #endif
@@ -72,14 +77,10 @@ static void v_test_one_string_tiny (const TiXmlNode * XNp_root, const char * cp_
    bool o_ok;
 
    printf ("-- expr : [%s] --\n", cp_expr);
-   fprintf (Fp_out_html, "<tr><td>%s</td>", cp_expr);
    TinyXPath::xpath_processor xp_proc (XNp_root, cp_expr);
    S_res = xp_proc . S_compute_xpath ();
    o_ok = strcmp (S_res . c_str (), cp_expected) == 0;
-   if (o_ok)
-      fprintf (Fp_out_html, "<td>%s</td><td>%s</td></tr>\n", S_res . c_str (), cp_expected);
-   else
-      fprintf (Fp_out_html, "<td><em>%s</em></td><td><em>%s</em></td></tr>\n", S_res . c_str (), cp_expected);
+   v_out_one_line (cp_expr, S_res . c_str (), cp_expected, o_ok);
 }
 
 #ifdef LIBXML_CHECK 
@@ -218,16 +219,15 @@ int main ()
    v_test_one_string (XEp_main, "substring('12345',2,6)", "2345");
    v_test_one_string (XEp_main, "concat('[',normalize-space('  before and   after      '),']')", "[before and after]");
 
+   // regression test for bug in i_compute_xpath
 
-   const TiXmlAttribute * XAp_attrib;
-   unsigned u_res;
+   int i_res;
+   char ca_res [80];
 
    TinyXPath::xpath_processor xp_proc (XEp_main, "//*[@val]/@val");
-   u_res = xp_proc . u_compute_xpath_node_set ();
-   if (u_res)
-   {
-      XAp_attrib = xp_proc . XAp_get_xpath_attribute (0);
-   }
+   i_res = xp_proc . i_compute_xpath ();
+   sprintf (ca_res, "%d", i_res);
+   v_out_one_line ("//*[@val]/@val", ca_res, "123", i_res == 123);
 
    fprintf (Fp_out_html, "</table>\n");
    fprintf (Fp_out_html, "</body></html>\n");
