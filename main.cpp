@@ -69,6 +69,13 @@ class test_fail {};
 enum WORK_ITEM_ENUM {WORK_NONE, WORK_STRING, WORK_QNAME, WORK_AXIS, WORK_NAME_TEST, WORK_NODE_TEST, WORK_STEP,
       WORK_EXPR};
 
+static void v_levelize (int i_level)
+{
+	int i_loop;
+	for (i_loop = 0; i_loop < i_level; i_loop++)
+		printf ("   ");
+}
+
 /// Working stack virtual item
 class work_item
 {
@@ -97,7 +104,7 @@ public :
    /// Get the useful value of an item. By default, this doesn't exist
    virtual const char * cp_get_value () { assert (false); return ""; }
    /// Prints an item's internal content to stdout
-   virtual void v_dump () {}
+   virtual void v_dump (int = 0) {}
    /// Get an expression's value
    virtual int i_get_expr_value () { assert (false); return 0;}
    /// Apply an XPath predicate
@@ -114,7 +121,7 @@ public :
       value = cp_in;
       u_class = WORK_STRING;
    }
-   work_string (const work_string & copy)
+   work_string (const work_string & )
    {
       assert (false);
       printf ("\n");
@@ -123,9 +130,10 @@ public :
    {
       return value . c_str ();
    }
-   virtual void v_dump ()
+   virtual void v_dump (int i_level)
    {
-      printf ("   string \"%s\"\n", cp_get_value ());
+		v_levelize (i_level);
+      printf ("string \"%s\"\n", cp_get_value ());
    }
 } ;
 
@@ -159,10 +167,15 @@ public :
             return "";
       return value . c_str ();
    }
-   virtual void v_dump ()
+   virtual void v_dump (int i_level)
    {
-      printf ("   axis \"%s\"\n", cp_get_value ());
+		v_levelize (i_level);
+      printf ("axis \"%s\"\n", cp_get_value ());
    }
+	bool o_is_at ()
+	{
+		return o_at;
+	}
 } ;
 
 /// Specialized work_item for expressions
@@ -201,9 +214,10 @@ public :
    {
       return S_value . c_str ();
    }
-   virtual void v_dump ()
+   virtual void v_dump (int i_level)
    {
-      printf ("   expr (%d)\n", i_value);
+		v_levelize (i_level);
+      printf ("expr (%d)\n", i_value);
    }
    virtual int i_get_expr_value () 
    {
@@ -253,7 +267,7 @@ public :
          S_total += ":*";
       }
    }
-   work_name_test (const work_name_test & copy)
+   work_name_test (const work_name_test & )
    {
       assert (false);
    }
@@ -267,9 +281,10 @@ public :
       }
       return "????";
    }
-   virtual void v_dump ()
+   virtual void v_dump (int i_level)
    {
-      printf ("   name_test \"%s\"\n", cp_get_value ());
+		v_levelize (i_level);
+      printf ("name_test \"%s\"\n", cp_get_value ());
    }
 } ;
 
@@ -359,9 +374,10 @@ public :
       }
       return "????";
    }
-   virtual void v_dump ()
+   virtual void v_dump (int i_level)
    {
-      printf ("   node_test \"%s\"\n", cp_get_value ());
+		v_levelize (i_level);
+      printf ("node_test \"%s\"\n", cp_get_value ());
    }
 
    // Look for all first-level items that have the S_value name, and mark them with
@@ -405,6 +421,15 @@ public :
          }
       }
    }
+
+   // Mark all children of a selection with next level
+   void v_find_child_attrib (TiXmlNode * XNp_target, int & i_id)
+   {
+		XNp_target -> Print (stdout, 0);
+      v_mark_children_attrib (XNp_target, CA_WORK, S_value . c_str (), i_id, i_id + 1); 
+		XNp_target -> Print (stdout, 0);
+      i_id += 1;
+   }
 } ;
 
 /// Specialized work_item for QName
@@ -430,7 +455,7 @@ public :
       }
       u_class = WORK_QNAME;
    }
-   work_qname (const work_qname & copy)
+   work_qname (const work_qname & )
    {
       assert (false);
    }
@@ -438,9 +463,10 @@ public :
    {
       return S_total . c_str ();
    }
-   virtual void v_dump ()
+   virtual void v_dump (int i_level)
    {
-      printf ("   qname \"%s\"\n", cp_get_value ());
+		v_levelize (i_level);
+      printf ("qname \"%s\"\n", cp_get_value ());
    }
 } ;
 
@@ -482,17 +508,21 @@ public :
    {
       return " (pointers to axis and node_test)";
    }
-   virtual void v_dump ()
+   virtual void v_dump (int i_level)
    {
-      printf ("   step %s\n", cp_get_value ());
-      printf ("    |-- axis : "); 
-      wp_axis -> v_dump ();
-      printf ("    |-- node_test : "); 
-      wp_node_test -> v_dump ();
+		v_levelize (i_level);
+      printf ("step %s\n", cp_get_value ());
+		v_levelize (i_level);
+      printf (" |-- axis : "); 
+      wp_axis -> v_dump (i_level + 1);
+		v_levelize (i_level);
+      printf (" |-- node_test : "); 
+      wp_node_test -> v_dump (i_level + 1);
       if (wp_next_step)
       {
-         printf ("    |-- next step : ");
-         wp_next_step -> v_dump ();
+			v_levelize (i_level);
+         printf (" |-- next step : ");
+         wp_next_step -> v_dump (i_level + 1);
       }
    }
    void v_step_it (TiXmlNode * XNp_context, int & i_mark_level)
@@ -508,9 +538,18 @@ public :
    }
    void v_step_child (TiXmlNode * XNp_context, int & i_mark_level)
    {
-      wp_node_test -> v_find_child (XNp_context, i_mark_level);
-      if (wp_next_step)
-         wp_next_step -> v_step_child (XNp_context, i_mark_level);
+		if (wp_axis -> o_is_at ())
+		{
+			wp_node_test -> v_find_child_attrib (XNp_context, i_mark_level);
+			if (wp_next_step)
+				wp_next_step -> v_step_child (XNp_context, i_mark_level);
+		}
+		else
+		{
+			wp_node_test -> v_find_child (XNp_context, i_mark_level);
+			if (wp_next_step)
+				wp_next_step -> v_step_child (XNp_context, i_mark_level);
+		}
    }
    void v_set_next_step (const work_step * wp_in_next)
    {
@@ -580,7 +619,7 @@ public :
       wip_cur = wip_top ();
       while (wip_cur)
       {
-         wip_cur -> v_dump ();
+         wip_cur -> v_dump (1);
          wip_cur = wip_cur -> wip_get_next ();
       }
       printf ("[end Work Stack dump]\n");
@@ -767,6 +806,8 @@ public :
             case xpath_abbreviated_absolute_location_path :
                // [10]
                wp_step = (work_step *) wsp_stack -> wip_top ();
+					XDp_target -> Print (stdout, 0);
+					wsp_stack -> v_dump ();
                wp_step -> v_step_all (XDp_target, i_mark_level);
                wsp_stack -> v_pop ();
                break;

@@ -42,6 +42,12 @@ extern void v_mark_all_children (
    TiXmlNode * XNp_source, 
    const char * cp_attrib_name,
    int i_id);
+extern void v_mark_children_attrib (
+   TiXmlNode * XNp_target, 
+	const char * cp_mark_attrib,
+   const char * cp_name,
+   int i_mother_value, 
+   int i_child_value);
 extern void v_mark_children_name (
    TiXmlNode * XNp_target, 
    const char * cp_attrib, 
