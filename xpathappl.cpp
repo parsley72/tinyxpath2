@@ -46,7 +46,8 @@ void xpath_from_source::v_action (
    work_step * wp_step, * wp_step_2;
    work_node_test * wp_node_test;
    work_axis * wp_axis;
-   unsigned u_nb_predicate, u_predicate;
+	work_func * wp_func;
+   unsigned u_nb_predicate, u_predicate, u_arg;
    work_item ** wipp_list;
 
    switch (u_rule)
@@ -105,6 +106,7 @@ void xpath_from_source::v_action (
                   for (u_predicate = 0; u_predicate < u_nb_predicate; u_predicate++)
                      wipp_list [u_predicate] = wip_copy (wsp_stack -> wip_top (u_predicate));
                }
+					wsp_stack -> v_dump ();
                wp_node_test = (work_node_test *) wsp_stack -> wip_top (u_nb_predicate);
 					assert (wp_node_test -> work_node_test::o_identity ());
                if (u_nb_predicate)
@@ -171,6 +173,11 @@ void xpath_from_source::v_action (
          }
          break;
 
+		case xpath_predicate :
+			// [8] 
+			printf ("Skipping predicate syntax rule\n");
+			break;
+
       case xpath_abbreviated_absolute_location_path :
          // [10]
          wp_step = (work_step *) wsp_stack -> wip_top ();
@@ -200,16 +207,46 @@ void xpath_from_source::v_action (
             case 2 :
             case 3 :
                // Houston, we have a number
-               wsp_stack -> v_push (new work_expr (0, atoi (cp_explain)));
+               wsp_stack -> v_push (new work_expr (e_work_expr_value, atoi (cp_explain)));
                break;
             case 4 :
                // Houston : it's getting worse : we have a function call
+					/*
                S_name = wsp_stack -> cp_get_top_value ();
                wsp_stack -> v_pop ();
                wsp_stack -> v_push (new work_expr (1, 0, S_name . c_str ()));
+					*/
                break;
          }
          break;
+
+		case xpath_function_call :
+			// [16]
+			switch (u_sub)
+			{
+				case 0 :
+					// no arguments
+               S_name = wsp_stack -> cp_get_top_value ();
+               wsp_stack -> v_pop ();
+               wsp_stack -> v_push (new work_expr (e_work_expr_func, 0, S_name . c_str ()));
+					break;
+				case 1 :
+					// arguments
+               wipp_list = new work_item * [u_variable];
+               for (u_arg = 0; u_arg < u_variable; u_arg++)
+                  wipp_list [u_arg] = wip_copy (wsp_stack -> wip_top (u_arg));
+					wp_func = new work_func (u_variable, wipp_list);
+					for (u_arg = 0; u_arg < u_variable; u_arg++)
+						delete wipp_list [u_arg];
+               delete [] wipp_list;
+               wsp_stack -> v_pop (u_variable);
+					wp_func -> v_set_func_name (wsp_stack -> cp_get_top_value ());
+					wsp_stack -> v_pop ();
+					wsp_stack -> v_push (wp_func);
+					break;
+			}
+			printf ("Skipping function call !\n");
+			break;
 
       case xpath_name_test :
          // [37]
@@ -261,7 +298,7 @@ void xpath_from_source::v_action (
          break;
       case xpath_xml_local_part :
          // [208]
-         printf ("[207]   LocalPart is %s\n", cp_explain);
+         printf ("[208]   LocalPart is %s\n", cp_explain);
          wsp_stack -> v_push (new work_string (cp_explain));
          break;
 		default :

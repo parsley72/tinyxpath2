@@ -30,7 +30,7 @@ distribution.
 #include "tinyutil.h"
 
 enum WORK_ITEM_ENUM {WORK_NONE, WORK_STRING, WORK_QNAME, WORK_AXIS, WORK_NAME_TEST, WORK_NODE_TEST, WORK_STEP,
-      WORK_EXPR};
+      WORK_EXPR, WORK_FUNC};
 
 /// Working stack virtual item
 class work_item
@@ -42,7 +42,7 @@ protected :
    work_item * wip_next;
 public :
    /// constructor
-   work_item () {u_class = WORK_NONE; wip_next = NULL;}
+   work_item (WORK_ITEM_ENUM W_in) {u_class = W_in; wip_next = NULL;}
    /// virtual destructor
    virtual ~ work_item () {}
    /// Get the class of this work_item
@@ -73,12 +73,11 @@ class work_string : public work_item
 {
    TIXML_STRING value;
 public :
-   work_string (const char * cp_in)
+   work_string (const char * cp_in) : work_item (WORK_STRING)
    {
       value = cp_in;
-      u_class = WORK_STRING;
    }
-   work_string (const work_string & )
+   work_string (const work_string & ) : work_item (WORK_STRING)
    {
       assert (false);
       printf ("\n");
@@ -102,19 +101,18 @@ class work_axis : public work_item
    bool o_at;
    bool o_abbrev;
 public :
-   work_axis (bool o_abbreviated, bool o_in_at, const char * cp_in = "") : work_item ()
+   work_axis (bool o_abbreviated, bool o_in_at, const char * cp_in = "") 
+			: work_item (WORK_AXIS)
    {
       o_at = o_in_at;
       o_abbrev = o_abbreviated;
       value = cp_in;
-      u_class = WORK_AXIS;
    }
-   work_axis (const work_axis & copy) : work_item ()
+   work_axis (const work_axis & copy) : work_item (WORK_AXIS)
    {
       o_at = copy . o_at;
       o_abbrev = copy . o_abbrev;
       value = copy . value;
-      u_class = WORK_AXIS;
    }
    virtual const char * cp_get_value ()
    {  
@@ -138,6 +136,8 @@ public :
    virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, long & l_marker);
 } ;
 
+enum {e_work_expr_value, e_work_expr_func};
+
 /// Specialized work_item for expressions
 class work_expr : public work_item
 {
@@ -145,30 +145,29 @@ class work_expr : public work_item
    TIXML_STRING S_value;
    unsigned u_cat;
 public :
-   work_expr (unsigned u_in_cat, int i_in_value, const char * cp_in_func = NULL) : work_item ()
+   work_expr (unsigned u_in_cat, int i_in_value, const char * cp_in_func = NULL) 
+				: work_item (WORK_EXPR)
    {
       u_cat = u_in_cat;
       switch (u_cat)
       {
-         case 0:
+         case e_work_expr_value :
             i_value = i_in_value;   
             char ca_s [20];
             sprintf (ca_s, "%d", i_value);
             S_value = ca_s;
             break;
-         case 1 :
+         case e_work_expr_func :
             S_value = cp_in_func;
             i_value = 0;
             break;
       }
-      u_class = WORK_EXPR;
    }
-   work_expr (const work_expr & copy) : work_item ()
+   work_expr (const work_expr & copy) : work_item (WORK_EXPR)
    {
       u_cat = copy . u_cat;
       i_value = copy . i_value;
       S_value = copy . S_value;
-      u_class = WORK_EXPR;
    }
    virtual const char * cp_get_value ()
    {
@@ -181,7 +180,7 @@ public :
    }
    virtual int i_get_expr_value () 
    {
-      if (u_cat)
+      if (u_cat != e_work_expr_value)
          assert (false);
       return i_value;
    }
@@ -189,12 +188,12 @@ public :
    {
       switch (u_cat)
       {
-         case 0 :
+         case e_work_expr_value :
             v_mark_children_name_order (XNp_target, cp_name, i_get_expr_value (), 
                l_marker, l_marker + 1); 
             l_marker += 1;
             break;
-         case 1 :
+         case e_work_expr_func :
             if (S_value == "last")
             {
                v_mark_children_name_last (XNp_target, cp_name, l_marker, l_marker + 1); 
@@ -211,24 +210,65 @@ public :
 	virtual bool o_identity () {return u_class == WORK_EXPR;}
 } ;
 
+class work_func : public work_item
+{
+	TIXML_STRING S_name;
+   work_item ** wipp_list;
+	unsigned u_nb_arg;
+public :
+	work_func (unsigned u_in_nb_arg, work_item ** wipp_arg) : work_item (WORK_FUNC)
+	{
+		v_set_arg_list (u_in_nb_arg, wipp_arg);
+	}
+	void v_set_arg_list (unsigned u_in_nb_arg, work_item ** wip_arg);
+	work_func (work_func & copy) : work_item (WORK_FUNC)
+	{
+		v_set_arg_list (copy . u_nb_arg, copy . wipp_list);
+		S_name = copy . S_name;
+	}
+	void v_set_func_name (const char * cp_func_name)
+	{
+		S_name = cp_func_name;
+	}
+	virtual bool o_identity () {return u_class == WORK_FUNC;}
+   virtual void v_dump (int i_level) 
+	{
+		v_levelize (i_level);
+		printf ("work_func (%s)(%d arguments)\n", S_name . c_str (), u_nb_arg);
+	}
+   virtual void v_apply (TiXmlNode * XNp_target, const char * cp_name, long & l_marker)
+	{
+		if (S_name == "not")
+		{
+			assert (u_nb_arg == 1);
+			wipp_list [0] -> v_apply (XNp_target, cp_name, l_marker);
+			v_mark_not_attrib (XNp_target, l_marker - 1, l_marker, l_marker + 1);
+			l_marker++;
+		}
+		else
+		{
+			assert (false);
+		}
+	}
+} ;     // work_func
+
 /// Specialized work_item for NameTest
 class work_name_test : public work_item
 {
    TIXML_STRING S_value, S_total;
    unsigned u_type;
 public :
-   work_name_test (unsigned u_in_type, const char * cp_in = "") : work_item ()
+   work_name_test (unsigned u_in_type, const char * cp_in = "") : work_item (WORK_NAME_TEST)
    {
       u_type = u_in_type;
       S_value = cp_in;
-      u_class = WORK_NAME_TEST;
       if (u_type == 1)
       {
          S_total = cp_in;
          S_total += ":*";
       }
    }
-   work_name_test (const work_name_test & )
+   work_name_test (const work_name_test & ) : work_item (WORK_NAME_TEST)
    {
       assert (false);
    }
@@ -257,12 +297,12 @@ class work_node_test : public work_item
    unsigned u_type, u_lex, u_nb_predicate;
    work_item ** wipp_list;
 public :
-   work_node_test (unsigned u_in_type, unsigned u_in_lex, const char * cp_in = "") : work_item ()
+   work_node_test (unsigned u_in_type, unsigned u_in_lex, const char * cp_in = "") 
+			: work_item (WORK_NODE_TEST)
    {
       u_type = u_in_type;
       u_lex = u_in_lex;
       S_value = cp_in;
-      u_class = WORK_NODE_TEST;
       if (u_type == 1)
       {
          S_total = cp_in;
@@ -271,12 +311,11 @@ public :
       u_nb_predicate = 0;
       wipp_list = NULL;
    }
-   work_node_test (const work_node_test & copy) : work_item ()
+   work_node_test (const work_node_test & copy) : work_item (WORK_NODE_TEST)
    {
       u_type = copy . u_type;
       u_lex = copy . u_lex;
       S_value = copy . S_value;
-      u_class = WORK_NODE_TEST;
       v_set_predicate_list (copy . u_nb_predicate, copy . wipp_list);
       if (u_type == 1)
       {
@@ -377,7 +416,7 @@ class work_qname : public work_item
 {
    TIXML_STRING S_local, S_prefix, S_total;
 public :
-   work_qname (const char * cp_in_prefix, const char * cp_in_local) : work_item ()
+   work_qname (const char * cp_in_prefix, const char * cp_in_local) : work_item (WORK_QNAME)
    {
       if (cp_in_prefix)
       {
@@ -393,9 +432,8 @@ public :
          S_local = cp_in_local;
          S_total = cp_in_local;
       }
-      u_class = WORK_QNAME;
    }
-   work_qname (const work_qname & )
+   work_qname (const work_qname & ) : work_item (WORK_QNAME)
    {
       assert (false);
    }
@@ -419,18 +457,17 @@ class work_step : public work_item
    work_step * wp_next_step;
 	bool o_absolute, o_all;
 public :
-   work_step (const work_axis * wp_in_axis, const work_node_test * wp_in_node_test) : work_item ()
+   work_step (const work_axis * wp_in_axis, const work_node_test * wp_in_node_test) 
+		: work_item (WORK_STEP)
    {
-      u_class = WORK_STEP;
       wp_axis = new work_axis (* wp_in_axis);
       wp_node_test = new work_node_test (* wp_in_node_test);
       wp_next_step = NULL;
 		o_absolute = false;
 		o_all = false;
    }
-   work_step (const work_step & copy) : work_item ()
+   work_step (const work_step & copy) : work_item (WORK_STEP)
    {
-      u_class = WORK_STEP;
       wp_axis = new work_axis (* (copy . wp_axis));
       wp_node_test = new work_node_test (* (copy . wp_node_test));
       if (copy . wp_next_step)

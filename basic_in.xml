@@ -207,7 +207,7 @@
          <BBB/>
       </AAA>
    </source>
-<ignore>
+
    <source name="test14" detail="Example 5 / test14" xpath_expr="//BBB[not(@*)]">
       <AAA>
          <BBB id = "b1"/>
@@ -216,6 +216,5 @@
          <BBB/>
       </AAA>
    </source>
-</ignore>
 
 </xpath_test>

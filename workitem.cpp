@@ -38,12 +38,28 @@ work_item * wip_copy (const work_item * wip_in)
 			// we can have a predicate which is a step //BBB[@name]
          wip_ret = new work_step (* (work_step *) wip_in);
 			break;
+		case WORK_FUNC :
+			wip_ret = new work_func (* (work_func *) wip_in);
+			break;
       default :
          assert (false);
    }
 	return wip_ret;
 }
 
+void work_func::v_set_arg_list (unsigned u_in_nb_arg, work_item ** wipp_arg)
+{
+	unsigned u_arg;
+	u_nb_arg = u_in_nb_arg;
+	if (u_nb_arg)
+	{
+		wipp_list = new work_item * [u_nb_arg];
+		for (u_arg = 0; u_arg < u_nb_arg; u_arg++)
+			wipp_list [u_arg] = wip_copy (wipp_arg [u_arg]);
+	}
+	else
+		wipp_list = NULL;
+}
 void work_node_test::v_set_predicate_list (unsigned u_in_nb_predicate, work_item ** wipp_in_list)
 {
    unsigned u_predicate;

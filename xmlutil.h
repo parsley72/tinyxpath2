@@ -77,6 +77,12 @@ extern void v_mark_by_order (
    int i_order,
    int i_mother_value,
    int i_child_value);
+extern void v_mark_not_attrib (
+   TiXmlNode * XNp_target,
+   int i_mother_value,
+	int i_attrib_value,
+   int i_child_value);
+
 extern void v_out_html (
 	FILE * Fp_out,
 	TiXmlNode * XNp_source,

@@ -393,6 +393,39 @@ void v_mark_by_order (
    }
 }
 
+/// Execute the [not(...)] predicate : mark only nodes whose attrib is selected at
+/// the previous level
+void v_mark_not_attrib (
+   TiXmlNode * XNp_target,
+   int i_mother_value,
+	int i_attrib_value,   
+	int i_child_value)
+{
+   TiXmlElement * XEp_child;
+	TiXmlAttribute * XAp_attrib;
+	bool o_found;
+
+   XEp_child = XNp_target -> FirstChildElement ();
+   while (XEp_child)
+   {
+		if (XEp_child -> GetUserValue () == i_mother_value)
+		{
+			o_found = false;
+			XAp_attrib = XEp_child -> FirstAttribute ();
+			while (XAp_attrib)
+			{
+				if (XAp_attrib -> GetUserValue () == i_attrib_value)
+					o_found = true;
+				XAp_attrib = XAp_attrib -> Next ();
+			}
+			if (! o_found)
+				XEp_child -> SetUserValue (i_child_value);
+		}
+      v_mark_not_attrib (XEp_child, i_mother_value, i_attrib_value, i_child_value);
+      XEp_child = XEp_child -> NextSiblingElement ();
+   }
+}
+
 void v_levelize (int i_level, FILE * Fp_out, bool o_html)
 {
 	int i_loop;
