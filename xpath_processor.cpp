@@ -56,6 +56,10 @@ public :
       next = (TiXmlNode *) XNp_next;
       prev = (TiXmlNode *) XNp_prev;
    }
+   void v_isolate ()
+   {
+      parent = next = prev = NULL;
+   }
 } ;
 
 /// xpath_processor constructor
@@ -142,8 +146,11 @@ void xpath_processor::v_build_root ()
       XNp_caller_prev = XNp_base -> PreviousSibling ();
       XNp_caller_next = XNp_base -> NextSibling ();
 
+      // now, isolate this element from it's parent and siblings
+      TiXmlNodeManip * XNp_false_node = (TiXmlNodeManip *) XNp_base;
+      XNp_false_node -> v_isolate ();
+
       // create a new root for it
-      // !!! warning : this actually kills the natural parent and sister relations of the node !!!
       XEp_root = new TiXmlElement ("root");
       XEp_root -> LinkEndChild ((TiXmlNode *) XNp_base);
       v_order_tree ();
