@@ -25,10 +25,9 @@ distribution.
 #ifndef __EXPR_H
 #define __EXPR_H
 
+#include "tinyxpath_conf.h"
 #include "tinyxml.h"
 #include "node_set.h"
-
-// #define TINYXPATH_DEBUG_EXPR
 
 namespace TinyXPath
 {
@@ -42,7 +41,7 @@ class expression_result
 protected :	
    /// String content
 	TIXML_STRING S_content;
-   #ifdef TINYXPATH_DEBUG_EXPR
+   #ifdef TINYXPATH_DEBUG
       /// Comment. This is for debuging only, for stack dump 
 	   TIXML_STRING S_comment;
    #endif
@@ -93,7 +92,7 @@ public :
             ns_set = er_2 . ns_set;
             break;
       }
-      #ifdef TINYXPATH_DEBUG_EXPR
+      #ifdef TINYXPATH_DEBUG
          S_comment = er_2 . S_comment;
       #endif
       return * this;
@@ -131,7 +130,7 @@ public :
    /// Set the comment associated with a stack element. This is for debuging
 	void v_set_comment (const char * cp_in)
 	{
-      #ifdef TINYXPATH_DEBUG_EXPR      
+      #ifdef TINYXPATH_DEBUG
 		   S_comment = cp_in;
       #endif
 	}
@@ -197,7 +196,7 @@ public :
    {
       return & ns_set;
    }
-   #ifdef TINYXPATH_DEBUG_EXPR
+   #ifdef TINYXPATH_DEBUG
       void v_dump ();
    #endif
 } ;

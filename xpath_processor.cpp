@@ -28,7 +28,10 @@ distribution.
 
 using namespace TinyXPath;
 
-// #define DUMP_ACTION
+#ifdef TINYXPATH_DEBUG
+   // only define DUMP_ACTION if TINYXPATH_DEBUG is defined
+   #define DUMP_ACTION
+#endif
 
 /// Utility class to allow us to delete a TiXmlElement without its children
 class TiXmlElementNoDelete : public TiXmlElement
@@ -191,7 +194,7 @@ void xpath_processor::v_action (
 	const char * cp_literal)      ///< Input literal, depends on the rule
 {
    as_action_store . v_add (xc_rule, u_sub, u_variable, cp_literal);
-   #ifdef DUMP_ACTION
+   #ifdef TINYXPATH_DEBUG
       printf ("Action %2d : %s (%d,%d,%s)\n", as_action_store . i_get_size () - 1, cp_disp_construct (xc_rule), u_sub, u_variable, cp_literal);
    #endif
 }

@@ -124,7 +124,7 @@ bool expression_result::o_get_bool ()
 	return false;
 }	
 
-#ifdef TINYXPATH_DEBUG_EXPR
+#ifdef TINYXPATH_DEBUG
 
    /// Debug function to print an expression_result to stdout
    void expression_result::v_dump ()

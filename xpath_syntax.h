@@ -44,7 +44,7 @@ class syntax_error
 public :
    syntax_error (const char * cp_mess = NULL)
    {
-      if (cp_mess)
+      if (cp_mess && strlen (cp_mess < sizeof (ca_mess) - 1))
          strcpy (ca_mess, cp_mess);
       else
          ca_mess [0] = 0;
@@ -66,7 +66,8 @@ public :
 /// Exception class for an overflow in syntax decoding
 class syntax_overflow {} ;
 
-/// XPath syntax decoder class
+/// XPath syntax decoder class. Pure virtual :
+/// one need to redefine v_action and i_get_action_counter
 class token_syntax_decoder : public token_list
 {
 protected :

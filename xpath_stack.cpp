@@ -48,7 +48,7 @@ public :
    {
       return rnp_next;
    }
-   #ifdef TINYXPATH_STACK_DEBUG
+   #ifdef TINYXPATH_DEBUG
       void v_dump ();
    #endif
 protected :
@@ -56,13 +56,11 @@ protected :
    result_and_next * rnp_next;
 } ;
 
-#ifdef TINYXPATH_STACK_DEBUG
+#ifdef TINYXPATH_DEBUG
    /// Dump a stack element to stdout
    void result_and_next::v_dump ()
    {
-      #ifdef TINYXPATH_DEBUG_EXPR
-         expression_result::v_dump ();
-      #endif
+      expression_result::v_dump ();
    }
 #endif
 
@@ -230,7 +228,7 @@ void xpath_stack::v_pop (unsigned u_nb)
       v_pop_one ();
 }
 
-#ifdef TINYXPATH_STACK_DEBUG
+#ifdef TINYXPATH_DEBUG
    /// Dumps the content of the stack to stdout
    void xpath_stack::v_dump ()
    {

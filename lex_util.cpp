@@ -150,32 +150,12 @@ lexico lex_get_class (_byte_ b_in)
    return lex_char_map [b_in];
 }
 
-/// Display the lexical class of an XPath expression byte
-const char * cp_disp_class (_byte_ b_in)
-{
-   return cp_disp_class_lex (lex_get_class (b_in));
-}
-
 /// Check if a lexical element can be an axis name
 bool o_is_axis_name (lexico lex_test)
 {
    if (lex_test >= lex_start_axis_name && lex_test <= lex_end_axis_name)
       return true;
    return false;
-}
-
-/// Generates an ascii table summarizing all possible bytes and their XPath properties
-void v_generate_ascii_htm ()
-{
-   int c;
-   FILE * Fp_out;
-   Fp_out = fopen ("ascii.htm", "wt");
-   fprintf (Fp_out, "<html><head><title>ASCII</title></head><body>\n");
-   fprintf (Fp_out, "<table border=1><tr><th>dec</th><th>hex</th><th>char</th><th>class</th></tr>\n");
-   for (c = 0; c < 256; c++)
-      fprintf (Fp_out, "<tr><td>%3d</td><td>0x%02x</td><td>&#x%02x;</td><td>%s</td></tr>\n", c, c, c, cp_disp_class ((_byte_) c));
-   fprintf (Fp_out, "</table>\n");
-   fclose (Fp_out);
 }
 
 /// Check if an ID maps an existing keyword
@@ -232,6 +212,7 @@ TIXML_STRING S_remove_lead_trail (const char * cp_in)
 	return S_ret;
 }
 
+/// Assign an integer to a string
 void v_assign_int_to_string (TIXML_STRING & S_string, int i_val)
 {
    char ca_int [80];
@@ -240,6 +221,8 @@ void v_assign_int_to_string (TIXML_STRING & S_string, int i_val)
    S_string = ca_int;
 }
 
+/// Assign a double to a string, cleaning any trailing zeroes and the decimal point if there's no
+/// decimal part
 void v_assign_double_to_string (TIXML_STRING & S_string, double d_val)
 {
    char ca_int [80];
@@ -252,45 +235,70 @@ void v_assign_double_to_string (TIXML_STRING & S_string, double d_val)
    S_string = ca_int;
 }
 
-const char * cp_disp_construct (xpath_construct xc)
-{
-   switch (xc)
+#ifdef TINYXPATH_DEBUG
+   /// Return the name of an xpath_construct enumerated
+   const char * cp_disp_construct (xpath_construct xc)
    {
-      case xpath_unknown : return "xpath_unknown"; 
-      case xpath_location_path : return "xpath_location_path";
-      case xpath_absolute_location_path : return "xpath_absolute_location_path";
-      case xpath_relative_location_path : return "xpath_relative_location_path";
-      case xpath_step : return "xpath_step";
-      case xpath_axis_specifier : return "xpath_axis_specifier";
-      case xpath_axis_name : return "xpath_axis_name";
-      case xpath_node_test : return "xpath_node_test";
-      case xpath_predicate : return "xpath_predicate";
-      case xpath_predicate_expr : return "xpath_predicate_expr";
-      case xpath_abbreviated_absolute_location_path : return "xpath_abbreviated_absolute_location_path";
-      case xpath_abbrieviated_step : return "xpath_abbrieviated_step";
-      case xpath_abbreviated_axis_specifier : return "xpath_abbreviated_axis_specifier";
-      case xpath_expr : return "xpath_expr";
-      case xpath_primary_expr : return "xpath_primary_expr";
-      case xpath_function_call : return "xpath_function_call";
-      case xpath_argument : return "xpath_argument";
-      case xpath_union_expr : return "xpath_union_expr";
-      case xpath_path_expr : return "xpath_path_expr";
-      case xpath_filter_expr : return "xpath_filter_expr";
-      case xpath_or_expr : return "xpath_or_expr";
-      case xpath_and_expr : return "xpath_and_expr";
-      case xpath_equality_expr : return "xpath_equality_expr";
-      case xpath_relational_expr : return "xpath_relational_expr";
-      case xpath_additive_expr : return "xpath_additive_expr";
-      case xpath_multiplicative_expr : return "xpath_multiplicative_expr";
-      case xpath_unary_expr : return "xpath_unary_expr";
-      case xpath_multiply_operator : return "xpath_multiply_operator";
-      case xpath_variable_reference : return "xpath_variable_reference";
-      case xpath_name_test : return "xpath_name_test";
-      case xpath_xml_q_name : return "xpath_xml_q_name";
-      case xpath_xml_prefix : return "xpath_xml_prefix";
-      case xpath_xml_local_part : return "xpath_xml_local_part";
+      switch (xc)
+      {
+         case xpath_unknown : return "xpath_unknown"; 
+         case xpath_location_path : return "xpath_location_path";
+         case xpath_absolute_location_path : return "xpath_absolute_location_path";
+         case xpath_relative_location_path : return "xpath_relative_location_path";
+         case xpath_step : return "xpath_step";
+         case xpath_axis_specifier : return "xpath_axis_specifier";
+         case xpath_axis_name : return "xpath_axis_name";
+         case xpath_node_test : return "xpath_node_test";
+         case xpath_predicate : return "xpath_predicate";
+         case xpath_predicate_expr : return "xpath_predicate_expr";
+         case xpath_abbreviated_absolute_location_path : return "xpath_abbreviated_absolute_location_path";
+         case xpath_abbrieviated_step : return "xpath_abbrieviated_step";
+         case xpath_abbreviated_axis_specifier : return "xpath_abbreviated_axis_specifier";
+         case xpath_expr : return "xpath_expr";
+         case xpath_primary_expr : return "xpath_primary_expr";
+         case xpath_function_call : return "xpath_function_call";
+         case xpath_argument : return "xpath_argument";
+         case xpath_union_expr : return "xpath_union_expr";
+         case xpath_path_expr : return "xpath_path_expr";
+         case xpath_filter_expr : return "xpath_filter_expr";
+         case xpath_or_expr : return "xpath_or_expr";
+         case xpath_and_expr : return "xpath_and_expr";
+         case xpath_equality_expr : return "xpath_equality_expr";
+         case xpath_relational_expr : return "xpath_relational_expr";
+         case xpath_additive_expr : return "xpath_additive_expr";
+         case xpath_multiplicative_expr : return "xpath_multiplicative_expr";
+         case xpath_unary_expr : return "xpath_unary_expr";
+         case xpath_multiply_operator : return "xpath_multiply_operator";
+         case xpath_variable_reference : return "xpath_variable_reference";
+         case xpath_name_test : return "xpath_name_test";
+         case xpath_xml_q_name : return "xpath_xml_q_name";
+         case xpath_xml_prefix : return "xpath_xml_prefix";
+         case xpath_xml_local_part : return "xpath_xml_local_part";
+      }
+      return "";
    }
-   return "";
-}
+
+   /// Generates an ascii table summarizing all possible bytes and their XPath properties
+   void v_generate_ascii_htm ()
+   {
+      int c;
+      FILE * Fp_out;
+      Fp_out = fopen ("ascii.htm", "wt");
+      fprintf (Fp_out, "<html><head><title>ASCII</title></head><body>\n");
+      fprintf (Fp_out, "<table border=1><tr><th>dec</th><th>hex</th><th>char</th><th>class</th></tr>\n");
+      for (c = 0; c < 256; c++)
+         fprintf (Fp_out, "<tr><td>%3d</td><td>0x%02x</td><td>&#x%02x;</td><td>%s</td></tr>\n", c, c, c, cp_disp_class ((_byte_) c));
+      fprintf (Fp_out, "</table>\n");
+      fclose (Fp_out);
+   }
+
+   /// Display the lexical class of an XPath expression byte
+   const char * cp_disp_class (_byte_ b_in)
+   {
+      return cp_disp_class_lex (lex_get_class (b_in));
+   }
+
+
+#endif
 
 }
