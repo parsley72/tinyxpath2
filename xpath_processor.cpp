@@ -215,7 +215,7 @@ expression_result xpath_processor::er_compute_xpath ()
       er_result = er_null;
       e_error = e_error_overflow;
    }
-   catch (execution_error e)
+   catch (execution_error)
    {
       expression_result er_null;
       er_result = er_null;
@@ -461,7 +461,7 @@ void xpath_processor::v_execute_one (
                         v_function_not_equal (erpp_arg);
                   }
                }
-               catch (execution_error e)
+               catch (execution_error)
                {
                   o_error = true;
                }
@@ -759,7 +759,7 @@ void xpath_processor::v_execute_one (
                v_execute_function (S_name, u_variable, erpp_arg);
             }
          }
-         catch (execution_error e)
+         catch (execution_error)
          {
             o_error = true;
          }

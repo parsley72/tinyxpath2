@@ -106,5 +106,9 @@ SOURCE=.\changes.txt
 
 SOURCE=.\notes.txt
 # End Source File
+# Begin Source File
+
+SOURCE=.\test.xml
+# End Source File
 # End Target
 # End Project

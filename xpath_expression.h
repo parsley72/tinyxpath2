@@ -143,19 +143,7 @@ public :
 		return S_content . c_str ();
 	}	
 	bool o_get_bool ();
-   /// Get the expression_result as a double
-	double d_get_double ()
-	{
-		switch (e_type)
-		{
-			case e_double :
-				return d_content;
-			case e_int :
-				return i_content;
-		}
-		assert (false);
-		return 0;
-	}
+	double d_get_double ();
    /// Set the expression_result as a node set
 	void v_set_node_set (node_set * nsp_source)
 	{

@@ -95,7 +95,8 @@ int main ()
    TiXmlElement * XEp_main;
    int i_res;
    char ca_res [80];
-   bool o_ok;
+   bool o_ok, o_res;
+   double d_out;
 
    XDp_doc = new TiXmlDocument;
    if (! XDp_doc -> LoadFile ("test.xml"))
@@ -247,7 +248,6 @@ int main ()
    v_test_one_string (XEp_main, "count(/a/b/d[position()=3])", "0");
 
    // regression test for bug in i_compute_xpath
-
    i_res = TinyXPath::i_xpath_int (XEp_main, "//*[@val]/@val");
    sprintf (ca_res, "%d", i_res);
    v_out_one_line ("//*[@val]/@val", ca_res, "123", i_res == 123);
@@ -255,8 +255,18 @@ int main ()
    // regression test for bug in text in expressions
    v_test_one_string (XEp_main, "//x[text()='sub text']/@target", "xyz");
 
-   // regression testing for syntax error
+   // regression test for bug in o_xpath_double
+   o_res = TinyXPath::o_xpath_double (XEp_main, "substring('123.4',1)", d_out);            
+   if (o_res)
+   {
+      sprintf (ca_res, "%.1f", d_out);
+      o_ok = ! strcmp (ca_res, "123.4");
+   }
+   else
+      o_ok = false;
+   v_out_one_line ("substring('123.4',1)", ca_res, "123.4", o_ok);
 
+   // testing for syntax error
    TinyXPath::xpath_processor xp_proc_2 (XEp_main, "//**");
    i_res = xp_proc_2 . i_compute_xpath ();
    if (xp_proc_2 . e_error == TinyXPath::xpath_processor::e_error_syntax)

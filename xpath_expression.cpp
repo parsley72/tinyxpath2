@@ -44,6 +44,22 @@ int expression_result::i_get_int ()
    }
 }	
 
+/// Get the expression_result as a double
+double expression_result::d_get_double ()
+{
+	switch (e_type)
+	{
+		case e_double :
+			return d_content;
+		case e_int :
+			return (double) i_content;
+      case e_bool :
+         return o_content ? 1.0 : 0.0;
+      default :
+         return atof (S_get_string () . c_str ());
+	}
+}
+
 /// Get the expression_result as a string
 TIXML_STRING expression_result::S_get_string ()
 {

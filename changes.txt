@@ -2,6 +2,7 @@
 
 Bug fixes for 1.2.3
 
+- Apr 26th, 2004 : Bug fix : missing conversion from text to double
 - Apr 24th, 2004 : Bug fix in expressions like "//x[text()='sub text']/@target" (Thanks Jonathan Taylor) : text() wasn't recognized
 as a function call in that context
 
