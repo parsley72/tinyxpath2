@@ -44,7 +44,7 @@ class syntax_error
 public :
    syntax_error (const char * cp_mess = NULL)
    {
-      if (cp_mess && strlen (cp_mess < sizeof (ca_mess) - 1))
+      if (cp_mess && strlen (cp_mess) < sizeof (ca_mess) - 1)
          strcpy (ca_mess, cp_mess);
       else
          ca_mess [0] = 0;
