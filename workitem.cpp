@@ -83,7 +83,10 @@ void work_axis::v_apply (TiXmlNode * XNp_node, const char * cp_label, long & l_m
 	printf ("Applying axis");
 	if (o_at)
 	{
-		v_mark_children_attrib (XNp_node, cp_label, l_marker, l_marker + 1);
+		if (! strcmp (cp_label, "*"))
+			v_mark_children_any_attrib (XNp_node, l_marker, l_marker + 1);
+		else
+			v_mark_children_attrib (XNp_node, cp_label, l_marker, l_marker + 1);
 		l_marker++;
 	}
 	else

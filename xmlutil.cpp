@@ -219,6 +219,28 @@ void v_mark_children_attrib (
    }
 }
 
+void v_mark_children_any_attrib (
+   TiXmlNode * XNp_target, 
+   long l_mother_value, 
+   long l_child_value)
+{
+   TiXmlElement * XEp_child;
+	TiXmlAttribute * XAp_attrib;
+
+   XEp_child = XNp_target -> FirstChildElement ();
+   while (XEp_child)
+   {
+		XAp_attrib = XEp_child -> FirstAttribute ();
+		while (XAp_attrib)
+		{
+			v_set_value_of_attrib_if_mother (XEp_child, XAp_attrib -> Name (), l_mother_value, l_child_value);
+			XAp_attrib = XAp_attrib -> Next ();
+		}
+      v_mark_children_any_attrib (XEp_child, l_mother_value, l_child_value);
+      XEp_child = XEp_child -> NextSiblingElement ();
+   }
+}
+
 
 void v_mark_children_name_order (
    TiXmlNode * XNp_target, 
