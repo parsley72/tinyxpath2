@@ -578,6 +578,50 @@ void xpath_processor::v_execute_one (
                if (o_error)
                   throw execution_error (7);
                break;
+            case xpath_additive_expr_more_plus :  
+            case xpath_additive_expr_more_minus :  
+               // These 2 cases are involved for expressions like a+b+c 
+               // The second argument is an additive expression, not a multiplicative as it is the case
+               // when single a+b expressions are encountered
+               try
+               {
+                  o_error = false;
+                  erpp_arg = NULL;
+                  v_execute_one (xpath_multiplicative_expr, o_skip_only);
+                  if (! o_skip_only)
+                  {
+                     erpp_arg = new expression_result * [2];
+                     memset (erpp_arg, 0, 2 * sizeof (expression_result *));
+                     erpp_arg [1] = new expression_result (* xs_stack . erp_top ());
+                     xs_stack . v_pop ();
+                  }
+                  v_execute_one (xpath_additive_expr, o_skip_only);
+                  if (! o_skip_only)
+                  {
+                     erpp_arg [0] = new expression_result (* xs_stack . erp_top ());
+                     xs_stack . v_pop ();
+                     if (u_sub == xpath_additive_expr_more_plus)
+                        v_function_plus (erpp_arg);
+                     else
+                        v_function_minus (erpp_arg);
+                  }
+               }
+               catch (execution_error)
+               {
+                  o_error = true;
+               }
+               if (erpp_arg)
+               {
+                  for (u_arg = 0; u_arg < 2; u_arg++)
+                  {
+                     if (erpp_arg [u_arg])
+                        delete erpp_arg [u_arg];
+                  }
+                  delete [] erpp_arg;
+               }
+               if (o_error)
+                  throw execution_error (7);
+               break;
          }
          break;
 

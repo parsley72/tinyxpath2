@@ -152,6 +152,8 @@ enum xpath_sub {
    xpath_additive_expr_simple,
    xpath_additive_expr_plus,
    xpath_additive_expr_minus,
+   xpath_additive_expr_more_plus,
+   xpath_additive_expr_more_minus,
    xpath_or_expr_simple,
    xpath_or_expr_or,
    xpath_and_expr_simple,

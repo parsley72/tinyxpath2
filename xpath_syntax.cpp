@@ -74,6 +74,7 @@ bool token_syntax_decoder::o_recognize (
    bool o_empty, o_found, o_location_path, o_qname, o_temp;
    unsigned u_nb_argument, u_nb_predicate;
    int i_action_counter;
+   bool o_test_more;
 
    u_nb_recurs++;
    if (u_nb_recurs > 10000)
@@ -756,6 +757,7 @@ bool token_syntax_decoder::o_recognize (
          // 
          if (! o_recognize (xpath_multiplicative_expr, o_final))
             return false;
+         o_test_more = false;
          if (ltp_get (0))
          {
             switch (ltp_get (0) -> lex_get_value ())
@@ -766,6 +768,7 @@ bool token_syntax_decoder::o_recognize (
                      return false;
                   if (o_final)
                      v_action (xpath_additive_expr, xpath_additive_expr_plus);
+                  o_test_more = true;
                   break;
                case lex_minus :
                   v_inc_current (1);
@@ -773,6 +776,7 @@ bool token_syntax_decoder::o_recognize (
                      return false;
                   if (o_final)
                      v_action (xpath_additive_expr, xpath_additive_expr_minus);
+                  o_test_more = true;
                   break;
                default :
                   if (o_final)
@@ -783,6 +787,28 @@ bool token_syntax_decoder::o_recognize (
          else
             if (o_final)
                v_action (xpath_additive_expr, xpath_additive_expr_simple);
+         if (o_test_more)
+         {
+            while (ltp_get (0) && (ltp_get (0) -> lex_get_value () == lex_plus || ltp_get (0) -> lex_get_value () == lex_minus))
+            {
+               if (ltp_get (0) -> lex_get_value () == lex_plus)
+               {
+                  v_inc_current (1);
+                  if (! o_recognize (xpath_multiplicative_expr, o_final))
+                     return false;
+                  if (o_final)
+                     v_action (xpath_additive_expr, xpath_additive_expr_more_plus);
+               }
+               else
+               {
+                  v_inc_current (1);
+                  if (! o_recognize (xpath_multiplicative_expr, o_final))
+                     return false;
+                  if (o_final)
+                     v_action (xpath_additive_expr, xpath_additive_expr_more_minus);
+               }
+            } 
+         }
          break;
 
       case xpath_multiplicative_expr :

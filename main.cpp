@@ -236,6 +236,10 @@ int main ()
    o_ok = (u_nb == 6);
    v_out_one_line ("//*", ca_res, "6", o_ok);
 
+   // regression test for multiple additive expressions
+   v_test_one_string (XEp_main, "2+3+4+5", "14");
+   v_test_one_string (XEp_main, "20-2-3+5", "20");
+
    // regression test for predicate count bug
    v_test_one_string (XEp_main, "count(/a/x[1])", "1");
    v_test_one_string (XEp_main, "name(/a/*[2])", "x");
