@@ -253,6 +253,26 @@ int xpath_processor::i_compute_xpath ()
    return i_res;
 }
 
+bool xpath_processor::o_compute_xpath ()
+{
+   expression_result er_res;
+   bool o_res;
+
+   er_res = er_compute_xpath ();
+   o_res = er_res . o_get_bool ();   
+   return o_res;
+}
+
+double xpath_processor::d_compute_xpath ()
+{
+   expression_result er_res;
+   double d_res;
+
+   er_res = er_compute_xpath ();
+   d_res = er_res . d_get_double ();   
+   return d_res;
+}
+
 /// Callback from the XPath decoder : a rule has to be applied
 void xpath_processor::v_action (
 	xpath_construct xc_rule,      ///< XPath Rule 

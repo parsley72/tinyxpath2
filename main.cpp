@@ -5,7 +5,7 @@
    The LIBXML_CHECK define may be turned ON if we need to verify the output against libxml 
    (from the Gnome project).
 */
-#include "xpath_processor.h"
+#include "xpath_static.h"
 #include "htmlutil.h"
 
 static FILE * Fp_out_html;
@@ -77,8 +77,7 @@ static void v_test_one_string_tiny (const TiXmlNode * XNp_root, const char * cp_
    bool o_ok;
 
    printf ("-- expr : [%s] --\n", cp_expr);
-   TinyXPath::xpath_processor xp_proc (XNp_root, cp_expr);
-   S_res = xp_proc . S_compute_xpath ();
+   S_res = TinyXPath::S_xpath_string (XNp_root, cp_expr);
    o_ok = strcmp (S_res . c_str (), cp_expected) == 0;
    v_out_one_line (cp_expr, S_res . c_str (), cp_expected, o_ok);
 }
@@ -231,8 +230,7 @@ int main ()
    char ca_res [80];
    bool o_ok;
 
-   TinyXPath::xpath_processor xp_proc (XEp_main, "//*[@val]/@val");
-   i_res = xp_proc . i_compute_xpath ();
+   i_res = TinyXPath::i_xpath_int (XEp_main, "//*[@val]/@val");
    sprintf (ca_res, "%d", i_res);
    v_out_one_line ("//*[@val]/@val", ca_res, "123", i_res == 123);
 
@@ -248,7 +246,7 @@ int main ()
    else
    {
       o_ok = false;
-      sprintf (ca_res, "error %d", xp_proc . e_error);
+      sprintf (ca_res, "error %d", xp_proc_2 . e_error);
    }
    v_out_one_line ("//**", ca_res, "syntax error", o_ok);
 

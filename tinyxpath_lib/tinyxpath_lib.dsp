@@ -192,6 +192,10 @@ SOURCE=..\xpath_stack.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\xpath_static.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\xpath_stream.cpp
 # End Source File
 # Begin Source File

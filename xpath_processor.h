@@ -56,6 +56,8 @@ public :
    expression_result er_compute_xpath ();
    TIXML_STRING S_compute_xpath ();
    int i_compute_xpath ();
+   bool o_compute_xpath ();
+   double d_compute_xpath ();
    unsigned u_compute_xpath_node_set ();
    void v_get_xpath_base (unsigned u_order, const TiXmlBase * & XBp_res, bool & o_attribute);
    const TiXmlNode * XNp_get_xpath_node (unsigned u_order);
