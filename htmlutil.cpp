@@ -24,6 +24,7 @@ distribution.
 
 #include "tinyxml.h"
 #include "htmlutil.h"
+#include "xmlutil.h"
 
 void v_levelize (int i_level, FILE * Fp_out, bool o_html)
 {
@@ -55,18 +56,18 @@ void v_out_html (
 		{
 			v_levelize ((int) u_level, Fp_out, true);
 			fprintf (Fp_out, "&lt;");   // '<'
-			if (XNp_child -> GetUserValue ())
+			if (XNp_child -> GetUserValue () & l_select_mask)
 				fprintf (Fp_out, "<b>");
 			fprintf (Fp_out, "%s", XNp_child -> ToElement () -> Value ());
-			if (XNp_child -> GetUserValue ())
+			if (XNp_child -> GetUserValue () & l_select_mask)
 				fprintf (Fp_out, "</b>");
 			XAp_att = XNp_child -> ToElement () -> FirstAttribute ();
 			while (XAp_att)
 			{
-				if (XAp_att -> GetUserValue ())
+				if (XAp_att -> GetUserValue () & l_select_mask)
 				   fprintf (Fp_out, "<b>");
 				fprintf (Fp_out, " %s='%s'", XAp_att -> Name (), XAp_att -> Value ());
-				if (XAp_att -> GetUserValue ())
+				if (XAp_att -> GetUserValue () & l_select_mask)
 				   fprintf (Fp_out, "</b>");
 				XAp_att = XAp_att -> Next ();
 			}
@@ -109,10 +110,10 @@ void v_out_html (
 			{
 				v_levelize ((int) u_level, Fp_out, true);
 				fprintf (Fp_out, "&lt;");
-				if (XNp_child -> GetUserValue ())
+				if (XNp_child -> GetUserValue () & l_select_mask)
 					fprintf (Fp_out, "<b>");
 				fprintf (Fp_out, "/%s", XNp_child -> ToElement () -> Value ());
-				if (XNp_child -> GetUserValue ())
+				if (XNp_child -> GetUserValue () & l_select_mask)
 					fprintf (Fp_out, "</b>");
 				fprintf (Fp_out, "&gt;<br>\n");   // '>\n'
 			}

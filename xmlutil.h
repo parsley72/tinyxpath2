@@ -25,6 +25,8 @@ distribution.
 #define __XMLUTIL_H
 
 #include "tinyxml.h"
+const l_select_value = 0x10000L, l_select_mask = 0xffff0000, l_value_mask = 0xffff;
+
 
 extern void v_clone_children (
    TiXmlNode * XNp_source, 
@@ -56,7 +58,48 @@ extern void v_mark_children_inside (
 extern void v_retain_attrib_tree (
    TiXmlNode * XNp_target,
    long l_source_value);
+extern void v_mark_descendant (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	bool o_self,
+	long l_mother, long l_target);
+extern void v_mark_parent (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	long l_mother, long l_target);
+extern void v_mark_ancestor (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	bool o_self,
+	long l_mother, long l_target);
+extern void v_mark_following_sibling (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	long l_mother, long l_target);
+extern void v_mark_preceding_sibling (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	long l_mother, long l_target);
+extern void v_mark_following (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	long l_mother, long l_target);
+extern void v_mark_preceding (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	long l_mother, long l_target);
+extern void v_mark_self (
+	TiXmlNode * XNp_target, 
+	const char * cp_label, 
+	long l_mother, long l_target);
+extern void v_initialize_all_children (TiXmlNode * XNp_target);
+extern void v_set_user_value (TiXmlNode * XNp_node, long l_value);
+extern void v_set_user_value (TiXmlAttribute * XAp_att, long l_value);
+extern long l_get_user_value (TiXmlNode * XNp_node);
+extern long l_get_user_value (TiXmlAttribute * XAp_att);
+extern void v_upgrade_marker (TiXmlNode * XNp_target, long l_source, long l_new);
 extern int i_xml_cardinality (TiXmlElement * XEp_elem);
+extern int i_xml_valid_sibling (TiXmlElement * XEp_elem);
 extern unsigned u_count_children (TiXmlElement * XEp_elem, const char * cp_elem);
 extern unsigned u_count_children (TiXmlElement * XEp_elem);
 

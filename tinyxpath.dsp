@@ -218,6 +218,10 @@ SOURCE=.\basic_in.xml
 # End Source File
 # Begin Source File
 
+SOURCE=.\res.html
+# End Source File
+# Begin Source File
+
 SOURCE=.\syntax.txt
 # End Source File
 # End Target

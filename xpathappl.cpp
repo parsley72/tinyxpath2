@@ -146,9 +146,10 @@ void xpath_from_source::v_action (
          break;            
       case xpath_axis_name :
          // [6]
-         printf ("[6] Axis name is %s\n", cp_explain);
-         wsp_stack -> v_push (new work_string (cp_explain));
+         // printf ("[6] Axis name is %s\n", cp_explain);
+			wsp_stack -> v_push (new work_string (cp_disp_class_lex ((lexico) u_variable)));
          break;
+
       case xpath_node_test :
          // [7]
          switch (u_sub)
@@ -212,7 +213,10 @@ void xpath_from_source::v_action (
 					break;
             case 3 :
                // Houston, we have a number
-               wsp_stack -> v_push (new work_expr (e_work_expr_value, atoi (cp_explain)));
+					if (strchr (cp_explain, '.'))
+						wsp_stack -> v_push (new work_expr (atof (cp_explain)));
+					else
+                  wsp_stack -> v_push (new work_expr (e_work_expr_value, atoi (cp_explain)));
                break;
             case 4 :
                // Houston : it's getting worse : we have a function call
@@ -251,6 +255,40 @@ void xpath_from_source::v_action (
 					break;
 			}
 			printf ("Skipping function call !\n");
+			break;
+
+		case xpath_union_expr :
+			// [18]
+			if (! u_sub)
+			{
+            wipp_list = new work_item * [2];
+            for (u_arg = 0; u_arg < 2; u_arg++)
+               wipp_list [u_arg] = wip_copy (wsp_stack -> wip_top (u_arg));
+				wp_func = new work_func (2, wipp_list);
+				for (u_arg = 0; u_arg < u_variable; u_arg++)
+					delete wipp_list [u_arg];
+            delete [] wipp_list;
+            wsp_stack -> v_pop (2);
+				wp_func -> v_set_func_name ("__or__");
+				wsp_stack -> v_push (wp_func);
+			}
+			break;
+
+		case xpath_or_expr :
+			// [21]
+			if (! u_sub)
+			{
+            wipp_list = new work_item * [2];
+            for (u_arg = 0; u_arg < 2; u_arg++)
+               wipp_list [u_arg] = wip_copy (wsp_stack -> wip_top (u_arg));
+				wp_func = new work_func (2, wipp_list);
+				for (u_arg = 0; u_arg < u_variable; u_arg++)
+					delete wipp_list [u_arg];
+            delete [] wipp_list;
+            wsp_stack -> v_pop (2);
+				wp_func -> v_set_func_name ("__or_logical__");
+				wsp_stack -> v_push (wp_func);
+			}
 			break;
 
 		case xpath_equality_expr :
@@ -326,6 +364,59 @@ void xpath_from_source::v_action (
 			}
 			break;
 
+		case xpath_additive_expr :
+			// [25]
+			if (u_sub < 2)
+			{
+				wsp_stack -> v_dump ();
+				wipp_list = new work_item * [2];
+				// we do not take copies, the work_func constructor will copy itself
+				wipp_list [0] = wsp_stack -> wip_top (0);
+				wipp_list [1] = wsp_stack -> wip_top (1);
+				wp_func = new work_func (2, wipp_list);					
+				delete [] wipp_list;
+				switch (u_sub)
+				{
+					case 0 :
+						wp_func -> v_set_func_name ("__plus__");
+						break;
+					case 1 :
+						wp_func -> v_set_func_name ("__minus__");
+						break;
+				}
+				wsp_stack -> v_pop (2);
+				wsp_stack -> v_push (wp_func);
+			}
+			break;
+
+		case xpath_multiplicative_expr :
+			// [26]
+			if (u_sub < 3)
+			{
+				wsp_stack -> v_dump ();
+				wipp_list = new work_item * [2];
+				// we do not take copies, the work_func constructor will copy itself
+				wipp_list [0] = wsp_stack -> wip_top (0);
+				wipp_list [1] = wsp_stack -> wip_top (1);
+				wp_func = new work_func (2, wipp_list);					
+				delete [] wipp_list;
+				switch (u_sub)
+				{
+					case 0 :
+						wp_func -> v_set_func_name ("__mult__");
+						break;
+					case 1 :
+						wp_func -> v_set_func_name ("__div__");
+						break;
+					case 2 :
+						wp_func -> v_set_func_name ("__mod__");
+						break;
+				}
+				wsp_stack -> v_pop (2);
+				wsp_stack -> v_push (wp_func);
+			}
+			break;
+
       case xpath_name_test :
          // [37]
          switch (u_sub)
@@ -391,8 +482,8 @@ void xpath_from_source::v_run (const char * cp_test_name, FILE * Fp_html)
 
    v_clone_children (XNp_source, XEp_root);
 
-   v_mark_all_children (XDp_target, 1);
-   l_mark_level = 2;
+   v_initialize_all_children (XDp_target);
+	l_mark_level = 1;
 
 	wsp_stack -> v_dump ();
 

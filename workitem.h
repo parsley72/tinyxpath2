@@ -108,7 +108,7 @@ class work_axis : public work_item
    bool o_at;
    bool o_abbrev;
 public :
-   work_axis (bool o_abbreviated, bool o_in_at, const char * cp_in = "") 
+   work_axis (bool o_abbreviated, bool o_in_at, const char * cp_in = "")
 			: work_item (WORK_AXIS)
    {
       o_at = o_in_at;
@@ -139,20 +139,23 @@ public :
 	{
 		return o_at;
 	}
-	virtual bool o_identity () {return u_class == WORK_AXIS;}
-   virtual void v_apply (TiXmlNode * , const char * , long & )
+	bool o_is_abbreviated ()
 	{
-		assert (false);
+		return o_abbrev;
 	}
+	virtual bool o_identity () {return u_class == WORK_AXIS;}
+   virtual void v_apply (TiXmlNode * , const char * , long & );
+	void v_mark_axis (TiXmlNode * XNp_node, const char * cp_node, long & l_marker);
 } ;
 
-enum {e_work_expr_value, e_work_expr_func, e_work_expr_literal};
+enum {e_work_expr_value, e_work_expr_func, e_work_expr_literal, e_work_expr_double_value};
 
 /// Specialized work_item for expressions
 class work_expr : public work_item
 {
    int i_value;
    TIXML_STRING S_value;
+	double d_value;
    unsigned u_cat;
 public :
    work_expr (unsigned u_in_cat, int i_in_value, const char * cp_in_func = NULL) 
@@ -174,11 +177,21 @@ public :
             break;
       }
    }
+   work_expr (double d_in_value) 
+				: work_item (WORK_EXPR)
+   {
+      u_cat = e_work_expr_double_value;
+      d_value = d_in_value;   
+      char ca_s [20];
+      sprintf (ca_s, "%.3f", d_value);
+      S_value = ca_s;
+   }
    work_expr (const work_expr & copy) : work_item (WORK_EXPR)
    {
       u_cat = copy . u_cat;
       i_value = copy . i_value;
       S_value = copy . S_value;
+		d_value = copy . d_value;
    }
    virtual const char * cp_get_value ()
    {
@@ -197,6 +210,9 @@ public :
 				break;
 			case e_work_expr_literal :
 				printf ("expr : literal (%s)\n", S_value . c_str ());
+				break;
+			case e_work_expr_double_value :
+				printf ("expr (%.3f)\n", d_value);
 				break;
 			default :
 				assert (false);
@@ -242,9 +258,18 @@ public :
 		v_levelize (i_level);
 		printf ("work_func (%s)(%d arguments)\n", S_name . c_str (), u_nb_arg);
 	}
-   virtual void v_apply (TiXmlNode * , const char * , long & )
+   virtual void v_apply (TiXmlNode * XNp_node, const char * cp_name, long & l_marker)
 	{
-		assert (false);
+		if (S_name == "__or__")
+		{
+
+			wipp_list [0] -> v_apply (XNp_node, cp_name, l_marker);
+			v_retain_attrib_tree (XNp_node, l_marker);
+			wipp_list [1] -> v_apply (XNp_node, cp_name, l_marker);
+			v_retain_attrib_tree (XNp_node, l_marker);
+		}
+		else
+			assert (false);
 	}
 
 	virtual expression_result er_compute_predicate (TiXmlElement *) ;
@@ -358,8 +383,9 @@ public :
 
    // Look for all first-level items that have the S_value name, and mark them with
    // the attribute xpath-selected=i_id
-   void v_find_node (TiXmlNode * XNp_target, long l_id)
+   void v_find_node (TiXmlNode * XNp_target, long & l_id)
    {
+		l_id++;
       if (S_value == "*")
          v_mark_first_level (XNp_target, l_id);      
       else
@@ -524,11 +550,16 @@ public :
 				wp_next_step -> v_step_child (XNp_context, l_mark_level);
 		}
 		else
-		{
-			wp_node_test -> v_find_child (XNp_context, l_mark_level);
-			if (wp_next_step)
-				wp_next_step -> v_step_child (XNp_context, l_mark_level);
-		}
+			if (wp_axis -> o_is_abbreviated ())
+			{
+				wp_node_test -> v_find_child (XNp_context, l_mark_level);
+				if (wp_next_step)
+					wp_next_step -> v_step_child (XNp_context, l_mark_level);
+			}
+			else
+			{
+				wp_axis -> v_mark_axis (XNp_context, wp_node_test -> cp_get_value (), l_mark_level);
+			}
    }
    void v_set_next_step (const work_step * wp_in_next)
    {

@@ -27,7 +27,7 @@ distribution.
 
 #include "tinyxml.h"
 
-typedef enum {e_bool, e_string, e_int, e_invalid} e_expression_type;
+typedef enum {e_bool, e_string, e_int, e_double, e_invalid} e_expression_type;
 
 class expression_result
 {
@@ -35,6 +35,7 @@ protected :
 	TIXML_STRING S_content;
 	bool o_content;
 	int i_content;
+	double d_content;
 
 public :
 	e_expression_type e_type;
@@ -62,6 +63,11 @@ public :
 		e_type = e_string;
 		S_content = S_in;
 	}
+	void v_set_double (double d_in)
+	{
+		e_type = e_double;
+		d_content = d_in;
+	}
 	int i_get_int ()
 	{
 		assert (e_type == e_int);
@@ -82,6 +88,18 @@ public :
 		assert (e_type == e_bool);
 		return o_content;
 	}	
+	double d_get_double ()
+	{
+		switch (e_type)
+		{
+			case e_double :
+				return d_content;
+			case e_int :
+				return i_content;
+		}
+		assert (false);
+		return 0;
+	}
 } ;
 
 #endif

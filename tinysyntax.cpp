@@ -265,9 +265,9 @@ void token_syntax_decoder::v_recognize (xpath_construct xc_current, bool o_final
                throw syntax_error ("[6/1]");
             if (! o_is_axis_name (ltp_get (0) -> lex_get_value ()))
                throw syntax_error ("[6/2]");
-            v_inc_current (1);
             if (o_final)
                v_action (xpath_axis_name, 0, ltp_get (0) -> lex_get_value ());
+            v_inc_current (1);
             break;
          case xpath_node_test :
             // [7]   NodeTest				::=   NameTest 
@@ -486,7 +486,7 @@ void token_syntax_decoder::v_recognize (xpath_construct xc_current, bool o_final
             if (ltp_get (0) && ltp_get (0) -> lex_get_value () == lex_orchar)
             {
                v_inc_current (1);
-               v_recognize (xpath_path_expr, o_final);
+               v_recognize (xpath_union_expr, o_final);
                if (o_final)
                   v_action (xpath_union_expr, 0);
             }
