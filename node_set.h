@@ -58,11 +58,13 @@ public :
    node_set & operator = (const node_set & ns2);
    void v_add_base_in_set (const TiXmlBase * XBp_member, bool o_attrib);
 
+   /// Adds an attribute in the node set
    void v_add_attrib_in_set (const TiXmlAttribute * XAp_attrib)
    {
       v_add_base_in_set (XAp_attrib, true);
    }
 
+   /// Adds a node in the node set
    void v_add_node_in_set (const TiXmlNode * XNp_node)
    {
       v_add_base_in_set (XNp_node, false);
@@ -101,22 +103,30 @@ public :
    {
       return u_nb_node;
    }
-   /// Get a node.
+
+   /// Get a node or an attribute
    const TiXmlBase * XBp_get_base_in_set (unsigned u_which) 
    {
       assert (u_which < u_nb_node);
       return (const TiXmlBase *) vpp_node_set [u_which];
    }
+
+   /// Get a node
    const TiXmlNode * XNp_get_node_in_set (unsigned u_which) 
    {
       assert (u_which < u_nb_node);
+      assert (! o_is_attrib (u_which));
       return (const TiXmlNode *) vpp_node_set [u_which];
    }
+
+   /// Get an attribute
    const TiXmlAttribute * XAp_get_attribute_in_set (unsigned u_which) 
    {
       assert (u_which < u_nb_node);
+      assert (o_is_attrib (u_which));
       return (const TiXmlAttribute *) vpp_node_set [u_which];
    }
+
    /// Check if a node is an attribute or another node. This is needed because TinyXML has a weird exception for
    /// attributes not being children of TiXmlNode
    bool o_is_attrib (unsigned u_which)
@@ -155,7 +165,6 @@ public :
    void v_copy_selected_node_recursive (const TiXmlNode * XNp_root, const char * cp_lookup);
    void v_copy_selected_node_recursive_no_attrib (const TiXmlNode * XNp_root, const char * cp_lookup);
    TIXML_STRING S_get_string_value () const;
-   int i_get_first_marked (const TiXmlNode * & XNp_node, const TiXmlAttribute * & XAp_out) const;
    void v_dump ();
    void v_document_sort ();
 protected :

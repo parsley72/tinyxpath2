@@ -53,13 +53,16 @@ node_set & node_set::operator = (const node_set & ns2)
 }
 
 /// Copy all element children of a node to the node_set
-void node_set::v_copy_node_children (const TiXmlNode * XNp_root)
+void node_set::v_copy_node_children (
+   const TiXmlNode * XNp_root)   ///< The father of the nodes to be copied
 {
    v_copy_node_children (XNp_root, NULL);
 }
 
 /// Copy all element children of a node to the node_set, if their name matches a given name
-void node_set::v_copy_node_children (const TiXmlNode * XNp_root, const char * cp_lookup)
+void node_set::v_copy_node_children (
+   const TiXmlNode * XNp_root,   ///< The father of the nodes to be copied
+   const char * cp_lookup)       ///< Lookup name (or NULL)
 {
    const TiXmlNode * XNp_child;
 
@@ -73,13 +76,16 @@ void node_set::v_copy_node_children (const TiXmlNode * XNp_root, const char * cp
 }
 
 /// Copy all nodes in the tree to the node_set
-void node_set::v_copy_selected_node_recursive (const TiXmlNode * XNp_root)
+void node_set::v_copy_selected_node_recursive (
+   const TiXmlNode * XNp_root)      ///< The node to be copied
 {
    v_copy_selected_node_recursive (XNp_root, NULL);
 }
 
 /// Copy all nodes in the tree to the node_set
-void node_set::v_copy_selected_node_recursive (const TiXmlNode * XNp_root, const char * cp_lookup)
+void node_set::v_copy_selected_node_recursive (
+   const TiXmlNode * XNp_root,      ///< The node to be copied
+   const char * cp_lookup)          ///< Lookup name (or NULL)
 {
    TiXmlAttribute * XAp_attrib;
    const TiXmlNode * XNp_child;
@@ -104,7 +110,9 @@ void node_set::v_copy_selected_node_recursive (const TiXmlNode * XNp_root, const
 }
 
 /// Copy all nodes in the tree to the node_set, excluding attributes
-void node_set::v_copy_selected_node_recursive_no_attrib (const TiXmlNode * XNp_root, const char * cp_lookup)
+void node_set::v_copy_selected_node_recursive_no_attrib (
+   const TiXmlNode * XNp_root,   ///< Node whole children are to be copied
+   const char * cp_lookup)       ///< Lookup name or NULL
 {
    const TiXmlElement * XEp_child;
 
@@ -138,25 +146,9 @@ TIXML_STRING node_set::S_get_string_value () const
    return S_res;
 }
 
-/// Return 0 : none, 1 : node, 2 : attribute
-int node_set::i_get_first_marked (const TiXmlNode * & XNp_node, const TiXmlAttribute * & XAp_out) const
-{
-   if (! u_nb_node)
-      return 0;
-   if (op_attrib [0])
-   {
-      XAp_out = (const TiXmlAttribute *) vpp_node_set [0];
-      return 2;
-   }
-   else
-   {
-      XNp_node = (const TiXmlNode *) vpp_node_set [0];
-      return 1;
-   }
-}
-
 /// Checks if a node exist in the node set
-bool node_set::o_exist_in_set (const TiXmlBase * XBp_member)
+bool node_set::o_exist_in_set (
+   const TiXmlBase * XBp_member)    ///< Check if a base exist in the node set
 {
    unsigned u_node;
 
@@ -167,7 +159,9 @@ bool node_set::o_exist_in_set (const TiXmlBase * XBp_member)
 }
 
 /// Adds a new node in the node set
-void node_set::v_add_base_in_set (const TiXmlBase * XBp_member, bool o_attrib)
+void node_set::v_add_base_in_set (
+   const TiXmlBase * XBp_member,    ///< Base to add (node or attribute)
+   bool o_attrib)                   ///< true if the base is an attribute, false if it's a node
 {
    const void ** vpp_new_list;
    bool * op_new_list;
@@ -195,7 +189,9 @@ void node_set::v_add_base_in_set (const TiXmlBase * XBp_member, bool o_attrib)
 /// the following axis contains all nodes in the same document as the context 
 /// node that are after the context node in document order, excluding any 
 /// descendants and excluding attribute nodes and namespace nodes
-void node_set::v_add_all_foll_node (const TiXmlNode * XNp_node, const TIXML_STRING & S_name)
+void node_set::v_add_all_foll_node (
+   const TiXmlNode * XNp_node,   ///< base node
+   const TIXML_STRING & S_name)  ///< lookup name (or "*")
 {
    const TiXmlNode * XNp_ptr;
    const char * cp_lookup;
@@ -221,7 +217,9 @@ void node_set::v_add_all_foll_node (const TiXmlNode * XNp_node, const TIXML_STRI
 /// the preceding axis contains all nodes in the same document as the context 
 /// node that are before the context node in document order, excluding any 
 /// ancestors and excluding attribute nodes and namespace nodes
-void node_set::v_add_all_prec_node (const TiXmlNode * XNp_node, const TIXML_STRING & S_name)
+void node_set::v_add_all_prec_node (
+   const TiXmlNode * XNp_node,      ///< base node
+   const TIXML_STRING & S_name)     ///< lookup name (or "*")
 {
    const TiXmlNode * XNp_ptr;
    const char * cp_lookup;
@@ -251,7 +249,9 @@ public :
 } ;
 
 /// Internal utility function for node set sorting
-int i_compare_ptr_and_flag (const void * vp_1, const void * vp_2)
+int i_compare_ptr_and_flag (
+   const void * vp_1,   ///< Ptr to first element to compare
+   const void * vp_2)   ///< Ptr to second element to compare
 {
    const ptr_and_flag * pafp_1, * pafp_2;
    TiXmlNode * XNp_1, * XNp_2;
