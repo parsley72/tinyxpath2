@@ -87,7 +87,7 @@ void node_set::v_copy_selected_node_recursive (
    const TiXmlNode * XNp_root,      ///< The node to be copied
    const char * cp_lookup)          ///< Lookup name (or NULL)
 {
-   TiXmlAttribute * XAp_attrib;
+   const TiXmlAttribute * XAp_attrib;
    const TiXmlNode * XNp_child;
 
    if ((! cp_lookup) || ! strcmp (XNp_root -> Value (), cp_lookup))

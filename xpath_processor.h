@@ -76,7 +76,7 @@ protected :
 
    void v_execute_absolute_path (unsigned u_action_position, bool o_with_rel, bool o_everywhere);
    void v_execute_step (int & i_relative_action, bool o_skip_only);
-   bool o_check_predicate (TiXmlElement * XEp_child, bool o_by_name);
+   bool o_check_predicate (const TiXmlElement * XEp_child, bool o_by_name);
 
    void v_execute_function (TIXML_STRING & S_name, unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_ceiling (unsigned u_nb_arg, expression_result ** erpp_arg);
@@ -126,7 +126,7 @@ protected :
    TIXML_STRING S_pop_string () {return xs_stack . S_pop_string ();}
    node_set ns_pop_node_set () {return xs_stack . ns_pop_node_set ();}
 
-   void v_set_context (TiXmlElement * XEp_in, bool o_by_name);
+   void v_set_context (const TiXmlElement * XEp_in, bool o_by_name);
    const TiXmlElement * XEp_get_context () {return XEp_context;}
    /// Root, above the XML tree given as parameter to the xpath_processor object
    TiXmlElement * XEp_root;

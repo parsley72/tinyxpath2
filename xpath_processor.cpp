@@ -219,7 +219,7 @@ expression_result xpath_processor::er_compute_xpath ()
       er_result = er_null;
       e_error = e_error_overflow;
    }
-   catch (execution_error e)
+   catch (execution_error)
    {
       expression_result er_null;
       er_result = er_null;
@@ -325,7 +325,7 @@ void xpath_processor::v_execute_one (
 	unsigned u_sub;      
 	unsigned u_variable;
 	TIXML_STRING S_literal;
-
+   TIXML_STRING S_temp;
 	TIXML_STRING S_name;
    expression_result ** erpp_arg;
    unsigned u_arg;
@@ -938,7 +938,8 @@ void xpath_processor::v_execute_one (
                {
                   i_pop_int ();
                   v_push_int (u_variable, "axis is a keyword");
-                  v_push_string ("*");
+                  S_temp = "*";
+                  v_push_string (S_temp);
                }
                break;
             case xpath_node_test_pi :
@@ -966,7 +967,10 @@ void xpath_processor::v_execute_one (
          {
             case xpath_name_test_star :
                if (! o_skip_only)
-                  v_push_string ("*");
+               {
+                  S_temp = "*";
+                  v_push_string (S_temp);
+               }
                break;
             case xpath_name_test_ncname :
                break;
@@ -1061,9 +1065,10 @@ void xpath_processor ::v_execute_step (
    unsigned u_nb_node, u_node, u_pred, u_sub, u_variable;
 	xpath_construct xc_action;
    TIXML_STRING S_literal, S_name;
-   TiXmlElement * XEp_child, * XEp_elem, * XEp_father;
-   TiXmlAttribute * XAp_attrib;
-   TiXmlNode * XNp_next, * XNp_parent;
+   const TiXmlElement * XEp_child, * XEp_elem;
+   const TiXmlElement * XEp_father;
+   const TiXmlAttribute * XAp_attrib;
+   const TiXmlNode * XNp_next, * XNp_parent;
    node_set ns_source, ns_target;
 
    if (! o_skip_only)
@@ -1286,7 +1291,7 @@ void xpath_processor ::v_execute_step (
 /// is equal to the context position and will be converted to false otherwise; if the result 
 /// is not a number, then the result will be converted as if by a call to the boolean function. 
 /// Thus a location path para[3] is equivalent to para[position()=3].
-bool xpath_processor::o_check_predicate (TiXmlElement * XEp_child, bool o_by_name)
+bool xpath_processor::o_check_predicate (const TiXmlElement * XEp_child, bool o_by_name)
 {
    expression_result * erp_top;
    bool o_keep;
@@ -2078,7 +2083,7 @@ void xpath_processor::v_order_recurs (TiXmlNode * Np_base, int & i_current)
 
 /// Set the current context node for predicate evaluations
 void xpath_processor::v_set_context (
-   TiXmlElement * XEp_in,     ///< Context node
+   const TiXmlElement * XEp_in,     ///< Context node
    bool o_by_name)            ///< true if the current node search is by name, false if it's a *
 {
    XEp_context = XEp_in; 

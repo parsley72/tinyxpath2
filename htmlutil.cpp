@@ -49,8 +49,8 @@ void v_out_html (
 	const TiXmlNode * XNp_source,    ///< Input XML tree
 	unsigned u_level)                ///< Current level
 {
-	TiXmlNode * XNp_child;
-	TiXmlAttribute * XAp_att;
+	const TiXmlNode * XNp_child;
+	const TiXmlAttribute * XAp_att;
 
 	XNp_child = XNp_source -> FirstChild ();
 	while (XNp_child)

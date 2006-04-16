@@ -37,8 +37,8 @@ int i_xml_cardinality (
    const TiXmlElement * XEp_elem,      ///< Base element. Must not be null
    bool o_by_name)                     ///< true if we ask for the cardinality for our name only
 {
-	TiXmlNode * XNp_parent;
-	TiXmlElement * XEp_child;
+	const TiXmlNode * XNp_parent;
+	const TiXmlElement * XEp_child;
    TIXML_STRING S_name; 
 	int i_res;
 
@@ -84,8 +84,8 @@ int i_xml_cardinality (
 int i_xml_family_size (
    const TiXmlElement * XEp_elem)   ///< Base element. Must not be null 
 {
-	TiXmlElement * XEp_child;
-	TiXmlNode * XNp_parent;
+	const TiXmlElement * XEp_child;
+	const TiXmlNode * XNp_parent;
    int i_res;
 
    assert (XEp_elem);
