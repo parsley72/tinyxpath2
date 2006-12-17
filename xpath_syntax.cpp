@@ -28,6 +28,13 @@ distribution.
    XPath Syntax analyzer for TinyXPath project
 */
 
+/*
+@history 
+ Modified on  16 December 2006 by  Aman Aggarwal
+ Added support for Expressions like ( Expr or Expr or Expr) 
+
+*/
+
 #include <stdio.h>
 #include "xpath_syntax.h"
 
@@ -620,6 +627,7 @@ bool token_syntax_decoder::o_recognize (
          // [21]   OrExpr				::=   AndExpr 
 			// 					         | OrExpr 'or' AndExpr 
          //
+         o_test_more = false;
          if (! o_recognize (xpath_and_expr, o_final))
             return false;
          if (ltp_get (0) && ltp_get (0) -> lex_get_value () == lex_or)
@@ -629,10 +637,22 @@ bool token_syntax_decoder::o_recognize (
                return false;
             if (o_final)
                v_action (xpath_or_expr, xpath_or_expr_or);
+            o_test_more = true;
          }
          else
             if (o_final)
                v_action (xpath_or_expr, xpath_or_expr_simple);
+         if (o_test_more)
+         {
+            while (ltp_get (0) && (ltp_get (0) ->lex_get_value () == lex_or ))
+            {
+               v_inc_current (1);
+               if (! o_recognize (xpath_and_expr, o_final))
+                  return false;
+               if (o_final)
+                  v_action (xpath_or_expr, xpath_or_expr_more);				
+            } 
+         }		
          break;
 
       case xpath_and_expr :

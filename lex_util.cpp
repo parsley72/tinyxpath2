@@ -264,6 +264,7 @@ void v_assign_double_to_string (TIXML_STRING & S_string, double d_val)
          case xpath_path_expr : return "xpath_path_expr";
          case xpath_filter_expr : return "xpath_filter_expr";
          case xpath_or_expr : return "xpath_or_expr";
+         case xpath_or_expr_more : return "xpath_or_expr_more";
          case xpath_and_expr : return "xpath_and_expr";
          case xpath_equality_expr : return "xpath_equality_expr";
          case xpath_relational_expr : return "xpath_relational_expr";

@@ -22,6 +22,13 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/*
+ @history:
+ 
+ Modified on  16 December 2006 by  Aman Aggarwal
+ Added support for Expressions like ( Expr or Expr or Expr) 
+
+*/
 #include <math.h>
 #include "xpath_processor.h"
 #include "xml_util.h"
@@ -385,6 +392,46 @@ void xpath_processor::v_execute_one (
                if (o_error)
                   throw execution_error (3);
                break;
+	         case xpath_or_expr_more :
+	         {
+		         // These  case is  involved for expressions like a or b or c
+		         try
+		         {
+			         o_error = false;
+			         erpp_arg = NULL;
+			         v_execute_one (xpath_and_expr, o_skip_only);
+			         if (! o_skip_only)
+			         {
+				         erpp_arg = new expression_result * [2];
+				         memset (erpp_arg, 0, 2 * sizeof (expression_result *));
+				         erpp_arg [1] = new expression_result (* xs_stack . erp_top ());
+				         xs_stack . v_pop ();
+			         }
+			         v_execute_one (xpath_or_expr, o_skip_only);
+			         if (! o_skip_only)
+			         {
+				         erpp_arg [0] = new expression_result (* xs_stack . erp_top ());
+				         xs_stack . v_pop ();
+				         v_function_or (erpp_arg);
+			         }
+		         }
+		         catch (execution_error)
+		         {
+			         o_error = true;
+		         }
+		         if (erpp_arg)
+		         {
+			         for (u_arg = 0; u_arg < 2; u_arg++)
+			         {
+				         if (erpp_arg [u_arg])
+					         delete erpp_arg [u_arg];
+			         }
+			         delete [] erpp_arg;
+		         }
+		         if (o_error)
+			         throw execution_error (7);
+	         }
+	         break;	   
          }
          break;
 

@@ -135,12 +135,16 @@ int main ()
 
    TiXmlElement * XEp_sub = XEp_main -> FirstChildElement ("b");
 
-   v_test_one_string (XEp_sub, "@val", "123" ); 
+   v_test_one_string (XEp_main, "//b/@val", "123" ); 
 
    // v_test_one_string (XEp_main, "//x/y/text()", "inner text" ); 
    // v_test_one_string (XEp_main, "//x[/y/text()='inner text']/@target", "123" ); 
    v_test_one_string (XEp_main, "//x/text()", "sub text");
    v_test_one_string (XEp_main, "//*/comment()", " -122.0 ");
+
+   v_test_one_string (XEp_main, "( //dummy1 or  //dummy2  or /dummy/dummy2 or /a/b )", "true");
+   v_test_one_string (XEp_main, "( //dummy1 or  //dummy2  or /dummy/dummy2  )", "false");
+
    v_test_one_string (XEp_main, "count(//*/comment())", "2");
    v_test_one_string (XEp_main, "sum(//@*)", "123");
    v_test_one_string (XEp_main, "sum(//*/comment())", "378");
