@@ -26,8 +26,9 @@ distribution.
  @history:
  
  Modified on  16 December 2006 by  Aman Aggarwal
- Added support for Expressions like ( Expr or Expr or Expr) 
-
+ ::Added support for Expressions like ( Expr or Expr or Expr) 
+ Modified on 18 December 2006 by Aman Aggarwal
+ ::Added support for translate()  
 */
 #include <math.h>
 #include "xpath_processor.h"
@@ -1450,6 +1451,10 @@ void xpath_processor::v_execute_function (
       v_function_text (u_nb_arg, erpp_arg);
    else
 
+   if (S_name == "translate")
+      v_function_translate (u_nb_arg, erpp_arg);
+   else
+
    if (S_name == "true")
       v_function_true (u_nb_arg, erpp_arg);
    else
@@ -1780,6 +1785,82 @@ void xpath_processor::v_function_text (
    v_push_string (S_res);
 }
 
+/// XPath \b translate function\n
+/// Standard exerpt :\n
+///The translate function returns the first argument string with occurrences of 
+///characters in the second argument string replaced by the character at the 
+///corresponding position in the third argument string. 
+void xpath_processor::v_function_translate (
+   unsigned u_nb_arg,               ///< Nb of arguments
+   expression_result ** erpp_arg)   ///< Argument list
+{
+   TIXML_STRING S_translated;
+   char* cp_translated = NULL;
+   //pre-conditions
+   if (u_nb_arg != 3)
+      throw execution_error (40);
+   
+   TIXML_STRING S_translate_me  = erpp_arg [0] -> S_get_string ();
+   TIXML_STRING S_translation_table_lhs = erpp_arg [1] -> S_get_string ();
+   TIXML_STRING S_translation_table_rhs = erpp_arg [2] -> S_get_string ();
+   
+   
+   // Strings S_translation_table_lhs and S_translation_table_rhs represent
+   // the translation  table's left hand side and right hand side respectively
+   // e.g.  for   "abc"  "XYZ" ... we have the table
+   //		"a   "X	
+   //		 b    Y	
+   //		 c    Z 
+   //		 "    "
+   //        lhs   rhs   
+   
+   cp_translated = new char[ S_translate_me.length() + 1];
+   
+   unsigned int u_write_at = 0 ;
+	
+   for(unsigned int u_read_at = 0; u_read_at < S_translate_me.length() ; u_read_at++)
+   {
+      //search in the translation scheme table
+      unsigned int u_translation_rule_index = 0;
+      for(; u_translation_rule_index < S_translation_table_lhs.size(); u_translation_rule_index++)
+      {
+         // this also ensures that if we have multiple translation rules for a single character then only the first one is selected
+         if(S_translate_me[u_read_at] == S_translation_table_lhs [u_translation_rule_index])
+         {
+            //translation rule found for current character
+            break;   
+         }
+      }
+      if( u_translation_rule_index  <  S_translation_table_lhs.size())
+      {
+         //the current character has a translation rule
+         if(u_translation_rule_index < S_translation_table_rhs.size())
+         {
+            cp_translated[u_write_at] = S_translation_table_rhs[u_translation_rule_index];
+            u_write_at++;
+         }
+         else
+         {
+            // else empty translation scheme
+            // so current charater skipped
+         }   
+      }
+      else
+      {
+         //no translation scheme for  current charater
+         //thus copy it as it is in cp_translated
+         cp_translated[u_write_at] = S_translate_me[u_read_at];
+         u_write_at++;
+      }
+   }
+   cp_translated [u_write_at] = 0; 
+   
+   S_translated = cp_translated;
+   
+   delete [] cp_translated;
+   
+   v_push_string(S_translated);
+}
 
 /// XPath \b true function
 void xpath_processor::v_function_true (

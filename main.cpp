@@ -7,7 +7,12 @@
 */
 #include "xpath_static.h"
 #include "htmlutil.h"
-
+/*
+ @history:
+ 
+ Modified on 18 December 2006 by Aman Aggarwal
+ ::Added test cases for translate()  
+*/
 static FILE * Fp_out_html;
 
 // #define LIBXML_CHECK
@@ -144,6 +149,14 @@ int main ()
 
    v_test_one_string (XEp_main, "( //dummy1 or  //dummy2  or /dummy/dummy2 or /a/b )", "true");
    v_test_one_string (XEp_main, "( //dummy1 or  //dummy2  or /dummy/dummy2  )", "false");
+   
+   v_test_one_string (XEp_main, "translate('aabbccdd','aaabc','AXYB')" , "AABBdd");
+   v_test_one_string (XEp_main, "translate('aabbccdde','abcd','')" , "e");
+	
+   v_test_one_string (XEp_main, "translate('aabbccdd','','ASDF')" , "aabbccdd");
+   v_test_one_string (XEp_main, "translate('aabbccdd','','')" , "aabbccdd");
+	
+   v_test_one_string (XEp_main, "translate('The quick brown fox jumps over the lazy dog','abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" , "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG");
 
    v_test_one_string (XEp_main, "count(//*/comment())", "2");
    v_test_one_string (XEp_main, "sum(//@*)", "123");

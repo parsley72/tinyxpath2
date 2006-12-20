@@ -26,7 +26,12 @@ distribution.
    \file xpath_processor.h
    \author Yves Berquin
 */
-
+/*
+ @history:
+ 
+ Modified on 18 December 2006 by Aman Aggarwal
+ ::Added support for translate()  
+*/
 #ifndef __XPATH_PROCESSOR_H
 #define __XPATH_PROCESSOR_H
 
@@ -95,6 +100,7 @@ protected :
    void v_function_substring (unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_sum (unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_text (unsigned u_nb_arg, expression_result ** erpp_arg);
+   void v_function_translate(unsigned u_nb_arg, expression_result ** erpp_arg);
    void v_function_true (unsigned u_nb_arg, expression_result ** erpp_arg);
 
    void v_function_equal (expression_result ** erpp_arg);
