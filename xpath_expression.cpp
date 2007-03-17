@@ -79,7 +79,7 @@ TIXML_STRING expression_result::S_get_string ()
          v_assign_double_to_string (S_res, d_get_double ());
          break;
       case e_node_set :
-         // See XPath 1.0 spec, 3.2 :
+         // See XPath 1.0 spec, 4.2 :
          // An argument is converted to type string as if by calling the string function
          // ...
          // A node-set is converted to a string by returning the string-value of the node 
