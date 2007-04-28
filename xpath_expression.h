@@ -53,19 +53,14 @@ protected :
 	double d_content;
    /// node set content
    node_set ns_set;
-   #if OP_CONCURRENT
-      const TiXmlNode * XNp_root;
-   #endif
+   /// Ptr to the root node
+   const TiXmlNode * XNp_root;
 
 public :
    /// expression type
 	e_expression_type e_type;
    /// Dummy constructor
-   #if OP_CONCURRENT
-   	expression_result (const TiXmlNode * XNp_in_root) : XNp_root (XNp_in_root)
-   #else
-   	expression_result ()
-   #endif
+ 	expression_result (const TiXmlNode * XNp_in_root) : XNp_root (XNp_in_root)
 	{
 		e_type = e_invalid;
       o_content = false;
@@ -73,18 +68,16 @@ public :
       d_content = 0.0;
 	}
 
-   #if OP_CONCURRENT
-   	expression_result ()
-	   {
-	      XNp_root = NULL;
-		   e_type = e_invalid;
-         o_content = false;
-         i_content = 0;
-         d_content = 0.0;
-	   }
-	   
-	   void v_set_root (const TiXmlNode * XNp_in) {XNp_root = XNp_in;}
-   #endif
+   expression_result ()
+	{
+	   XNp_root = NULL;
+		e_type = e_invalid;
+      o_content = false;
+      i_content = 0;
+      d_content = 0.0;
+	}
+	
+	void v_set_root (const TiXmlNode * XNp_in) {XNp_root = XNp_in;}
 
    /// Copy constructor
 	expression_result (const expression_result & er_2)
@@ -94,9 +87,7 @@ public :
 
    expression_result & operator = (const expression_result & er_2)
    {
-      #if OP_CONCURRENT
-         XNp_root = er_2 . XNp_root;
-      #endif
+      XNp_root = er_2 . XNp_root;
 		e_type = er_2 . e_type;
       switch (e_type)
       {

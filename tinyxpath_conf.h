@@ -31,8 +31,6 @@ distribution.
 #ifndef __TINYXPATH_CONF_H
 #define __TINYXPATH_CONF_H
 
-#define OP_CONCURRENT      1
-
 // #define TINYXPATH_DEBUG
 
 #endif

@@ -87,11 +87,7 @@ TIXML_STRING expression_result::S_get_string ()
          nsp_ptr = nsp_get_node_set ();
          if (nsp_ptr -> u_get_nb_node_in_set ())
          {
-            #if OP_CONCURRENT
-               nsp_ptr -> v_document_sort (XNp_root);
-            #else
-               nsp_ptr -> v_document_sort ();
-            #endif
+            nsp_ptr -> v_document_sort (XNp_root);
             if (nsp_ptr -> o_is_attrib (0))
                S_res = nsp_ptr -> XAp_get_attribute_in_set (0) -> Value ();
             else

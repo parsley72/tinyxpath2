@@ -112,11 +112,6 @@ protected :
    void v_function_opposite ();
    void v_function_mult (expression_result ** erpp_arg, unsigned u_sub);
 
-   #if ! OP_CONCURRENT
-      void v_order_tree ();
-      void v_order_recurs (TiXmlNode * Np_base, int & i_current);
-   #endif
-   
    void v_push_int (int i_val, const char * cp_comment = "")   {xs_stack . v_push_int (i_val, cp_comment);}
    void v_push_string (TIXML_STRING S_val)   {xs_stack . v_push_string (S_val);}
    void v_push_bool (bool o_val)   {xs_stack . v_push_bool (o_val);}
@@ -138,18 +133,8 @@ protected :
 
    /// Base node
    const TiXmlNode * XNp_base;
-   #if OP_CONCURRENT
-      /// Node above the caller:    
-      const TiXmlNode * XNp_base_parent;
-   #else
-      /// Root, above the XML tree given as parameter to the xpath_processor object
-      TiXmlElement * XEp_root;
-      const TiXmlNode * XNp_caller_parent;
-      const TiXmlNode * XNp_caller_prev;
-      const TiXmlNode * XNp_caller_next;
-
-      void v_remove_root ();
-   #endif
+   /// Node above the caller:    
+   const TiXmlNode * XNp_base_parent;
    void v_build_root ();
 } ;
 

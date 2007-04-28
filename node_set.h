@@ -165,16 +165,10 @@ public :
    void v_copy_selected_node_recursive (const TiXmlNode * XNp_root);
    void v_copy_selected_node_recursive (const TiXmlNode * XNp_root, const char * cp_lookup);
    void v_copy_selected_node_recursive_no_attrib (const TiXmlNode * XNp_root, const char * cp_lookup);
-   #if OP_CONCURRENT
-      void v_copy_selected_node_recursive_root_only (const TiXmlNode * XNp_root, const TiXmlNode * XNp_base);
-   #endif
+   void v_copy_selected_node_recursive_root_only (const TiXmlNode * XNp_root, const TiXmlNode * XNp_base);
    TIXML_STRING S_get_string_value () const;
    void v_dump ();
-   #if OP_CONCURRENT
-      void v_document_sort (const TiXmlNode * XNp_root);
-   #else
-      void v_document_sort ();
-   #endif
+   void v_document_sort (const TiXmlNode * XNp_root);
 protected :
    /// Nb of nodes in the set
    unsigned u_nb_node;

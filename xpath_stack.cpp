@@ -140,11 +140,7 @@ void xpath_stack::v_push (expression_result er_res)
 /// Push an integer on the stack
 void xpath_stack::v_push_int (int i_elem, const char * cp_comment)
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_root);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_root);
    er_res . v_set_int (i_elem);
    if (cp_comment)
       er_res . v_set_comment (cp_comment);
@@ -154,11 +150,7 @@ void xpath_stack::v_push_int (int i_elem, const char * cp_comment)
 /// Push a double on the stack
 void xpath_stack::v_push_double (double d_elem)
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_root);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_root);
    er_res . v_set_double (d_elem);
    v_push (er_res);
 }
@@ -166,11 +158,7 @@ void xpath_stack::v_push_double (double d_elem)
 /// Push a node_set on the stack
 void xpath_stack::v_push_node_set (node_set * nsp_ptr)
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_root);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_root);
    er_res . v_set_node_set (nsp_ptr);
    v_push (er_res);
 }
@@ -178,11 +166,7 @@ void xpath_stack::v_push_node_set (node_set * nsp_ptr)
 /// Push a bool on the stack
 void xpath_stack::v_push_bool (bool o_in)
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_root);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_root);
    er_res . v_set_bool (o_in);
    v_push (er_res);
 }
@@ -190,11 +174,7 @@ void xpath_stack::v_push_bool (bool o_in)
 /// Push a string on the stack
 void xpath_stack::v_push_string (TIXML_STRING S_in)
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_root);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_root);
    er_res . v_set_string (S_in);
    v_push (er_res);
 }

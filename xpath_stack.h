@@ -45,12 +45,10 @@ class xpath_stack
 {
 public : 
    xpath_stack ();
-   #if OP_CONCURRENT
-      void v_set_root (const TiXmlNode * XNp_in_root)
-      {
-         XNp_root = XNp_in_root;
-      }
-   #endif
+   void v_set_root (const TiXmlNode * XNp_in_root)
+   {
+      XNp_root = XNp_in_root;
+   }
    ~ xpath_stack ();
    void v_push (expression_result er_res);
    void v_push_int (int i_elem, const char * cp_comment = NULL);
@@ -79,9 +77,7 @@ protected :
    /// Stack size
    unsigned u_size;
    void v_pop_one ();
-   #if OP_CONCURRENT
-      const TiXmlNode * XNp_root;
-   #endif
+   const TiXmlNode * XNp_root;
 } ;
 
 }

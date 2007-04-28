@@ -41,37 +41,6 @@ using namespace TinyXPath;
    #define DUMP_ACTION
 #endif
 
-#if ! OP_CONCURRENT
-   /// Utility class to allow us to delete a TiXmlElement without its children
-   class TiXmlElementNoDelete : public TiXmlElement
-   {
-   public :
-      TiXmlElementNoDelete () : TiXmlElement ("") {} // this constructor is never used
-      void v_clean_children () 
-      {
-         firstChild=0; 
-         lastChild=0;
-      }
-   } ;
-
-   /// Utility class to reset the parent, prev and next pointers of a node
-   class TiXmlNodeManip : public TiXmlNode 
-   {
-   public :
-      TiXmlNodeManip () : TiXmlNode (TiXmlNode::UNKNOWN) {}
-      void v_reset (const TiXmlNode * XNp_parent, const TiXmlNode * XNp_next, const TiXmlNode * XNp_prev)
-      {
-         parent = (TiXmlNode *) XNp_parent;
-         next = (TiXmlNode *) XNp_next;
-         prev = (TiXmlNode *) XNp_prev;
-      }
-      void v_isolate ()
-      {
-         parent = next = prev = NULL;
-      }
-   } ;
-#endif
-
 /// xpath_processor constructor
 xpath_processor::xpath_processor (
    const TiXmlNode * XNp_source_tree,  ///< Source XML tree
@@ -82,15 +51,11 @@ xpath_processor::xpath_processor (
       XNp_base = XNp_source_tree;
    else
       XNp_base = NULL;
-   #if OP_CONCURRENT
-      er_result . v_set_root (XNp_base);
-      xs_stack . v_set_root (XNp_base);
-   #endif
+   er_result . v_set_root (XNp_base);
+   xs_stack . v_set_root (XNp_base);
    XEp_context = NULL;
    o_is_context_by_name = false;
-   #if OP_CONCURRENT
-      XNp_base_parent = NULL;
-   #endif
+   XNp_base_parent = NULL;
 }
 
 /// Compute an XPath expression, and return the number of nodes in the resulting node set.
@@ -151,85 +116,32 @@ TiXmlAttribute * xpath_processor::XAp_get_xpath_attribute (
 
 void xpath_processor::v_build_root ()
 {
-   #if OP_CONCURRENT
-      if (XNp_base)
-      {
-         XNp_base_parent = XNp_base -> Parent ();
-         if (! XNp_base_parent)
-            // no correct initialization of the xpath_processor object
-            throw execution_error (1);
-         // set the main node as the context one, if it's an element
-         if (XNp_base -> ToElement ())
-            XEp_context = XNp_base -> ToElement ();
-      }
-      else
-         XNp_base_parent = NULL;
-   #else
-      if (XNp_base)
-      {
-         // backup the parent, prev and next node pointers
-         // we will restore them in the destructor
-         XNp_caller_parent = XNp_base -> Parent ();
-         XNp_caller_prev = XNp_base -> PreviousSibling ();
-         XNp_caller_next = XNp_base -> NextSibling ();
-
-         // now, isolate this element from it's parent and siblings
-         TiXmlNodeManip * XNp_false_node = (TiXmlNodeManip *) XNp_base;
-         XNp_false_node -> v_isolate ();
-
-         // create a new root for it
-         XEp_root = new TiXmlElement ("root");
-         XEp_root -> LinkEndChild ((TiXmlNode *) XNp_base);
-
-         // set the main node as the context one, if it's an element
-         if (XNp_base -> ToElement ())
-            XEp_context = XNp_base -> ToElement ();
-         // v_order_tree ();
-      }
-      else
-         XEp_root = NULL;
-   #endif
-}
-
-#if ! OP_CONCURRENT
-   /// Remove our fake root, and restore the original relationships of the 
-   /// node given to us as argument
-   void xpath_processor::v_remove_root ()
+   if (XNp_base)
    {
-      if (XEp_root)
-      {
-         assert (XNp_base);
-         // reset the original relationships
-         TiXmlNodeManip * XNp_false_node = (TiXmlNodeManip *) XNp_base;
-         XNp_false_node -> v_reset (XNp_caller_parent, XNp_caller_next, XNp_caller_prev);
-
-         TiXmlElementNoDelete * XEp_false_root = (TiXmlElementNoDelete *) XEp_root;
-         XEp_false_root -> v_clean_children ();
-         delete XEp_false_root;
-      }
+      XNp_base_parent = XNp_base -> Parent ();
+      if (! XNp_base_parent)
+         // no correct initialization of the xpath_processor object
+         throw execution_error (1);
+      // set the main node as the context one, if it's an element
+      if (XNp_base -> ToElement ())
+         XEp_context = XNp_base -> ToElement ();
    }
-#endif
+   else
+      XNp_base_parent = NULL;
+}
 
 /// Compute an XPath expression 
 expression_result xpath_processor::er_compute_xpath ()
 {
    try
    {
-      #if OP_CONCURRENT
-         XNp_base_parent = XNp_base -> Parent ();
-         if (! XNp_base_parent)
-            // no correct initialization of the xpath_processor object
-            throw execution_error (1);
-         // set the main node as the context one, if it's an element
-         if (XNp_base -> ToElement ())
-            XEp_context = XNp_base -> ToElement ();
-      #else
-         v_build_root ();
-               
-         if (! XEp_root)
-            // no correct initialization of the xpath_processor object
-            throw execution_error (1);
-      #endif
+      XNp_base_parent = XNp_base -> Parent ();
+      if (! XNp_base_parent)
+         // no correct initialization of the xpath_processor object
+         throw execution_error (1);
+      // set the main node as the context one, if it's an element
+      if (XNp_base -> ToElement ())
+         XEp_context = XNp_base -> ToElement ();
 
       // Decode XPath expression
       v_evaluate ();
@@ -246,49 +158,29 @@ expression_result xpath_processor::er_compute_xpath ()
       }
       else
       {
-         #if OP_CONCURRENT
-            expression_result er_null (NULL);
-         #else
-            expression_result er_null;
-         #endif
+         expression_result er_null (NULL);
          er_result = er_null;
          e_error = e_error_stack;
       }
    }
    catch (syntax_error)
    {
-      #if OP_CONCURRENT
-         expression_result er_null (NULL);
-      #else
-         expression_result er_null;
-      #endif
+      expression_result er_null (NULL);
       er_result = er_null;
       e_error = e_error_syntax;
    }
    catch (syntax_overflow)
    {
-      #if OP_CONCURRENT
-         expression_result er_null (NULL);
-      #else
-         expression_result er_null;
-      #endif
+      expression_result er_null (NULL);
       er_result = er_null;
       e_error = e_error_overflow;
    }
    catch (execution_error)
    {
-      #if OP_CONCURRENT
-         expression_result er_null (NULL);
-      #else
-         expression_result er_null;
-      #endif
+      expression_result er_null (NULL);
       er_result = er_null;
       e_error = e_error_execution;
    }
-
-   #if ! OP_CONCURRENT
-      v_remove_root ();
-   #endif
 
    return er_result;
 }
@@ -296,11 +188,7 @@ expression_result xpath_processor::er_compute_xpath ()
 /// Compute an XPath expression and return the result as a string
 TIXML_STRING xpath_processor::S_compute_xpath ()
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_base);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_base);
    TIXML_STRING S_res;
 
    er_res = er_compute_xpath ();
@@ -311,11 +199,7 @@ TIXML_STRING xpath_processor::S_compute_xpath ()
 /// Compute an XPath expression and return the result as an integer
 int xpath_processor::i_compute_xpath ()
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_base);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_base);
    int i_res;
 
    er_res = er_compute_xpath ();
@@ -325,11 +209,7 @@ int xpath_processor::i_compute_xpath ()
 
 bool xpath_processor::o_compute_xpath ()
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_base);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_base);
    bool o_res;
 
    er_res = er_compute_xpath ();
@@ -339,11 +219,7 @@ bool xpath_processor::o_compute_xpath ()
 
 double xpath_processor::d_compute_xpath ()
 {
-   #if OP_CONCURRENT
-      expression_result er_res (XNp_base);
-   #else
-      expression_result er_res;
-   #endif
+   expression_result er_res (XNp_base);
    double d_res;
 
    er_res = er_compute_xpath ();
@@ -1184,11 +1060,7 @@ void xpath_processor ::v_execute_step (
 	xpath_construct xc_action;
    TIXML_STRING S_literal, S_name;
    const TiXmlElement * XEp_child, * XEp_elem;
-   #if OP_CONCURRENT
-      const TiXmlNode * XNp_father;
-   #else
-      const TiXmlElement * XEp_father;
-   #endif
+   const TiXmlNode * XNp_father;
    const TiXmlAttribute * XAp_attrib;
    const TiXmlNode * XNp_next, * XNp_parent;
    node_set ns_source, ns_target;
@@ -1205,20 +1077,12 @@ void xpath_processor ::v_execute_step (
             break;
          case -1 :
             // everywhere
-            #if OP_CONCURRENT
-               ns_source . v_copy_selected_node_recursive_root_only (XNp_base_parent, XNp_base);
-            #else
-               ns_source . v_copy_selected_node_recursive (XEp_root);
-            #endif
+            ns_source . v_copy_selected_node_recursive_root_only (XNp_base_parent, XNp_base);
             i_relative_action = 1;
             break;
          case 0 :
             // first absolute
-            #if OP_CONCURRENT
-               ns_source . v_add_node_in_set (XNp_base_parent);
-            #else
-               ns_source . v_add_node_in_set (XEp_root);
-            #endif
+            ns_source . v_add_node_in_set (XNp_base_parent);
             i_relative_action = 1;
             break;
          default :
@@ -1264,24 +1128,15 @@ void xpath_processor ::v_execute_step (
       {
          if (! ns_source . o_is_attrib (u_node))
          {
-            #if OP_CONCURRENT
-               XNp_father = ns_source . XNp_get_node_in_set (u_node);
-               if (XNp_father)
-            #else
-               XEp_father = ns_source . XNp_get_node_in_set (u_node) -> ToElement ();
-               if (XEp_father)
-            #endif
+            XNp_father = ns_source . XNp_get_node_in_set (u_node);
+            if (XNp_father)
             {
                switch (i_axis_type)
                {
                   case 0 :
                   case lex_child :
                      // none
-                     #if OP_CONCURRENT
-                        XEp_child = XNp_father -> FirstChildElement ();
-                     #else
-                        XEp_child = XEp_father -> FirstChildElement ();
-                     #endif
+                     XEp_child = XNp_father -> FirstChildElement ();
                      while (XEp_child)
                      {
                         ns_target . v_add_node_in_set_if_name_or_star (XEp_child, S_name);
@@ -1291,14 +1146,10 @@ void xpath_processor ::v_execute_step (
                   case 1 :
                   case lex_attribute :
                      // @
-                     #if OP_CONCURRENT
-                        if (XNp_father -> ToElement ())
-                           XAp_attrib = XNp_father -> ToElement () -> FirstAttribute ();
-                        else
-                           XAp_attrib = NULL;
-                     #else
-                        XAp_attrib = XEp_father -> FirstAttribute ();
-                     #endif
+                     if (XNp_father -> ToElement ())
+                        XAp_attrib = XNp_father -> ToElement () -> FirstAttribute ();
+                     else
+                        XAp_attrib = NULL;
                      while (XAp_attrib)
                      {
                         ns_target . v_add_attrib_in_set_if_name_or_star (XAp_attrib, S_name);
@@ -1306,56 +1157,31 @@ void xpath_processor ::v_execute_step (
                      }
                      break;
                   case lex_parent :
-                     #if OP_CONCURRENT
-                        XNp_parent = XNp_father -> Parent ();
-                     #else
-                        XNp_parent = XEp_father -> Parent ();
-                     #endif
+                     XNp_parent = XNp_father -> Parent ();
                      if (XNp_parent)
                         ns_target . v_add_node_in_set_if_name_or_star (XNp_parent, S_name);
                      break;
                   case lex_ancestor :
-                     #if OP_CONCURRENT
-                        XNp_parent = XNp_father -> Parent ();
-                        // we have to exclude our own dummy parent
-                        while (XNp_parent && XNp_parent != XNp_base_parent)
-                     #else
-                        XNp_parent = XEp_father -> Parent ();
-                        // we have to exclude our own dummy parent
-                        while (XNp_parent && XNp_parent != XEp_root)
-                     #endif
+                     XNp_parent = XNp_father -> Parent ();
+                     // we have to exclude our own dummy parent
+                     while (XNp_parent && XNp_parent != XNp_base_parent)
                      {
                         ns_target . v_add_node_in_set_if_name_or_star (XNp_parent, S_name);
                         XNp_parent = XNp_parent -> Parent ();
                      }
                      break;
                   case lex_ancestor_or_self :
-                     #if OP_CONCURRENT
-                        if (XNp_father -> ToElement () && XNp_father != XNp_base_parent)
-                           ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
-                        XNp_parent = XNp_father -> Parent ();
-                     #else
-                        if (XEp_father != XEp_root)
-                           ns_target . v_add_node_in_set_if_name_or_star (XEp_father, S_name);
-                        XNp_parent = XEp_father -> Parent ();
-                     #endif
-                     #if OP_CONCURRENT
-                        while (XNp_parent && XNp_parent != XNp_base_parent)
-                     #else
-                        // we have to exclude our own dummy parent
-                        while (XNp_parent && XNp_parent != XEp_root)
-                     #endif
+                     if (XNp_father -> ToElement () && XNp_father != XNp_base_parent)
+                        ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
+                     XNp_parent = XNp_father -> Parent ();
+                     while (XNp_parent && XNp_parent != XNp_base_parent)
                      {
                         ns_target . v_add_node_in_set_if_name_or_star (XNp_parent, S_name);
                         XNp_parent = XNp_parent -> Parent ();
                      }
                      break;
                   case lex_following_sibling :
-                     #if OP_CONCURRENT
-                        XNp_next = XNp_father -> NextSiblingElement ();
-                     #else
-                        XNp_next = XEp_father -> NextSiblingElement ();
-                     #endif
+                     XNp_next = XNp_father -> NextSiblingElement ();
                      while (XNp_next)
                      {
                         ns_target . v_add_node_in_set_if_name_or_star (XNp_next, S_name);
@@ -1363,11 +1189,7 @@ void xpath_processor ::v_execute_step (
                      }
                      break;
                   case lex_preceding_sibling :
-                     #if OP_CONCURRENT
-                        XNp_next = XNp_father -> PreviousSibling ();
-                     #else
-                        XNp_next = XEp_father -> PreviousSibling ();
-                     #endif
+                     XNp_next = XNp_father -> PreviousSibling ();
                      while (XNp_next)
                      {
                         if (XNp_next -> Type () == TiXmlNode::ELEMENT)
@@ -1376,73 +1198,40 @@ void xpath_processor ::v_execute_step (
                      }
                      break;
                   case lex_descendant :
-                     #if OP_CONCURRENT
-                        if (XNp_father -> ToElement ())
-                        {
-                           if (S_name == "*")
-                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
-                           else
-                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
-                        }
-                     #else
+                     if (XNp_father -> ToElement ())
+                     {
                         if (S_name == "*")
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XEp_father, NULL);
+                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
                         else
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XEp_father, S_name . c_str ());
-                     #endif
+                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
+                     }
                      break;
                   case lex_descendant_or_self :
-                     #if OP_CONCURRENT
-                        if (XNp_father -> ToElement ())
-                        {
-                           if (XNp_father != XNp_base_parent)
-                              ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
-                           if (S_name == "*")
-                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
-                           else
-                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
-                        }
-                     #else
-                        if (XEp_father != XEp_root)
-                           ns_target . v_add_node_in_set_if_name_or_star (XEp_father, S_name);
+                     if (XNp_father -> ToElement ())
+                     {
+                        if (XNp_father != XNp_base_parent)
+                           ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
                         if (S_name == "*")
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XEp_father, NULL);
+                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
                         else
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XEp_father, S_name . c_str ());
-                     #endif
+                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
+                     }
                      break;
                   case lex_self :
-                     #if OP_CONCURRENT
-                        if (XNp_father -> ToElement ())
-                        {
-                           if (XNp_father != XNp_base_parent && XNp_father -> ToElement ())
-                              ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
-                        }
-                     #else
-                        if (XEp_father != XEp_root)
-                           ns_target . v_add_node_in_set_if_name_or_star (XEp_father, S_name);
-                     #endif
+                     if (XNp_father -> ToElement ())
+                     {
+                        if (XNp_father != XNp_base_parent && XNp_father -> ToElement ())
+                           ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
+                     }
                      break;
                   case lex_following :
-                     #if OP_CONCURRENT
-                        ns_target . v_add_all_foll_node (XNp_father, S_name);
-                     #else
-                        ns_target . v_add_all_foll_node (XEp_father, S_name);
-                     #endif
+                     ns_target . v_add_all_foll_node (XNp_father, S_name);
                      break;
                   case lex_preceding :
-                     #if OP_CONCURRENT
-                        ns_target . v_add_all_prec_node (XNp_father, S_name);
-                     #else
-                        ns_target . v_add_all_prec_node (XEp_father, S_name);
-                     #endif
+                     ns_target . v_add_all_prec_node (XNp_father, S_name);
                      break;
                   case lex_comment :
-                     #if OP_CONCURRENT
-                        XNp_next = XNp_father -> FirstChild ();               
-                     #else
-                        XNp_next = XEp_father -> FirstChild ();               
-                     #endif
+                     XNp_next = XNp_father -> FirstChild ();               
                      while (XNp_next)
                      {
                         if (XNp_next -> Type () == TiXmlNode::COMMENT)
@@ -1451,11 +1240,7 @@ void xpath_processor ::v_execute_step (
                      }
                      break;
                   case lex_text :
-                     #if OP_CONCURRENT
-                        XNp_next = XNp_father -> FirstChild ();               
-                     #else
-                        XNp_next = XEp_father -> FirstChild ();               
-                     #endif
+                     XNp_next = XNp_father -> FirstChild ();               
                      while (XNp_next)
                      {
                         if (XNp_next -> Type () == TiXmlNode::TEXT)
@@ -1464,11 +1249,7 @@ void xpath_processor ::v_execute_step (
                      }
                      break;
                   case lex_node :
-                     #if OP_CONCURRENT
-                        XNp_next = XNp_father -> FirstChild ();               
-                     #else
-                        XNp_next = XEp_father -> FirstChild ();               
-                     #endif
+                     XNp_next = XNp_father -> FirstChild ();               
                      while (XNp_next)
                      {
                         ns_target . v_add_node_in_set (XNp_next);
@@ -2343,11 +2124,7 @@ void xpath_processor::v_function_mult (expression_result ** erpp_arg, unsigned u
 /// \n It computes the mathematical opposite
 void xpath_processor::v_function_opposite ()
 {
-   #if OP_CONCURRENT
-      expression_result er_arg (XNp_base);
-   #else
-      expression_result er_arg;
-   #endif
+   expression_result er_arg (XNp_base);
 
    er_arg = * xs_stack . erp_top ();
    xs_stack . v_pop ();
@@ -2361,34 +2138,6 @@ void xpath_processor::v_function_opposite ()
          break;
    }
 }
-
-#if ! OP_CONCURRENT
-   /// Order the tree : assign an integer to all nodes based on the document order
-   /// \n Right now, tinyxml doesn't have a user value associated to attributes ... arrrgh.
-   /// We order everything else, and will have to compute attributes order on demand
-   void xpath_processor::v_order_tree ()
-   {
-      int i_dummy;
-
-      i_dummy = 1;
-      v_order_recurs (XEp_root, i_dummy);
-   }
-
-   /// Recursive ordering of an XML tree according to XPath's document order.
-   /// \n The result is stored as an integer in the void * pointer managed by TiXmlNode::SetUserData / TiXmlNode::GetUserData
-   void xpath_processor::v_order_recurs (TiXmlNode * Np_base, int & i_current)
-   {
-      TiXmlNode * Np_child;
-
-      Np_base -> SetUserData ((void *) i_current++);
-      Np_child = Np_base -> FirstChild ();
-      while (Np_child)
-      {
-         v_order_recurs (Np_child, i_current);
-         Np_child = Np_child -> NextSibling ();
-      }
-   }
-#endif
 
 /// Set the current context node for predicate evaluations
 void xpath_processor::v_set_context (
