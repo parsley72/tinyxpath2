@@ -82,6 +82,16 @@ void node_set::v_copy_selected_node_recursive (
    v_copy_selected_node_recursive (XNp_root, NULL);
 }
 
+#if OP_CONCURRENT
+   /// Copy all nodes in the tree to the node_set, knowing that we are copying the root
+   void node_set::v_copy_selected_node_recursive_root_only (
+      const TiXmlNode * XNp_root, const TiXmlNode * XNp_base)      
+   {
+      v_add_node_in_set (XNp_root);
+      v_copy_selected_node_recursive (XNp_base, NULL);
+   }
+#endif
+
 /// Copy all nodes in the tree to the node_set
 void node_set::v_copy_selected_node_recursive (
    const TiXmlNode * XNp_root,      ///< The node to be copied
@@ -168,6 +178,34 @@ void node_set::v_add_base_in_set (
 
    if (o_exist_in_set (XBp_member))
       return;
+
+/*      
+   printf ("add ");
+   if (o_attrib)
+      printf ("attrib %s='%s'", ((TiXmlAttribute *) XBp_member)->Name(),((TiXmlAttribute *) XBp_member)->Value());
+   else
+   {
+      TiXmlNode * XNp_node;
+      XNp_node = (TiXmlNode *) XBp_member;
+      switch (XNp_node->Type())
+      {
+         case TiXmlNode::TEXT :
+            printf ("text (%s)", XNp_node->ToText()->Value ());
+            break;
+         case TiXmlNode::DOCUMENT :
+            printf ("document");
+            break;
+         case TiXmlNode::ELEMENT :
+            printf ("element <%s>", XNp_node->ToElement()->Value ());
+            break;
+         case TiXmlNode::COMMENT :
+            printf ("comment <%s>", XNp_node->ToComment()->Value ());
+            break;
+      }
+   }
+   printf ("\n");
+*/
+      
    vpp_new_list = new const void * [u_nb_node + 1];
    op_new_list = new bool [u_nb_node + 1];
    if (u_nb_node)
@@ -240,60 +278,178 @@ void node_set::v_add_all_prec_node (
    }
 }
 
-/// Internal utility class for the node set sorting
-class ptr_and_flag 
+/// Check if a node is an ancestor of another one
+static bool o_is_ancestor (const TiXmlNode * XNp_test, const TiXmlNode * XNp_node)
 {
-public :
-   const void * vp_ptr;
-   bool o_flag;
-} ;
+   while (XNp_test)
+   {
+      if (XNp_test == XNp_node)
+         return true;
+      XNp_test = XNp_test -> Parent ();
+   }
+   return false;
+}
 
-/// Internal utility function for node set sorting
-int i_compare_ptr_and_flag (
-   const void * vp_1,   ///< Ptr to first element to compare
-   const void * vp_2)   ///< Ptr to second element to compare
-{
-   const ptr_and_flag * pafp_1, * pafp_2;
-   TiXmlNode * XNp_1, * XNp_2;
+#if OP_CONCURRENT
+   /// Internal utility class for the node set sorting
+   class ptr_2_and_flag 
+   {
+   public :
+      const void * vp_node;
+      const TiXmlNode * XNp_root;
+      bool o_flag;
+   } ;
 
-   pafp_1 = (const ptr_and_flag *) vp_1;
-   pafp_2 = (const ptr_and_flag *) vp_2;
-   if (pafp_1 -> o_flag || pafp_2 -> o_flag)
-      // for now
+   enum {e_not_found, e_lower, e_higher, e_same};
+   
+   /// Find which node is first in tree, in document order (recursive calls)
+   static int i_compare_node_in_tree (const TiXmlNode * XNp_root, const TiXmlBase * XBp_1, const TiXmlBase * XBp_2)
+   {
+      const TiXmlNode * XNp_child;
+      const TiXmlAttribute * XAp_attrib;
+      int i_res;
+      
+      if (! XNp_root || ! XBp_1 || ! XBp_2)
+         return e_not_found;
+      if (XNp_root == XBp_1)
+         if (XNp_root == XBp_2)
+            return e_same;
+         else
+            return e_lower;
+      else
+         if (XNp_root == XBp_2)
+            return e_higher;
+      if (XNp_root -> ToElement ())
+      {
+         // We have an element in the tree, let's see if one of the argument is an attribute of this element
+         XAp_attrib = XNp_root -> ToElement () -> FirstAttribute ();   
+         while (XAp_attrib)
+         {
+            if (XAp_attrib == XBp_1)
+               if (XAp_attrib == XBp_2)
+                  return e_same;
+               else
+                  return e_lower;
+            else
+               if (XAp_attrib == XBp_2)
+                  return e_higher;
+            XAp_attrib = XAp_attrib -> Next ();
+         }
+      }
+      XNp_child = XNp_root -> FirstChild ();
+      while (XNp_child)
+      {
+         i_res = i_compare_node_in_tree (XNp_child, XBp_1, XBp_2);
+         if (i_res != e_not_found)
+            return i_res;
+         XNp_child = XNp_child -> NextSibling ();
+      }
+      return e_not_found;
+   }
+
+   /// Internal utility function for node set sorting
+   static int i_compare_ptr_2_and_flag (
+      const void * vp_1,   ///< Ptr to first element to compare
+      const void * vp_2)   ///< Ptr to second element to compare
+   {
+      const ptr_2_and_flag * p2afp_1, * p2afp_2;
+      int i_res;
+
+      p2afp_1 = (const ptr_2_and_flag *) vp_1;
+      p2afp_2 = (const ptr_2_and_flag *) vp_2;
+      i_res = i_compare_node_in_tree (p2afp_1 -> XNp_root, (const TiXmlBase *) p2afp_1 -> vp_node, (const TiXmlBase *) p2afp_1 -> vp_node);
+      switch (i_res)
+      {
+         case e_lower :
+            return -1;
+         case e_higher : 
+            return 1;
+      }
       return 0;
-   XNp_1 = (TiXmlNode *) pafp_1 -> vp_ptr;
-   XNp_2 = (TiXmlNode *) pafp_2 -> vp_ptr;
-   return (int) (XNp_1 -> GetUserData ()) - (int) (XNp_2 -> GetUserData ());
-}
-
-/// Sort the node set according to the document order.
-/// \n The document order must have been recorded already in the tiny xml user's value
-/// \n There's still a problem with the attributes. They aren't covered by the GetUserData / SetUserData
-/// yet. If two attributes come from the same element, we have to compute on the fly their relative position
-void node_set::v_document_sort ()
-{
-   ptr_and_flag * pafp_list;
-   unsigned u_node;
-
-   if (u_nb_node < 2)
-      return;
-
-   // well, next problem is, if we want to make a clean library, we can't use static variables
-   // the only way for us to sort the vpp_node_set / op_attrib is to make it the other way up
-   pafp_list = new ptr_and_flag [u_nb_node];
-   for (u_node = 0; u_node < u_nb_node; u_node++)
-   {
-      pafp_list [u_node] . vp_ptr = vpp_node_set [u_node];
-      pafp_list [u_node] . o_flag = op_attrib [u_node];
    }
-   qsort (pafp_list, u_nb_node, sizeof (ptr_and_flag), i_compare_ptr_and_flag);
-   for (u_node = 0; u_node < u_nb_node; u_node++)
+   
+
+   /// Sort the node set according to the document order.
+   /// \n We do sort these nodes on the fly, comparing parents and orders for each
+   void node_set::v_document_sort (const TiXmlNode * XNp_root)
    {
-      vpp_node_set [u_node] = pafp_list [u_node] . vp_ptr;
-      op_attrib [u_node] = pafp_list [u_node] . o_flag;
+      ptr_2_and_flag * p2afp_list;
+      unsigned u_node;
+
+      if (u_nb_node < 2)
+         return;
+
+      p2afp_list = new ptr_2_and_flag [u_nb_node];
+      for (u_node = 0; u_node < u_nb_node; u_node++)
+      {
+         p2afp_list [u_node] . vp_node = vpp_node_set [u_node];
+         p2afp_list [u_node] . o_flag = op_attrib [u_node];
+         p2afp_list [u_node] . XNp_root = XNp_root;
+      }
+      qsort (p2afp_list, u_nb_node, sizeof (ptr_2_and_flag), i_compare_ptr_2_and_flag);
+      for (u_node = 0; u_node < u_nb_node; u_node++)
+      {
+         vpp_node_set [u_node] = p2afp_list [u_node] . vp_node;
+         op_attrib [u_node] = p2afp_list [u_node] . o_flag;
+      }
+      delete [] p2afp_list;
    }
-   delete [] pafp_list;
-}
+#else
+   /// Internal utility class for the node set sorting
+   class ptr_and_flag 
+   {
+   public :
+      const void * vp_ptr;
+      bool o_flag;
+   } ;
+
+   /// Internal utility function for node set sorting
+   static int i_compare_ptr_and_flag (
+      const void * vp_1,   ///< Ptr to first element to compare
+      const void * vp_2)   ///< Ptr to second element to compare
+   {
+      const ptr_and_flag * pafp_1, * pafp_2;
+      TiXmlNode * XNp_1, * XNp_2;
+
+      pafp_1 = (const ptr_and_flag *) vp_1;
+      pafp_2 = (const ptr_and_flag *) vp_2;
+      if (pafp_1 -> o_flag || pafp_2 -> o_flag)
+         // for now
+         return 0;
+      XNp_1 = (TiXmlNode *) pafp_1 -> vp_ptr;
+      XNp_2 = (TiXmlNode *) pafp_2 -> vp_ptr;
+      return (int) (XNp_1 -> GetUserData ()) - (int) (XNp_2 -> GetUserData ());
+   }
+   
+   /// Sort the node set according to the document order.
+   /// \n The document order must have been recorded already in the tiny xml user's value
+   /// \n There's still a problem with the attributes. They aren't covered by the GetUserData / SetUserData
+   /// yet. If two attributes come from the same element, we have to compute on the fly their relative position
+   void node_set::v_document_sort ()
+   {
+      ptr_and_flag * pafp_list;
+      unsigned u_node;
+
+      if (u_nb_node < 2)
+         return;
+
+      // well, next problem is, if we want to make a clean library, we can't use static variables
+      // the only way for us to sort the vpp_node_set / op_attrib is to make it the other way up
+      pafp_list = new ptr_and_flag [u_nb_node];
+      for (u_node = 0; u_node < u_nb_node; u_node++)
+      {
+         pafp_list [u_node] . vp_ptr = vpp_node_set [u_node];
+         pafp_list [u_node] . o_flag = op_attrib [u_node];
+      }
+      qsort (pafp_list, u_nb_node, sizeof (ptr_and_flag), i_compare_ptr_and_flag);
+      for (u_node = 0; u_node < u_nb_node; u_node++)
+      {
+         vpp_node_set [u_node] = pafp_list [u_node] . vp_ptr;
+         op_attrib [u_node] = pafp_list [u_node] . o_flag;
+      }
+      delete [] pafp_list;
+   }
+#endif   
 
 /// Debug function to print the content of a node set to stdout
 void node_set::v_dump ()

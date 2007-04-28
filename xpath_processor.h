@@ -35,11 +35,7 @@ distribution.
 #ifndef __XPATH_PROCESSOR_H
 #define __XPATH_PROCESSOR_H
 
-#define ACTION_STACK 1
-
-#ifdef ACTION_STACK
-   #include "action_store.h"
-#endif
+#include "action_store.h"
 #include "xpath_expression.h"
 #include "xpath_stream.h"
 #include "xpath_stack.h"
@@ -116,11 +112,11 @@ protected :
    void v_function_opposite ();
    void v_function_mult (expression_result ** erpp_arg, unsigned u_sub);
 
-   /// flag that says if the tree has been ordered already. This is a rather slow process, 
-   /// so we only do it if needed
-   void v_order_tree ();
-   void v_order_recurs (TiXmlNode * Np_base, int & i_current);
-
+   #if ! OP_CONCURRENT
+      void v_order_tree ();
+      void v_order_recurs (TiXmlNode * Np_base, int & i_current);
+   #endif
+   
    void v_push_int (int i_val, const char * cp_comment = "")   {xs_stack . v_push_int (i_val, cp_comment);}
    void v_push_string (TIXML_STRING S_val)   {xs_stack . v_push_string (S_val);}
    void v_push_bool (bool o_val)   {xs_stack . v_push_bool (o_val);}
@@ -134,22 +130,27 @@ protected :
 
    void v_set_context (const TiXmlElement * XEp_in, bool o_by_name);
    const TiXmlElement * XEp_get_context () {return XEp_context;}
-   /// Root, above the XML tree given as parameter to the xpath_processor object
-   TiXmlElement * XEp_root;
    /// Current context
    const TiXmlElement * XEp_context;
    /// The result of the XPath evaluation, for further node retrieving by v_get_xpath_base
    expression_result er_result;
    bool o_is_context_by_name;
 
-   const TiXmlNode * XNp_caller_parent;
-   const TiXmlNode * XNp_caller_prev;
-   const TiXmlNode * XNp_caller_next;
+   /// Base node
    const TiXmlNode * XNp_base;
+   #if OP_CONCURRENT
+      /// Node above the caller:    
+      const TiXmlNode * XNp_base_parent;
+   #else
+      /// Root, above the XML tree given as parameter to the xpath_processor object
+      TiXmlElement * XEp_root;
+      const TiXmlNode * XNp_caller_parent;
+      const TiXmlNode * XNp_caller_prev;
+      const TiXmlNode * XNp_caller_next;
 
+      void v_remove_root ();
+   #endif
    void v_build_root ();
-   void v_remove_root ();
-
 } ;
 
 }
