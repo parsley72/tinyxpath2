@@ -1331,7 +1331,7 @@ void xpath_processor ::v_execute_step (
                      break;
                   case lex_ancestor_or_self :
                      #if OP_CONCURRENT
-                        if (XNp_father != XNp_base_parent)
+                        if (XNp_father -> ToElement () && XNp_father != XNp_base_parent)
                            ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
                         XNp_parent = XNp_father -> Parent ();
                      #else
@@ -1377,10 +1377,13 @@ void xpath_processor ::v_execute_step (
                      break;
                   case lex_descendant :
                      #if OP_CONCURRENT
-                        if (S_name == "*")
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
-                        else
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
+                        if (XNp_father -> ToElement ())
+                        {
+                           if (S_name == "*")
+                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
+                           else
+                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
+                        }
                      #else
                         if (S_name == "*")
                            ns_target . v_copy_selected_node_recursive_no_attrib (XEp_father, NULL);
@@ -1390,12 +1393,15 @@ void xpath_processor ::v_execute_step (
                      break;
                   case lex_descendant_or_self :
                      #if OP_CONCURRENT
-                        if (XNp_father != XNp_base_parent)
-                           ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
-                        if (S_name == "*")
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
-                        else
-                           ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
+                        if (XNp_father -> ToElement ())
+                        {
+                           if (XNp_father != XNp_base_parent)
+                              ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
+                           if (S_name == "*")
+                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, NULL);
+                           else
+                              ns_target . v_copy_selected_node_recursive_no_attrib (XNp_father, S_name . c_str ());
+                        }
                      #else
                         if (XEp_father != XEp_root)
                            ns_target . v_add_node_in_set_if_name_or_star (XEp_father, S_name);
@@ -1407,8 +1413,11 @@ void xpath_processor ::v_execute_step (
                      break;
                   case lex_self :
                      #if OP_CONCURRENT
-                        if (XNp_father != XNp_base_parent && XNp_father -> ToElement ())
-                           ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
+                        if (XNp_father -> ToElement ())
+                        {
+                           if (XNp_father != XNp_base_parent && XNp_father -> ToElement ())
+                              ns_target . v_add_node_in_set_if_name_or_star (XNp_father, S_name);
+                        }
                      #else
                         if (XEp_father != XEp_root)
                            ns_target . v_add_node_in_set_if_name_or_star (XEp_father, S_name);
