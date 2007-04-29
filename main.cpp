@@ -139,7 +139,7 @@ int main ()
    fprintf (Fp_out_html, "<h2>Results</h2>\n");
 
    TiXmlElement * XEp_sub = XEp_main -> FirstChildElement ("b");
-#if 0
+
    v_test_one_string (XEp_main, "//b/@val", "123" ); 
 
    // v_test_one_string (XEp_main, "//x/y/text()", "inner text" ); 
@@ -175,7 +175,7 @@ int main ()
    v_test_one_string (XEp_main, "count(//b/child::*)", "3");
    v_test_one_string (XEp_main, "count(//x/ancestor-or-self::*)", "2");
    v_test_one_string (XEp_main, "count(//b/descendant-or-self::*)", "4");
-#endif  
+
    v_test_one_string (XEp_main, "count(//self::*)", "6");
 
    v_test_one_string (XEp_main, "count(/a/descendant::*)", "5");
