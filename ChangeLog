@@ -3,6 +3,7 @@
 Structural changes for 1.3.0
 
 - All code is now reentrant: we do not use the UserData anymore
+- Some very useful enhancements to the Linux build (Thanks Martin Bernreuther)
 
 // ================== 1.2.3 ==================
 
