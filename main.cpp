@@ -103,6 +103,19 @@ int main ()
    bool o_ok, o_res;
    double d_out;
 
+   TIXML_STRING S_res;
+   
+   XDp_doc = new TiXmlDocument;
+   if (! XDp_doc -> LoadFile ("openoff.xml"))
+   {
+      printf ("Can't find openoff.xml !\n");
+      return 99;
+   }
+   S_res = TinyXPath::S_xpath_string (XDp_doc -> RootElement (), "/office:document-content/office:body/office:text/text:p/text()");
+   S_res = TinyXPath::S_xpath_string (XDp_doc -> RootElement (), "//text:sequence-decls/*[1]/@text:name");
+   delete XDp_doc;
+   
+
    XDp_doc = new TiXmlDocument;
    if (! XDp_doc -> LoadFile ("test.xml"))
    {
@@ -367,8 +380,8 @@ int main ()
                ca_expr, TinyXPath::S_xpath_string (XDp_doc -> RootElement (), ca_expr) . c_str ());
    }
    fprintf (Fp_out_html, "</table>\n");
-
    delete XDp_doc;
+   
    fprintf (Fp_out_html, "<br />&nbsp;<br /></body></html>\n");
    fclose (Fp_out_html);
 
