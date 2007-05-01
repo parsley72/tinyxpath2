@@ -822,8 +822,8 @@ void xpath_processor::v_execute_one (
          switch (u_sub)
          {
             case xpath_xml_q_name_colon :
-               v_execute_one (xpath_xml_prefix, o_skip_only);
                v_execute_one (xpath_xml_local_part, o_skip_only);
+               v_execute_one (xpath_xml_prefix, o_skip_only);
                break;
             case xpath_xml_q_name_simple :
                v_execute_one (xpath_xml_local_part, o_skip_only);
@@ -838,7 +838,14 @@ void xpath_processor::v_execute_one (
 
       case xpath_xml_prefix :
          if (! o_skip_only)
+         {
+            // we replace the current stack content (local_part) by the fully
+            // qualified XML name (prefix:local_part)
+            S_name = S_pop_string ();
+            S_literal += ":";
+            S_literal += S_name;
             v_push_string (S_literal);
+         }
          break;
 
       case xpath_argument :
