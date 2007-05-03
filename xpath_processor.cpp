@@ -1549,6 +1549,7 @@ void xpath_processor::v_function_last (
 }
 
 /// XPath \b name function
+/// \n XPath spec: If the argument it omitted, it defaults to a node-set with the context node as its only member.
 void xpath_processor::v_function_name (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
@@ -1556,17 +1557,28 @@ void xpath_processor::v_function_name (
    TIXML_STRING S_res;   
    node_set * nsp_set;
 
-   if (u_nb_arg != 1)
-      throw execution_error (22);
-   S_res = "";
-   if (erpp_arg [0] -> e_type == e_node_set)
+   switch (u_nb_arg)
    {
-      nsp_set = erpp_arg [0] -> nsp_get_node_set ();
-      if (nsp_set -> u_get_nb_node_in_set ())
-         if (nsp_set -> o_is_attrib (0))
-            S_res = nsp_set -> XAp_get_attribute_in_set (0) -> Name ();
-         else
-            S_res = nsp_set -> XNp_get_node_in_set (0) -> Value ();
+      case 0 :
+         // name of the context node
+         XEp_context = XEp_get_context ();
+         S_res = XEp_context -> Value ();
+         break;
+      case 1 :
+         // name of the argument
+         S_res = "";
+         if (erpp_arg [0] -> e_type == e_node_set)
+         {
+            nsp_set = erpp_arg [0] -> nsp_get_node_set ();
+            if (nsp_set -> u_get_nb_node_in_set ())
+               if (nsp_set -> o_is_attrib (0))
+                  S_res = nsp_set -> XAp_get_attribute_in_set (0) -> Name ();
+               else
+                  S_res = nsp_set -> XNp_get_node_in_set (0) -> Value ();
+         }
+         break;
+      default :
+         throw execution_error (22);
    }
    v_push_string (S_res);
 }

@@ -104,17 +104,15 @@ int main ()
    double d_out;
 
    TIXML_STRING S_res;
+
    
    XDp_doc = new TiXmlDocument;
-   if (! XDp_doc -> LoadFile ("openoff.xml"))
+   if (XDp_doc -> LoadFile ("openoff.xml"))
    {
-      printf ("Can't find openoff.xml !\n");
-      return 99;
-   }
-   S_res = TinyXPath::S_xpath_string (XDp_doc -> RootElement (), "/office:document-content/office:body/office:text/text:p/text()");
-   S_res = TinyXPath::S_xpath_string (XDp_doc -> RootElement (), "//text:sequence-decls/*[1]/@text:name");
+      S_res = TinyXPath::S_xpath_string (XDp_doc -> RootElement (), "/office:document-content/office:body/office:text/text:p/text()");
+      S_res = TinyXPath::S_xpath_string (XDp_doc -> RootElement (), "//text:sequence-decls/*[1]/@text:name");
+   }   
    delete XDp_doc;
-   
 
    XDp_doc = new TiXmlDocument;
    if (! XDp_doc -> LoadFile ("test.xml"))
@@ -153,10 +151,9 @@ int main ()
 
    TiXmlElement * XEp_sub = XEp_main -> FirstChildElement ("b");
 
+   v_test_one_string (XEp_main, "/a/*[name()!='b']", "x");
    v_test_one_string (XEp_main, "//b/@val", "123" ); 
 
-   // v_test_one_string (XEp_main, "//x/y/text()", "inner text" ); 
-   // v_test_one_string (XEp_main, "//x[/y/text()='inner text']/@target", "123" ); 
    v_test_one_string (XEp_main, "//x/text()", "sub text");
    v_test_one_string (XEp_main, "//*/comment()", " -122.0 ");
 
