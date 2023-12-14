@@ -39,7 +39,7 @@ action_store::action_store() {
     _i_size = 0;
     _i_position = 0;
     _i_alloc = 0;
-    _aipp_list = NULL;
+    _aipp_list = nullptr;
 }
 
 /// destructor

@@ -84,7 +84,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
     _u_nb_recurs++;
     if (_u_nb_recurs > 10000)
         throw syntax_overflow();
-    ltp_freeze = NULL;
+    ltp_freeze = nullptr;
 
     switch (xc_current) {
         case xpath_location_path:

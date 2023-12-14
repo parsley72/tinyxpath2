@@ -50,12 +50,12 @@ xpath_processor::xpath_processor(const TiXmlNode* XNp_source_tree,  ///< Source 
     if (XNp_source_tree && cp_xpath_expr)
         _XNp_base = XNp_source_tree;
     else
-        _XNp_base = NULL;
+        _XNp_base = nullptr;
     _er_result.v_set_root(_XNp_base);
     _xs_stack.v_set_root(_XNp_base);
-    _XEp_context = NULL;
+    _XEp_context = nullptr;
     _o_is_context_by_name = false;
-    _XNp_base_parent = NULL;
+    _XNp_base_parent = nullptr;
 }
 
 /// Compute an XPath expression, and return the number of nodes in the resulting node set.
@@ -73,7 +73,7 @@ void xpath_processor::v_get_xpath_base(
     const TiXmlBase*& XBp_res,  ///< Output node
     bool& o_attrib)             ///< True if the output node is an attribute, false if it's a TiXmlNode
 {
-    XBp_res = NULL;
+    XBp_res = nullptr;
     o_attrib = false;
     if (_er_result._e_type != e_node_set)
         return;
@@ -91,10 +91,10 @@ TiXmlNode* xpath_processor::XNp_get_xpath_node(
     const TiXmlBase* XBp_res;
 
     o_attrib = false;
-    XBp_res = NULL;
+    XBp_res = nullptr;
     v_get_xpath_base(u_order, XBp_res, o_attrib);
     if (o_attrib)
-        return NULL;
+        return nullptr;
     return (TiXmlNode*)XBp_res;
 }
 
@@ -106,10 +106,10 @@ TiXmlAttribute* xpath_processor::XAp_get_xpath_attribute(
     const TiXmlBase* XBp_res;
 
     o_attrib = false;
-    XBp_res = NULL;
+    XBp_res = nullptr;
     v_get_xpath_base(u_order, XBp_res, o_attrib);
     if (!o_attrib)
-        return NULL;
+        return nullptr;
     return (TiXmlAttribute*)XBp_res;
 }
 
@@ -123,7 +123,7 @@ void xpath_processor::v_build_root() {
         if (_XNp_base->ToElement())
             _XEp_context = _XNp_base->ToElement();
     } else
-        _XNp_base_parent = NULL;
+        _XNp_base_parent = nullptr;
 }
 
 /// Compute an XPath expression
@@ -149,20 +149,20 @@ expression_result xpath_processor::er_compute_xpath() {
             _xs_stack.v_pop();
             _e_error = e_no_error;
         } else {
-            expression_result er_null(NULL);
+            expression_result er_null(nullptr);
             _er_result = er_null;
             _e_error = e_error_stack;
         }
     } catch (syntax_error) {
-        expression_result er_null(NULL);
+        expression_result er_null(nullptr);
         _er_result = er_null;
         _e_error = e_error_syntax;
     } catch (syntax_overflow) {
-        expression_result er_null(NULL);
+        expression_result er_null(nullptr);
         _er_result = er_null;
         _e_error = e_error_overflow;
     } catch (execution_error) {
-        expression_result er_null(NULL);
+        expression_result er_null(nullptr);
         _er_result = er_null;
         _e_error = e_error_execution;
     }
@@ -279,7 +279,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     break;
                 case xpath_or_expr_or:
                     o_error = false;
-                    erpp_arg = NULL;
+                    erpp_arg = nullptr;
                     try {
                         v_execute_one(xpath_and_expr, o_skip_only);
                         if (!o_skip_only) {
@@ -311,7 +311,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     // These  case is  involved for expressions like a or b or c
                     try {
                         o_error = false;
-                        erpp_arg = NULL;
+                        erpp_arg = nullptr;
                         v_execute_one(xpath_and_expr, o_skip_only);
                         if (!o_skip_only) {
                             erpp_arg = new expression_result*[2];
@@ -348,7 +348,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     break;
                 case xpath_and_expr_and:
                     o_error = false;
-                    erpp_arg = NULL;
+                    erpp_arg = nullptr;
                     try {
                         v_execute_one(xpath_equality_expr, o_skip_only);
                         if (!o_skip_only) {
@@ -387,7 +387,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                 case xpath_equality_expr_equal:
                 case xpath_equality_expr_not_equal:
                     o_error = false;
-                    erpp_arg = NULL;
+                    erpp_arg = nullptr;
                     try {
                         v_execute_one(xpath_relational_expr, o_skip_only);
                         if (!o_skip_only) {
@@ -432,7 +432,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                 case xpath_relational_expr_lte:
                 case xpath_relational_expr_gte:
                     o_error = false;
-                    erpp_arg = NULL;
+                    erpp_arg = nullptr;
                     try {
                         v_execute_one(xpath_additive_expr, o_skip_only);
                         if (!o_skip_only) {
@@ -475,7 +475,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                 case xpath_additive_expr_minus:
                     try {
                         o_error = false;
-                        erpp_arg = NULL;
+                        erpp_arg = nullptr;
                         v_execute_one(xpath_multiplicative_expr, o_skip_only);
                         if (!o_skip_only) {
                             erpp_arg = new expression_result*[2];
@@ -512,7 +512,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     // when single a+b expressions are encountered
                     try {
                         o_error = false;
-                        erpp_arg = NULL;
+                        erpp_arg = nullptr;
                         v_execute_one(xpath_multiplicative_expr, o_skip_only);
                         if (!o_skip_only) {
                             erpp_arg = new expression_result*[2];
@@ -555,7 +555,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                 case xpath_multiplicative_expr_mod:
                     try {
                         o_error = false;
-                        erpp_arg = NULL;
+                        erpp_arg = nullptr;
                         v_execute_one(xpath_unary_expr, o_skip_only);
                         if (!o_skip_only) {
                             erpp_arg = new expression_result*[2];
@@ -677,7 +677,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_function_call:
-            erpp_arg = NULL;
+            erpp_arg = nullptr;
             o_error = false;
             try {
                 if (u_sub) {
@@ -1028,7 +1028,7 @@ void xpath_processor ::v_execute_step(
                             if (XNp_father->ToElement())
                                 XAp_attrib = XNp_father->ToElement()->FirstAttribute();
                             else
-                                XAp_attrib = NULL;
+                                XAp_attrib = nullptr;
                             while (XAp_attrib) {
                                 ns_target.v_add_attrib_in_set_if_name_or_star(XAp_attrib, S_name);
                                 XAp_attrib = XAp_attrib->Next();
@@ -1074,7 +1074,7 @@ void xpath_processor ::v_execute_step(
                         case lex_descendant:
                             if (XNp_father->ToElement()) {
                                 if (S_name == "*")
-                                    ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, NULL);
+                                    ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, nullptr);
                                 else
                                     ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, S_name.c_str());
                             }
@@ -1084,7 +1084,7 @@ void xpath_processor ::v_execute_step(
                                 if (XNp_father != _XNp_base_parent)
                                     ns_target.v_add_node_in_set_if_name_or_star(XNp_father, S_name);
                                 if (S_name == "*")
-                                    ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, NULL);
+                                    ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, nullptr);
                                 else
                                     ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, S_name.c_str());
                             }
@@ -1165,7 +1165,7 @@ bool xpath_processor::o_check_predicate(const TiXmlElement* XEp_child, bool o_by
 
     v_set_context(XEp_child, o_by_name);
     v_execute_one(xpath_predicate, false);
-    v_set_context(NULL, false);
+    v_set_context(nullptr, false);
     erp_top = _xs_stack.erp_top();
     switch (erp_top->_e_type) {
         case e_double:
@@ -1597,7 +1597,7 @@ void xpath_processor::v_function_translate(unsigned u_nb_arg,  ///< Nb of argume
     expression_result** erpp_arg)                              ///< Argument list
 {
     TIXML_STRING S_translated;
-    char* cp_translated = NULL;
+    char* cp_translated = nullptr;
     // pre-conditions
     if (u_nb_arg != 3)
         throw execution_error(40);

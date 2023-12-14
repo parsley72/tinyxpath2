@@ -40,8 +40,8 @@ node_set& node_set::operator=(const node_set& ns2) {
         _op_attrib = new bool[_u_nb_node];
         memcpy(_op_attrib, ns2._op_attrib, _u_nb_node * sizeof(bool));
     } else {
-        _vpp_node_set = NULL;
-        _op_attrib = NULL;
+        _vpp_node_set = nullptr;
+        _op_attrib = nullptr;
     }
     return *this;
 }
@@ -49,12 +49,12 @@ node_set& node_set::operator=(const node_set& ns2) {
 /// Copy all element children of a node to the node_set
 void node_set::v_copy_node_children(const TiXmlNode* XNp_root)  ///< The father of the nodes to be copied
 {
-    v_copy_node_children(XNp_root, NULL);
+    v_copy_node_children(XNp_root, nullptr);
 }
 
 /// Copy all element children of a node to the node_set, if their name matches a given name
 void node_set::v_copy_node_children(const TiXmlNode* XNp_root,  ///< The father of the nodes to be copied
-    const char* cp_lookup)                                      ///< Lookup name (or NULL)
+    const char* cp_lookup)                                      ///< Lookup name (or nullptr)
 {
     const TiXmlNode* XNp_child;
 
@@ -69,18 +69,18 @@ void node_set::v_copy_node_children(const TiXmlNode* XNp_root,  ///< The father 
 /// Copy all nodes in the tree to the node_set
 void node_set::v_copy_selected_node_recursive(const TiXmlNode* XNp_root)  ///< The node to be copied
 {
-    v_copy_selected_node_recursive(XNp_root, NULL);
+    v_copy_selected_node_recursive(XNp_root, nullptr);
 }
 
 /// Copy all nodes in the tree to the node_set, knowing that we are copying the root
 void node_set::v_copy_selected_node_recursive_root_only(const TiXmlNode* XNp_root, const TiXmlNode* XNp_base) {
     v_add_node_in_set(XNp_root);
-    v_copy_selected_node_recursive(XNp_base, NULL);
+    v_copy_selected_node_recursive(XNp_base, nullptr);
 }
 
 /// Copy all nodes in the tree to the node_set
 void node_set::v_copy_selected_node_recursive(const TiXmlNode* XNp_root,  ///< The node to be copied
-    const char* cp_lookup)                                                ///< Lookup name (or NULL)
+    const char* cp_lookup)                                                ///< Lookup name (or nullptr)
 {
     const TiXmlAttribute* XAp_attrib;
     const TiXmlNode* XNp_child;
@@ -104,7 +104,7 @@ void node_set::v_copy_selected_node_recursive(const TiXmlNode* XNp_root,  ///< T
 /// Copy all nodes in the tree to the node_set, excluding attributes
 void node_set::v_copy_selected_node_recursive_no_attrib(
     const TiXmlNode* XNp_root,  ///< Node whole children are to be copied
-    const char* cp_lookup)      ///< Lookup name or NULL
+    const char* cp_lookup)      ///< Lookup name or nullptr
 {
     const TiXmlElement* XEp_child;
 
@@ -209,7 +209,7 @@ void node_set::v_add_all_foll_node(const TiXmlNode* XNp_node,  ///< base node
     const char* cp_lookup;
 
     if (S_name == "*")
-        cp_lookup = NULL;
+        cp_lookup = nullptr;
     else
         cp_lookup = S_name.c_str();
     XNp_ptr = XNp_node->NextSiblingElement();
@@ -235,7 +235,7 @@ void node_set::v_add_all_prec_node(const TiXmlNode* XNp_node,  ///< base node
     const char* cp_lookup;
 
     if (S_name == "*")
-        cp_lookup = NULL;
+        cp_lookup = nullptr;
     else
         cp_lookup = S_name.c_str();
     XNp_ptr = XNp_node->PreviousSibling();
