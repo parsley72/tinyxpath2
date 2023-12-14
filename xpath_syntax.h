@@ -33,46 +33,46 @@ distribution.
 
 #include <assert.h>
 #include <stdio.h>
+
 #include "tokenlist.h"
 
-namespace TinyXPath
-{
+namespace TinyXPath {
 
 /// Exception class for a syntax error
-class syntax_error
-{
-public :
-   syntax_error (const char * cp_mess = NULL)
-   {
-      if (cp_mess && strlen (cp_mess) < sizeof (ca_mess) - 1)
-         strcpy (ca_mess, cp_mess);
-      else
-         ca_mess [0] = 0;
-   }
-   char ca_mess [200];
-} ;
+class syntax_error {
+   public:
+    syntax_error(const char* cp_mess = NULL) {
+        if (cp_mess && strlen(cp_mess) < sizeof(ca_mess) - 1)
+            strcpy(ca_mess, cp_mess);
+        else
+            ca_mess[0] = 0;
+    }
+    char ca_mess[200];
+};
 
 /// Exception class for an overflow in syntax decoding
-class syntax_overflow {} ;
+class syntax_overflow {};
 
 /// XPath syntax decoder class. Pure virtual :
 /// one need to redefine v_action and i_get_action_counter
-class token_syntax_decoder : public token_list
-{
-protected :
-   /// Nb of recursions
-   unsigned u_nb_recurs;
-   bool o_recognize (xpath_construct xc_current, bool o_final);
-public :
-   token_syntax_decoder () : token_list ()   {}
-   virtual ~ token_syntax_decoder ()   {}
-   void v_syntax_decode ();
-   /// Pure virtual : action taken when processing the rule
-   virtual void v_action (xpath_construct xc_rule, unsigned u_sub, 
-		unsigned u_variable = 0, const char * cp_literal = "") = 0;
-   virtual int i_get_action_counter () = 0;
-} ;
+class token_syntax_decoder : public token_list {
+   protected:
+    /// Nb of recursions
+    unsigned u_nb_recurs;
+    bool o_recognize(xpath_construct xc_current, bool o_final);
 
-}
+   public:
+    token_syntax_decoder() : token_list() {
+    }
+    virtual ~token_syntax_decoder() {
+    }
+    void v_syntax_decode();
+    /// Pure virtual : action taken when processing the rule
+    virtual void v_action(
+        xpath_construct xc_rule, unsigned u_sub, unsigned u_variable = 0, const char* cp_literal = "") = 0;
+    virtual int i_get_action_counter() = 0;
+};
+
+}  // namespace TinyXPath
 
 #endif

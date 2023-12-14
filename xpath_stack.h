@@ -34,52 +34,51 @@ distribution.
 #include "xpath_expression.h"
 #include "xpath_stream.h"
 
-namespace TinyXPath
-{
+namespace TinyXPath {
 
 class result_and_next;
 
 /// The XPath execution stack
 /// \n All elements are result_and_next elements
-class xpath_stack 
-{
-public : 
-   xpath_stack ();
-   void v_set_root (const TiXmlNode * XNp_in_root)
-   {
-      XNp_root = XNp_in_root;
-   }
-   ~ xpath_stack ();
-   void v_push (expression_result er_res);
-   void v_push_int (int i_elem, const char * cp_comment = NULL);
-   void v_push_bool (bool o_in);
-   void v_push_string (TIXML_STRING S_in);
-   void v_push_double (double d_elem);
-   void v_push_node_set (node_set * nsp_ptr);
+class xpath_stack {
+   public:
+    xpath_stack();
+    void v_set_root(const TiXmlNode* XNp_in_root) {
+        XNp_root = XNp_in_root;
+    }
+    ~xpath_stack();
+    void v_push(expression_result er_res);
+    void v_push_int(int i_elem, const char* cp_comment = NULL);
+    void v_push_bool(bool o_in);
+    void v_push_string(TIXML_STRING S_in);
+    void v_push_double(double d_elem);
+    void v_push_node_set(node_set* nsp_ptr);
 
-   expression_result * erp_top ();
-   int i_top_int ();
+    expression_result* erp_top();
+    int i_top_int();
 
-   void v_pop (unsigned u_nb = 1);
-   int i_pop_int ();
-   TIXML_STRING S_pop_string ();
-   bool o_pop_bool ();
-   node_set ns_pop_node_set ();
-   /// Return the stack's size
-   unsigned u_get_size () {return u_size;}
-   expression_result * erp_previous (unsigned u_nb);
-   #ifdef TINYXPATH_DEBUG
-      void v_dump ();
-   #endif
-protected :
-   /// First element in the stack
-   result_and_next * rnp_first;
-   /// Stack size
-   unsigned u_size;
-   void v_pop_one ();
-   const TiXmlNode * XNp_root;
-} ;
+    void v_pop(unsigned u_nb = 1);
+    int i_pop_int();
+    TIXML_STRING S_pop_string();
+    bool o_pop_bool();
+    node_set ns_pop_node_set();
+    /// Return the stack's size
+    unsigned u_get_size() {
+        return u_size;
+    }
+    expression_result* erp_previous(unsigned u_nb);
+#ifdef TINYXPATH_DEBUG
+    void v_dump();
+#endif
+   protected:
+    /// First element in the stack
+    result_and_next* rnp_first;
+    /// Stack size
+    unsigned u_size;
+    void v_pop_one();
+    const TiXmlNode* XNp_root;
+};
 
-}
+}  // namespace TinyXPath
 
 #endif

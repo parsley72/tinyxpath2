@@ -1,0 +1,20 @@
+# -*- yaml -*-
+#
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+#
+---
+BasedOnStyle: Google
+AlignAfterOpenBracket: DontAlign
+AlignConsecutiveMacros: true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+ColumnLimit: 120
+IndentWidth: 4
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+# Force pointers to the left
+DerivePointerAlignment: false
+PointerAlignment: Left

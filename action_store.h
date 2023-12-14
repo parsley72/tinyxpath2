@@ -32,69 +32,72 @@ distribution.
 
 #include "tinyxml.h"
 
-namespace TinyXPath
-{
+namespace TinyXPath {
 
 /// Action item for the XPath action placeholder
 /// \n Able to store 1 quadruplet (3 integers and a string)
-class action_item 
-{
-public :
-   /// constructor
-   action_item (int i_in_1, int i_in_2, int i_in_3, const char * cp_string) :
-      i_1 (i_in_1), i_2 (i_in_2), i_3 (i_in_3), S_string (cp_string)
-   {
-   }
+class action_item {
+   public:
+    /// constructor
+    action_item(int i_in_1, int i_in_2, int i_in_3, const char* cp_string)
+        : i_1(i_in_1), i_2(i_in_2), i_3(i_in_3), S_string(cp_string) {
+    }
 
-   /// Retrieve the set of values
-   void v_get (int & i_out_1, int & i_out_2, int & i_out_3, TIXML_STRING & S_out)
-   {
-      i_out_1 = i_1;
-      i_out_2 = i_2;
-      i_out_3 = i_3;
-      S_out = S_string;
-   }
+    /// Retrieve the set of values
+    void v_get(int& i_out_1, int& i_out_2, int& i_out_3, TIXML_STRING& S_out) {
+        i_out_1 = i_1;
+        i_out_2 = i_2;
+        i_out_3 = i_3;
+        S_out = S_string;
+    }
 
-protected :
-   /// Integer triplet values
-   int i_1, i_2, i_3;
-   /// String value
-   TIXML_STRING S_string;
-} ;
+   protected:
+    /// Integer triplet values
+    int i_1, i_2, i_3;
+    /// String value
+    TIXML_STRING S_string;
+};
 
 /// The XPath action stack. Not a stack per se, only a placeholder
 /// \n It's able to store quadruplets (3 integers and a string)
 /// \n It allocates them by set of 100
-class action_store 
-{
-public : 
-   action_store  ();
-   ~ action_store  ();
-   /// add an element on the placeholder, given its details
-   void v_add (int i_1, int i_2, int i_3, const char * cp_string);
-   /// Get the current nb of stored elements
-   int i_get_size () {return i_size;}
-   /// Get one element from the placeholder
-   void v_get (int i_position, int & i_1, int & i_2, int & i_3, TIXML_STRING & S_out);
-   /// Get the current position. See i_position.
-   int i_get_position () {return i_position;}
-   /// Set the position to an arbitrary value. See i_position.
-   void v_set_position (int i_where) {i_position = i_where;}
-   /// Decrement the position. See i_position.
-   void v_dec_position () {i_position--;}
+class action_store {
+   public:
+    action_store();
+    ~action_store();
+    /// add an element on the placeholder, given its details
+    void v_add(int i_1, int i_2, int i_3, const char* cp_string);
+    /// Get the current nb of stored elements
+    int i_get_size() {
+        return i_size;
+    }
+    /// Get one element from the placeholder
+    void v_get(int i_position, int& i_1, int& i_2, int& i_3, TIXML_STRING& S_out);
+    /// Get the current position. See i_position.
+    int i_get_position() {
+        return i_position;
+    }
+    /// Set the position to an arbitrary value. See i_position.
+    void v_set_position(int i_where) {
+        i_position = i_where;
+    }
+    /// Decrement the position. See i_position.
+    void v_dec_position() {
+        i_position--;
+    }
 
-protected :
-   /// Used number of elements
-   int i_size;
-   /// This value is informative and is not related
-   /// to the nb of elements in the placeholder
-   int i_position;
-   /// Nb of allocated elements
-   int i_alloc;
-   /// Pointers to the allocated elements
-   action_item ** aipp_list;
-} ;
+   protected:
+    /// Used number of elements
+    int i_size;
+    /// This value is informative and is not related
+    /// to the nb of elements in the placeholder
+    int i_position;
+    /// Nb of allocated elements
+    int i_alloc;
+    /// Pointers to the allocated elements
+    action_item** aipp_list;
+};
 
-}
+}  // namespace TinyXPath
 
 #endif
