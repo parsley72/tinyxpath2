@@ -342,7 +342,7 @@ static int i_compare_ptr_2_and_flag (
 
    p2afp_1 = (const ptr_2_and_flag *) vp_1;
    p2afp_2 = (const ptr_2_and_flag *) vp_2;
-   i_res = i_compare_node_in_tree (p2afp_1 -> XNp_root, (const TiXmlBase *) p2afp_1 -> vp_node, (const TiXmlBase *) p2afp_1 -> vp_node);
+   i_res = i_compare_node_in_tree (p2afp_1 -> XNp_root, (const TiXmlBase *) p2afp_1 -> vp_node, (const TiXmlBase *) p2afp_2 -> vp_node);
    switch (i_res)
    {
       case e_lower :
