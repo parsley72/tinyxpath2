@@ -22,8 +22,8 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-#ifndef __EXPR_H
-#define __EXPR_H
+#ifndef __XPATH_EXPR_H
+#define __XPATH_EXPR_H
 
 #include "node_set.h"
 #include "tinyxml.h"
@@ -187,4 +187,4 @@ class expression_result {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __XPATH_EXPR_H

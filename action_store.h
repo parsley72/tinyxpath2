@@ -100,4 +100,4 @@ class action_store {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __ACTION_STORE_H

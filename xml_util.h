@@ -33,8 +33,10 @@ distribution.
 #include "tinyxml.h"
 
 namespace TinyXPath {
+
 extern int i_xml_cardinality(const TiXmlElement* XEp_elem, bool o_by_name);
 extern int i_xml_family_size(const TiXmlElement* XEp_elem);
+
 }  // namespace TinyXPath
 
-#endif
+#endif  // __XML_UTIL_H

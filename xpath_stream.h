@@ -27,8 +27,8 @@ distribution.
    Specialized byte stream for the TinyXPath project
 */
 
-#ifndef __TINYXPSTREAM_H
-#define __TINYXPSTREAM_H
+#ifndef __XPATH_STREAM_H
+#define __XPATH_STREAM_H
 
 #include "byte_stream.h"
 #include "lex_util.h"
@@ -213,4 +213,4 @@ class xpath_stream : public byte_stream {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __XPATH_STREAM_H

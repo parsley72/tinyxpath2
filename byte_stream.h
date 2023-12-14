@@ -95,4 +95,4 @@ class byte_stream {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __TINYBYTESTREAM_H

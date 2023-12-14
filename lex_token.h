@@ -122,4 +122,4 @@ class lex_token {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __TINYLEXTOKEN_H

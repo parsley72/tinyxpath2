@@ -142,4 +142,4 @@ class token_list {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __TOKENLIST_H
