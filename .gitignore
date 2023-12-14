@@ -33,3 +33,6 @@
 
 # CMake
 build/
+
+# Test
+out.htm
