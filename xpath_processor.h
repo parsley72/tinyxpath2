@@ -169,4 +169,4 @@ class xpath_processor : public xpath_stream {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __XPATH_PROCESSOR_H

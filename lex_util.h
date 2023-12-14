@@ -233,4 +233,4 @@ extern const char* cp_disp_class(_byte_ b_in);
 #endif
 }  // namespace TinyXPath
 
-#endif
+#endif  // __TINYUTIL_H

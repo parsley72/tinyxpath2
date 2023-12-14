@@ -33,4 +33,4 @@ distribution.
 
 // #define TINYXPATH_DEBUG
 
-#endif
+#endif  // __TINYXPATH_CONF_H

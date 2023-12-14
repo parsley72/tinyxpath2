@@ -81,4 +81,4 @@ class xpath_stack {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __XPATH_STACK_H

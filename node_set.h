@@ -165,4 +165,4 @@ class node_set {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __NODE_SET_H

@@ -35,4 +35,4 @@ distribution.
 extern void v_out_html(FILE* Fp_out, const TiXmlNode* XNp_source, unsigned u_level);
 extern void v_levelize(int i_level, FILE* Fp_out = stdout, bool o_html = false);
 
-#endif
+#endif  // __HTMLUTIL_H

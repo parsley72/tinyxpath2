@@ -28,8 +28,8 @@ distribution.
    XPath Syntax analyzer for TinyXPath project
 */
 
-#ifndef __TINYSYNTAX_H
-#define __TINYSYNTAX_H
+#ifndef __XPATH_SYNTAX_H
+#define __XPATH_SYNTAX_H
 
 #include <assert.h>
 #include <stdio.h>
@@ -75,4 +75,4 @@ class token_syntax_decoder : public token_list {
 
 }  // namespace TinyXPath
 
-#endif
+#endif  // __XPATH_SYNTAX_H
