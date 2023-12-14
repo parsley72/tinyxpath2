@@ -1066,7 +1066,7 @@ void xpath_processor ::v_execute_step(
                         case lex_preceding_sibling:
                             XNp_next = XNp_father->PreviousSibling();
                             while (XNp_next) {
-                                if (XNp_next->Type() == TiXmlNode::ELEMENT)
+                                if (XNp_next->Type() == TiXmlNode::TINYXML_ELEMENT)
                                     ns_target.v_add_node_in_set_if_name_or_star(XNp_next, S_name);
                                 XNp_next = XNp_next->PreviousSibling();
                             }
@@ -1104,7 +1104,7 @@ void xpath_processor ::v_execute_step(
                         case lex_comment:
                             XNp_next = XNp_father->FirstChild();
                             while (XNp_next) {
-                                if (XNp_next->Type() == TiXmlNode::COMMENT)
+                                if (XNp_next->Type() == TiXmlNode::TINYXML_COMMENT)
                                     ns_target.v_add_node_in_set(XNp_next);
                                 XNp_next = XNp_next->NextSibling();
                             }
@@ -1112,7 +1112,7 @@ void xpath_processor ::v_execute_step(
                         case lex_text:
                             XNp_next = XNp_father->FirstChild();
                             while (XNp_next) {
-                                if (XNp_next->Type() == TiXmlNode::TEXT)
+                                if (XNp_next->Type() == TiXmlNode::TINYXML_TEXT)
                                     ns_target.v_add_node_in_set(XNp_next);
                                 XNp_next = XNp_next->NextSibling();
                             }
@@ -1581,7 +1581,7 @@ void xpath_processor::v_function_text(unsigned u_nb_arg,  ///< Nb of arguments
         throw execution_error(39);
     XNp_child = XEp_context->FirstChild();
     while (XNp_child) {
-        if (XNp_child->Type() == TiXmlNode::TEXT)
+        if (XNp_child->Type() == TiXmlNode::TINYXML_TEXT)
             S_res += XNp_child->Value();
         XNp_child = XNp_child->NextSibling();
     }
