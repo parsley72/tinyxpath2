@@ -33,15 +33,15 @@ node_set::node_set(const node_set& ns2) {
 
 /// Assignation operator. Allows one to write expressions like ns_1 = ns_2;
 node_set& node_set::operator=(const node_set& ns2) {
-    u_nb_node = ns2.u_nb_node;
-    if (u_nb_node) {
-        vpp_node_set = new const void*[u_nb_node];
-        memcpy(vpp_node_set, ns2.vpp_node_set, u_nb_node * sizeof(void*));
-        op_attrib = new bool[u_nb_node];
-        memcpy(op_attrib, ns2.op_attrib, u_nb_node * sizeof(bool));
+    _u_nb_node = ns2._u_nb_node;
+    if (_u_nb_node) {
+        _vpp_node_set = new const void*[_u_nb_node];
+        memcpy(_vpp_node_set, ns2._vpp_node_set, _u_nb_node * sizeof(void*));
+        _op_attrib = new bool[_u_nb_node];
+        memcpy(_op_attrib, ns2._op_attrib, _u_nb_node * sizeof(bool));
     } else {
-        vpp_node_set = NULL;
-        op_attrib = NULL;
+        _vpp_node_set = NULL;
+        _op_attrib = NULL;
     }
     return *this;
 }
@@ -124,9 +124,9 @@ TIXML_STRING node_set::S_get_string_value() const {
     unsigned u_node;
 
     S_res = "";
-    for (u_node = 0; u_node < u_nb_node; u_node++) {
-        if (!op_attrib[u_node]) {
-            XNp_node = (const TiXmlNode*)vpp_node_set[u_node];
+    for (u_node = 0; u_node < _u_nb_node; u_node++) {
+        if (!_op_attrib[u_node]) {
+            XNp_node = (const TiXmlNode*)_vpp_node_set[u_node];
             if (XNp_node->Type() == TiXmlNode::TEXT)
                 S_res += XNp_node->Value();
         }
@@ -139,8 +139,8 @@ bool node_set::o_exist_in_set(const TiXmlBase* XBp_member)  ///< Check if a base
 {
     unsigned u_node;
 
-    for (u_node = 0; u_node < u_nb_node; u_node++)
-        if (vpp_node_set[u_node] == XBp_member)
+    for (u_node = 0; u_node < _u_nb_node; u_node++)
+        if (_vpp_node_set[u_node] == XBp_member)
             return true;
     return false;
 }
@@ -182,19 +182,19 @@ void node_set::v_add_base_in_set(const TiXmlBase* XBp_member,  ///< Base to add 
        printf ("\n");
     */
 
-    vpp_new_list = new const void*[u_nb_node + 1];
-    op_new_list = new bool[u_nb_node + 1];
-    if (u_nb_node) {
-        memcpy(vpp_new_list, vpp_node_set, u_nb_node * sizeof(void*));
-        delete[] vpp_node_set;
-        memcpy(op_new_list, op_attrib, u_nb_node * sizeof(bool));
-        delete[] op_attrib;
+    vpp_new_list = new const void*[_u_nb_node + 1];
+    op_new_list = new bool[_u_nb_node + 1];
+    if (_u_nb_node) {
+        memcpy(vpp_new_list, _vpp_node_set, _u_nb_node * sizeof(void*));
+        delete[] _vpp_node_set;
+        memcpy(op_new_list, _op_attrib, _u_nb_node * sizeof(bool));
+        delete[] _op_attrib;
     }
-    vpp_new_list[u_nb_node] = (const void*)XBp_member;
-    vpp_node_set = vpp_new_list;
-    op_new_list[u_nb_node] = o_attrib;
-    op_attrib = op_new_list;
-    u_nb_node++;
+    vpp_new_list[_u_nb_node] = (const void*)XBp_member;
+    _vpp_node_set = vpp_new_list;
+    op_new_list[_u_nb_node] = o_attrib;
+    _op_attrib = op_new_list;
+    _u_nb_node++;
 }
 
 /// Populate the node set with all following nodes.
@@ -323,19 +323,19 @@ void node_set::v_document_sort(const TiXmlNode* XNp_root) {
     ptr_2_and_flag* p2afp_list;
     unsigned u_node;
 
-    if (u_nb_node < 2)
+    if (_u_nb_node < 2)
         return;
 
-    p2afp_list = new ptr_2_and_flag[u_nb_node];
-    for (u_node = 0; u_node < u_nb_node; u_node++) {
-        p2afp_list[u_node].vp_node = vpp_node_set[u_node];
-        p2afp_list[u_node].o_flag = op_attrib[u_node];
+    p2afp_list = new ptr_2_and_flag[_u_nb_node];
+    for (u_node = 0; u_node < _u_nb_node; u_node++) {
+        p2afp_list[u_node].vp_node = _vpp_node_set[u_node];
+        p2afp_list[u_node].o_flag = _op_attrib[u_node];
         p2afp_list[u_node].XNp_root = XNp_root;
     }
-    qsort(p2afp_list, u_nb_node, sizeof(ptr_2_and_flag), i_compare_ptr_2_and_flag);
-    for (u_node = 0; u_node < u_nb_node; u_node++) {
-        vpp_node_set[u_node] = p2afp_list[u_node].vp_node;
-        op_attrib[u_node] = p2afp_list[u_node].o_flag;
+    qsort(p2afp_list, _u_nb_node, sizeof(ptr_2_and_flag), i_compare_ptr_2_and_flag);
+    for (u_node = 0; u_node < _u_nb_node; u_node++) {
+        _vpp_node_set[u_node] = p2afp_list[u_node].vp_node;
+        _op_attrib[u_node] = p2afp_list[u_node].o_flag;
     }
     delete[] p2afp_list;
 }
@@ -346,9 +346,9 @@ void node_set::v_dump() {
     const TiXmlAttribute* XAp_att;
     const TiXmlNode* XNp_node;
 
-    printf("-- start node set (%d items) --\n", u_nb_node);
-    for (u_node = 0; u_node < u_nb_node; u_node++) {
-        if (op_attrib[u_node]) {
+    printf("-- start node set (%d items) --\n", _u_nb_node);
+    for (u_node = 0; u_node < _u_nb_node; u_node++) {
+        if (_op_attrib[u_node]) {
             XAp_att = XAp_get_attribute_in_set(u_node);
             printf("   [%d] : Attribute : %s=%s\n", u_node, XAp_att->Name(), XAp_att->Value());
         } else {

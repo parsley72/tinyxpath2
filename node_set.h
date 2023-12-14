@@ -35,21 +35,21 @@ class node_set {
    public:
     /// constructor : creates an empty set
     node_set() {
-        u_nb_node = 0;
-        vpp_node_set = NULL;
-        op_attrib = NULL;
+        _u_nb_node = 0;
+        _vpp_node_set = NULL;
+        _op_attrib = NULL;
     }
     /// copy constructor
     node_set(const node_set& ns2);
     /// destructor
     ~node_set() {
-        if (u_nb_node && vpp_node_set)
-            delete[] vpp_node_set;
-        if (u_nb_node && op_attrib)
-            delete[] op_attrib;
-        u_nb_node = 0;
-        vpp_node_set = NULL;
-        op_attrib = NULL;
+        if (_u_nb_node && _vpp_node_set)
+            delete[] _vpp_node_set;
+        if (_u_nb_node && _op_attrib)
+            delete[] _op_attrib;
+        _u_nb_node = 0;
+        _vpp_node_set = NULL;
+        _op_attrib = NULL;
     }
 
     node_set& operator=(const node_set& ns2);
@@ -93,34 +93,34 @@ class node_set {
 
     /// Get nb of nodes in the node set
     unsigned u_get_nb_node_in_set() const {
-        return u_nb_node;
+        return _u_nb_node;
     }
 
     /// Get a node or an attribute
     const TiXmlBase* XBp_get_base_in_set(unsigned u_which) {
-        assert(u_which < u_nb_node);
-        return (const TiXmlBase*)vpp_node_set[u_which];
+        assert(u_which < _u_nb_node);
+        return (const TiXmlBase*)_vpp_node_set[u_which];
     }
 
     /// Get a node
     const TiXmlNode* XNp_get_node_in_set(unsigned u_which) {
-        assert(u_which < u_nb_node);
+        assert(u_which < _u_nb_node);
         assert(!o_is_attrib(u_which));
-        return (const TiXmlNode*)vpp_node_set[u_which];
+        return (const TiXmlNode*)_vpp_node_set[u_which];
     }
 
     /// Get an attribute
     const TiXmlAttribute* XAp_get_attribute_in_set(unsigned u_which) {
-        assert(u_which < u_nb_node);
+        assert(u_which < _u_nb_node);
         assert(o_is_attrib(u_which));
-        return (const TiXmlAttribute*)vpp_node_set[u_which];
+        return (const TiXmlAttribute*)_vpp_node_set[u_which];
     }
 
     /// Check if a node is an attribute or another node. This is needed because TinyXML has a weird exception for
     /// attributes not being children of TiXmlNode
     bool o_is_attrib(unsigned u_which) {
-        assert(u_which < u_nb_node);
-        return op_attrib[u_which];
+        assert(u_which < _u_nb_node);
+        return _op_attrib[u_which];
     }
 
     /// Get a node value. The value is the name for an element, and the attribute value for an attribute
@@ -156,11 +156,11 @@ class node_set {
 
    protected:
     /// Nb of nodes in the set
-    unsigned u_nb_node;
+    unsigned _u_nb_node;
     /// List of node pointers to the
-    const void** vpp_node_set;
+    const void** _vpp_node_set;
     /// Attributes flag list
-    bool* op_attrib;
+    bool* _op_attrib;
 };
 
 }  // namespace TinyXPath
