@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "SonarSource.sonarlint-vscode"
+        "SonarSource.sonarlint-vscode",
+        "xaver.clang-format"
     ]
 }

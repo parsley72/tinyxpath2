@@ -28,40 +28,40 @@ distribution.
    Specialized byte stream for the TinyXPath project
 */
 
-#include "xpath_syntax.h"
 #include "xpath_stream.h"
 
-namespace TinyXPath
-{
+#include "xpath_syntax.h"
+
+namespace TinyXPath {
 
 /// Redefinition of a token_syntax_decoder, with an xpath_stream pointer
-/// \n We could have made this a double dependency on token_syntax_decoder and xpath_stream, 
+/// \n We could have made this a double dependency on token_syntax_decoder and xpath_stream,
 /// but this is not good pratice IMHO
-class token_redef : public token_syntax_decoder 
-{
-protected :
-   /// pointer to an xpath_stream instance
-	xpath_stream * xsp_stream;
-public :
-   /// constructor
-	token_redef (
-      xpath_stream * xsp_in)  ///< Pointer to an xpath_stream instance
-	{
-		xsp_stream = xsp_in;
-	}
-   /// dispatcher of the xpath_stream::v_action 
-   virtual void v_action (xpath_construct xc_rule, unsigned u_sub, unsigned u_variable = 0, const char * cp_literal = "")
-	{
-		xsp_stream -> v_action (xc_rule, u_sub, u_variable, cp_literal);
-	}
-   /// dispatcher of the xpath_stream::i_get_action_counter
-   virtual int i_get_action_counter () {return xsp_stream -> i_get_action_counter ();}
-} ;
+class token_redef : public token_syntax_decoder {
+   protected:
+    /// pointer to an xpath_stream instance
+    xpath_stream* xsp_stream;
+
+   public:
+    /// constructor
+    token_redef(xpath_stream* xsp_in)  ///< Pointer to an xpath_stream instance
+    {
+        xsp_stream = xsp_in;
+    }
+    /// dispatcher of the xpath_stream::v_action
+    virtual void v_action(
+        xpath_construct xc_rule, unsigned u_sub, unsigned u_variable = 0, const char* cp_literal = "") {
+        xsp_stream->v_action(xc_rule, u_sub, u_variable, cp_literal);
+    }
+    /// dispatcher of the xpath_stream::i_get_action_counter
+    virtual int i_get_action_counter() {
+        return xsp_stream->i_get_action_counter();
+    }
+};
 
 /// xpath_stream constructor
-xpath_stream::xpath_stream (const char * cp_in) : byte_stream (cp_in) 
-{
-   tlp_list = new token_redef (this);
+xpath_stream::xpath_stream(const char* cp_in) : byte_stream(cp_in) {
+    tlp_list = new token_redef(this);
 }
 
-}
+}  // namespace TinyXPath

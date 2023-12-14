@@ -32,23 +32,23 @@ distribution.
 
 #include "xpath_processor.h"
 
-namespace TinyXPath
-{
-   // no check static functions
-   extern int i_xpath_int (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   extern double d_xpath_double (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   extern bool o_xpath_bool (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   extern TIXML_STRING S_xpath_string (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   extern TiXmlNode * XNp_xpath_node (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
-   extern TiXmlAttribute * XAp_xpath_attribute (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr);
+namespace TinyXPath {
+// no check static functions
+extern int i_xpath_int(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
+extern double d_xpath_double(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
+extern bool o_xpath_bool(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
+extern TIXML_STRING S_xpath_string(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
+extern TiXmlNode* XNp_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
+extern TiXmlAttribute* XAp_xpath_attribute(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
 
-   // check static functions
-   extern bool o_xpath_int (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr, int & i_res);
-   extern bool o_xpath_double (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr, double & d_res);
-   extern bool o_xpath_bool (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr, bool & o_res);
-   extern bool o_xpath_string (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr, TIXML_STRING & S_res);
-   extern bool o_xpath_node (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr, const TiXmlNode * & XNp_node);
-   extern bool o_xpath_attribute (const TiXmlNode * XNp_source_tree, const char * cp_xpath_expr, const TiXmlAttribute * & XAp_attrib);
-}
+// check static functions
+extern bool o_xpath_int(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, int& i_res);
+extern bool o_xpath_double(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, double& d_res);
+extern bool o_xpath_bool(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, bool& o_res);
+extern bool o_xpath_string(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, TIXML_STRING& S_res);
+extern bool o_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, const TiXmlNode*& XNp_node);
+extern bool o_xpath_attribute(
+    const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, const TiXmlAttribute*& XAp_attrib);
+}  // namespace TinyXPath
 
 #endif

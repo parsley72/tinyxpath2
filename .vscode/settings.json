@@ -4,5 +4,6 @@
         "-p",
         "${workspaceFolder}/build/compile_commands.json"
     ],
-    "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json"
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "editor.formatOnSave": true
 }
