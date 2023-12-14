@@ -36,45 +36,45 @@ namespace TinyXPath {
 */
 class lex_token {
     /// Representation
-    char* cp_value;
+    char* _cp_value;
     /// lexical value
-    lexico l_enum;
+    lexico _l_enum;
     /// pointer to next element
-    lex_token *ltp_next, *ltp_prev;
+    lex_token *_ltp_next, *_ltp_prev;
 
    public:
     /// constructor
     lex_token(lexico l_in_enum, const _byte_* bp_in_value, unsigned u_in_size) {
-        l_enum = l_in_enum;
-        cp_value = new char[u_in_size + 1];
+        _l_enum = l_in_enum;
+        _cp_value = new char[u_in_size + 1];
         if (u_in_size)
-            memcpy(cp_value, bp_in_value, u_in_size);
-        cp_value[u_in_size] = 0;
-        ltp_next = NULL;
-        ltp_prev = NULL;
+            memcpy(_cp_value, bp_in_value, u_in_size);
+        _cp_value[u_in_size] = 0;
+        _ltp_next = NULL;
+        _ltp_prev = NULL;
     }
     /// set the next element in list
     void v_set_next(lex_token* ltp_in_next) {
-        ltp_next = ltp_in_next;
+        _ltp_next = ltp_in_next;
     }
     /// set the previous element in list
     void v_set_prev(lex_token* ltp_in_prev) {
-        ltp_prev = ltp_in_prev;
+        _ltp_prev = ltp_in_prev;
     }
     /// destructor. doesn't destroys next in list
     ~lex_token() {
-        if (cp_value)
-            delete[] cp_value;
+        if (_cp_value)
+            delete[] _cp_value;
     }
 
     /// get next in list
     lex_token* ltp_get_next() const {
-        return ltp_next;
+        return _ltp_next;
     }
 
     /// get next in list
     lex_token* ltp_get_prev() const {
-        return ltp_prev;
+        return _ltp_prev;
     }
 
     /// Return the next i-th element in the list
@@ -95,28 +95,28 @@ class lex_token {
 
     /// return the value of a lexical element
     lexico lex_get_value() const {
-        return l_enum;
+        return _l_enum;
     }
 
     /// Set the string value of a lexical element
     void v_set(lexico lex_in, const char* cp_repre) {
         unsigned u_length;
 
-        l_enum = lex_in;
-        delete[] cp_value;
+        _l_enum = lex_in;
+        delete[] _cp_value;
         u_length = strlen(cp_repre);
-        cp_value = new char[u_length + 1];
-        strcpy(cp_value, cp_repre);
+        _cp_value = new char[u_length + 1];
+        strcpy(_cp_value, cp_repre);
     }
 
     /// return the string value of a lexical element
     const char* cp_get_literal() {
-        return cp_value;
+        return _cp_value;
     }
 
     /// check if the lexical element is valid
     bool o_is_valid() const {
-        return (l_enum != lex_null);
+        return (_l_enum != lex_null);
     }
 };
 

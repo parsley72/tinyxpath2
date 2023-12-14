@@ -42,12 +42,12 @@ namespace TinyXPath {
 class syntax_error {
    public:
     syntax_error(const char* cp_mess = NULL) {
-        if (cp_mess && strlen(cp_mess) < sizeof(ca_mess) - 1)
-            strcpy(ca_mess, cp_mess);
+        if (cp_mess && strlen(cp_mess) < sizeof(_ca_mess) - 1)
+            strcpy(_ca_mess, cp_mess);
         else
-            ca_mess[0] = 0;
+            _ca_mess[0] = 0;
     }
-    char ca_mess[200];
+    char _ca_mess[200];
 };
 
 /// Exception class for an overflow in syntax decoding
@@ -58,7 +58,7 @@ class syntax_overflow {};
 class token_syntax_decoder : public token_list {
    protected:
     /// Nb of recursions
-    unsigned u_nb_recurs;
+    unsigned _u_nb_recurs;
     bool o_recognize(xpath_construct xc_current, bool o_final);
 
    public:

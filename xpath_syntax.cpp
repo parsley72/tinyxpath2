@@ -53,7 +53,7 @@ void token_syntax_decoder::v_syntax_decode() {
     // reset list start
     v_set_current_top();
 
-    u_nb_recurs = 0;
+    _u_nb_recurs = 0;
 
     // the XPath expression, well, ..., must be an xpath_expr
     o_res = o_recognize(xpath_expr, true);
@@ -64,7 +64,7 @@ void token_syntax_decoder::v_syntax_decode() {
         printf("!!! Still to decode : %s !!!\n", cp_disp_class_lex(ltp_get(0)->lex_get_value()));
     else
         printf("Completely parsed\n");
-    printf("%d recursions\n", u_nb_recurs);
+    printf("%d recursions\n", _u_nb_recurs);
 #endif
 }
 
@@ -81,8 +81,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
     int i_action_counter;
     bool o_test_more;
 
-    u_nb_recurs++;
-    if (u_nb_recurs > 10000)
+    _u_nb_recurs++;
+    if (_u_nb_recurs > 10000)
         throw syntax_overflow();
     ltp_freeze = NULL;
 

@@ -44,7 +44,7 @@ class xpath_stack {
    public:
     xpath_stack();
     void v_set_root(const TiXmlNode* XNp_in_root) {
-        XNp_root = XNp_in_root;
+        _XNp_root = XNp_in_root;
     }
     ~xpath_stack();
     void v_push(expression_result er_res);
@@ -64,7 +64,7 @@ class xpath_stack {
     node_set ns_pop_node_set();
     /// Return the stack's size
     unsigned u_get_size() {
-        return u_size;
+        return _u_size;
     }
     expression_result* erp_previous(unsigned u_nb);
 #ifdef TINYXPATH_DEBUG
@@ -72,11 +72,11 @@ class xpath_stack {
 #endif
    protected:
     /// First element in the stack
-    result_and_next* rnp_first;
+    result_and_next* _rnp_first;
     /// Stack size
-    unsigned u_size;
+    unsigned _u_size;
     void v_pop_one();
-    const TiXmlNode* XNp_root;
+    const TiXmlNode* _XNp_root;
 };
 
 }  // namespace TinyXPath

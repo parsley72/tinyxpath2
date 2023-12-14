@@ -30,13 +30,13 @@ namespace TinyXPath {
 
 /// Get the expression_result as an int
 int expression_result::i_get_int() {
-    switch (e_type) {
+    switch (_e_type) {
         case e_int:
-            return i_content;
+            return _i_content;
         case e_bool:
-            return o_content ? 1 : 0;
+            return _o_content ? 1 : 0;
         case e_double:
-            return (int)(d_content);
+            return (int)(_d_content);
         default:
             return atoi(S_get_string().c_str());
     }
@@ -44,13 +44,13 @@ int expression_result::i_get_int() {
 
 /// Get the expression_result as a double
 double expression_result::d_get_double() {
-    switch (e_type) {
+    switch (_e_type) {
         case e_double:
-            return d_content;
+            return _d_content;
         case e_int:
-            return (double)i_content;
+            return (double)_i_content;
         case e_bool:
-            return o_content ? 1.0 : 0.0;
+            return _o_content ? 1.0 : 0.0;
         default:
             return atof(S_get_string().c_str());
     }
@@ -62,9 +62,9 @@ TIXML_STRING expression_result::S_get_string() {
     node_set* nsp_ptr;
 
     S_res = "";
-    switch (e_type) {
+    switch (_e_type) {
         case e_string:
-            S_res = S_content;
+            S_res = _S_content;
             break;
         case e_int:
             v_assign_int_to_string(S_res, i_get_int());
@@ -80,7 +80,7 @@ TIXML_STRING expression_result::S_get_string() {
             // in the node-set that is first in document order. If the node-set is empty, an empty string is returned.
             nsp_ptr = nsp_get_node_set();
             if (nsp_ptr->u_get_nb_node_in_set()) {
-                nsp_ptr->v_document_sort(XNp_root);
+                nsp_ptr->v_document_sort(_XNp_root);
                 if (nsp_ptr->o_is_attrib(0))
                     S_res = nsp_ptr->XAp_get_attribute_in_set(0)->Value();
                 else
@@ -107,13 +107,13 @@ The boolean function converts its argument to a boolean as follows:
 */
 bool expression_result::o_get_bool() {
     node_set* nsp_ptr;
-    switch (e_type) {
+    switch (_e_type) {
         case e_int:
-            return i_content != 0;
+            return _i_content != 0;
         case e_double:
             return (d_get_double() == 0.0);
         case e_string:
-            return S_content.length() > 0;
+            return _S_content.length() > 0;
             break;
         case e_node_set:
             // See XPath 1.0 spec, 3.2 :
@@ -124,7 +124,7 @@ bool expression_result::o_get_bool() {
             nsp_ptr = nsp_get_node_set();
             return nsp_ptr->u_get_nb_node_in_set() != 0;
         case e_bool:
-            return o_content;
+            return _o_content;
     }
     return false;
 }
@@ -133,25 +133,25 @@ bool expression_result::o_get_bool() {
 
 /// Debug function to print an expression_result to stdout
 void expression_result::v_dump() {
-    switch (e_type) {
+    switch (_e_type) {
         case e_bool:
-            printf("   bool : %s\n", o_content ? "true" : "false");
+            printf("   bool : %s\n", _o_content ? "true" : "false");
             break;
         case e_string:
-            printf("   string : %s\n", S_content.c_str());
+            printf("   string : %s\n", _S_content.c_str());
             break;
         case e_int:
-            printf("   int : %d", i_content);
-            if (S_comment.length())
-                printf(" (%s)", S_comment.c_str());
+            printf("   int : %d", _i_content);
+            if (_S_comment.length())
+                printf(" (%s)", _S_comment.c_str());
             printf("\n");
             break;
         case e_double:
-            printf("   double : %f\n", d_content);
+            printf("   double : %f\n", _d_content);
             break;
         case e_node_set:
             printf("  node set\n");
-            ns_set.v_dump();
+            _ns_set.v_dump();
             break;
         case e_invalid:
             printf("  (invalid)\n");

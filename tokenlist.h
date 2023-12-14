@@ -44,86 +44,86 @@ namespace TinyXPath {
 class token_list {
    protected:
     /// Pointer to first element
-    lex_token* ltp_first;
+    lex_token* _ltp_first;
     /// Pointer to last element
-    lex_token* ltp_last;
+    lex_token* _ltp_last;
     /// Pointer to current element. This is for external usage : we keep track of where it
     /// is, but it's not needed to manage the list structure
-    lex_token* ltp_current;
+    lex_token* _ltp_current;
 
    public:
     /// constructor
     token_list() {
-        ltp_first = new lex_token(lex_null, NULL, 0);
-        ltp_last = ltp_first;
-        ltp_first->v_set_prev(ltp_first);
-        ltp_first->v_set_next(ltp_first);
-        ltp_current = NULL;
+        _ltp_first = new lex_token(lex_null, NULL, 0);
+        _ltp_last = _ltp_first;
+        _ltp_first->v_set_prev(_ltp_first);
+        _ltp_first->v_set_next(_ltp_first);
+        _ltp_current = NULL;
     }
     /// destructor
     virtual ~token_list() {
-        ltp_current = ltp_first->ltp_get_next();
-        while (ltp_current->o_is_valid())
+        _ltp_current = _ltp_first->ltp_get_next();
+        while (_ltp_current->o_is_valid())
             v_delete_current();
-        delete ltp_first;
+        delete _ltp_first;
     }
     /// Adds a lexical token
     void v_add_token(lexico l_in_enum, const _byte_* bp_in_value, unsigned u_in_size) {
         lex_token* ltp_new;
 
         ltp_new = new lex_token(l_in_enum, bp_in_value, u_in_size);
-        ltp_last->v_set_next(ltp_new);
-        ltp_new->v_set_next(ltp_first);
-        ltp_first->v_set_prev(ltp_new);
-        ltp_new->v_set_prev(ltp_last);
-        ltp_last = ltp_new;
+        _ltp_last->v_set_next(ltp_new);
+        ltp_new->v_set_next(_ltp_first);
+        _ltp_first->v_set_prev(ltp_new);
+        ltp_new->v_set_prev(_ltp_last);
+        _ltp_last = ltp_new;
     }
 
     /// Set current to first real element
     void v_set_current_top() {
-        ltp_current = ltp_first->ltp_get_next(1);
+        _ltp_current = _ltp_first->ltp_get_next(1);
     }
 
     /// Set current
     void v_set_current(lex_token* ltp_cur) {
-        ltp_current = ltp_cur;
+        _ltp_current = ltp_cur;
     }
 
     /// Return the current token
     lex_token* ltp_freeze() {
-        return ltp_current;
+        return _ltp_current;
     }
 
     /// Get next X linear token
     lex_token* ltp_get(int i_offset) {
-        if (!ltp_current)
+        if (!_ltp_current)
             return NULL;
-        return ltp_current->ltp_get_next(i_offset);
+        return _ltp_current->ltp_get_next(i_offset);
     }
 
     /// Increments the linear counter
     void v_inc_current(int i_rel) {
-        if (!ltp_current)
+        if (!_ltp_current)
             return;
-        ltp_current = ltp_current->ltp_get_next(i_rel);
+        _ltp_current = _ltp_current->ltp_get_next(i_rel);
     }
 
     /// Replaces the current element
     void v_replace_current(lexico lex_in, const char* cp_rep) {
-        if (!ltp_current)
+        if (!_ltp_current)
             return;
-        ltp_current->v_set(lex_in, cp_rep);
+        _ltp_current->v_set(lex_in, cp_rep);
     }
 
     /// Deletes the current element
     void v_delete_current() {
         lex_token* ltp_temp;
 
-        assert(ltp_current);
-        ltp_temp = ltp_current;
+        assert(_ltp_current);
+        ltp_temp = _ltp_current;
         ltp_temp->ltp_get_prev()->v_set_next(ltp_temp->ltp_get_next());
         ltp_temp->ltp_get_next()->v_set_prev(ltp_temp->ltp_get_prev());
-        ltp_current = ltp_temp->ltp_get_next();
+        _ltp_current = ltp_temp->ltp_get_next();
         delete ltp_temp;
     }
 
@@ -131,10 +131,10 @@ class token_list {
     void v_delete_next() {
         lex_token* ltp_temp;
 
-        assert(ltp_current);
-        ltp_temp = ltp_current->ltp_get_next();
-        ltp_current->v_set_next(ltp_temp->ltp_get_next());
-        ltp_temp->ltp_get_next()->v_set_prev(ltp_current);
+        assert(_ltp_current);
+        ltp_temp = _ltp_current->ltp_get_next();
+        _ltp_current->v_set_next(ltp_temp->ltp_get_next());
+        ltp_temp->ltp_get_next()->v_set_prev(_ltp_current);
         delete ltp_temp;
     }
     void v_tokenize_expression();

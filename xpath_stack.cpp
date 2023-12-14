@@ -61,13 +61,13 @@ void result_and_next::v_dump() {
 
 /// Constructor
 xpath_stack::xpath_stack() {
-    rnp_first = NULL;
-    u_size = 0;
+    _rnp_first = NULL;
+    _u_size = 0;
 }
 
 /// Destructor
 xpath_stack::~xpath_stack() {
-    while (rnp_first)
+    while (_rnp_first)
         v_pop_one();
 }
 
@@ -119,14 +119,14 @@ int xpath_stack::i_top_int() {
 void xpath_stack::v_push(expression_result er_res) {
     result_and_next* rnp_new;
 
-    rnp_new = new result_and_next(er_res, rnp_first);
-    rnp_first = rnp_new;
-    u_size++;
+    rnp_new = new result_and_next(er_res, _rnp_first);
+    _rnp_first = rnp_new;
+    _u_size++;
 }
 
 /// Push an integer on the stack
 void xpath_stack::v_push_int(int i_elem, const char* cp_comment) {
-    expression_result er_res(XNp_root);
+    expression_result er_res(_XNp_root);
     er_res.v_set_int(i_elem);
     if (cp_comment)
         er_res.v_set_comment(cp_comment);
@@ -135,37 +135,37 @@ void xpath_stack::v_push_int(int i_elem, const char* cp_comment) {
 
 /// Push a double on the stack
 void xpath_stack::v_push_double(double d_elem) {
-    expression_result er_res(XNp_root);
+    expression_result er_res(_XNp_root);
     er_res.v_set_double(d_elem);
     v_push(er_res);
 }
 
 /// Push a node_set on the stack
 void xpath_stack::v_push_node_set(node_set* nsp_ptr) {
-    expression_result er_res(XNp_root);
+    expression_result er_res(_XNp_root);
     er_res.v_set_node_set(nsp_ptr);
     v_push(er_res);
 }
 
 /// Push a bool on the stack
 void xpath_stack::v_push_bool(bool o_in) {
-    expression_result er_res(XNp_root);
+    expression_result er_res(_XNp_root);
     er_res.v_set_bool(o_in);
     v_push(er_res);
 }
 
 /// Push a string on the stack
 void xpath_stack::v_push_string(TIXML_STRING S_in) {
-    expression_result er_res(XNp_root);
+    expression_result er_res(_XNp_root);
     er_res.v_set_string(S_in);
     v_push(er_res);
 }
 
 /// Retrieve top expression from the stack
 expression_result* xpath_stack::erp_top() {
-    if (!rnp_first)
+    if (!_rnp_first)
         throw execution_error(34);
-    return rnp_first;
+    return _rnp_first;
 }
 
 /// Retrieve a previous expression from the stack
@@ -174,8 +174,8 @@ expression_result* xpath_stack::erp_previous(unsigned u_nb)  ///< Nb of items to
     result_and_next* rnp_current;
     unsigned u_prev;
 
-    assert(u_nb <= u_size);
-    rnp_current = rnp_first;
+    assert(u_nb <= _u_size);
+    rnp_current = _rnp_first;
     for (u_prev = 0; u_prev < u_nb; u_prev++) {
         assert(rnp_current);
         rnp_current = rnp_current->rnp_get_next();
@@ -187,14 +187,14 @@ expression_result* xpath_stack::erp_previous(unsigned u_nb)  ///< Nb of items to
 void xpath_stack::v_pop_one() {
     result_and_next* rnp_old;
 
-    if (!u_size)
+    if (!_u_size)
         throw execution_error(35);
-    if (!rnp_first)
+    if (!_rnp_first)
         throw execution_error(36);
-    rnp_old = rnp_first;
-    rnp_first = rnp_first->rnp_get_next();
+    rnp_old = _rnp_first;
+    _rnp_first = _rnp_first->rnp_get_next();
     delete rnp_old;
-    u_size--;
+    _u_size--;
 }
 
 /// Pop N element from the stack
@@ -210,8 +210,8 @@ void xpath_stack::v_pop(unsigned u_nb) {
 void xpath_stack::v_dump() {
     result_and_next* rnp_ptr;
 
-    printf("--- stack start (%d elem) ---\n", u_size);
-    rnp_ptr = rnp_first;
+    printf("--- stack start (%d elem) ---\n", _u_size);
+    rnp_ptr = _rnp_first;
     while (rnp_ptr) {
         rnp_ptr->v_dump();
         rnp_ptr = rnp_ptr->rnp_get_next();

@@ -40,22 +40,22 @@ class action_item {
    public:
     /// constructor
     action_item(int i_in_1, int i_in_2, int i_in_3, const char* cp_string)
-        : i_1(i_in_1), i_2(i_in_2), i_3(i_in_3), S_string(cp_string) {
+        : _i_1(i_in_1), _i_2(i_in_2), _i_3(i_in_3), _S_string(cp_string) {
     }
 
     /// Retrieve the set of values
     void v_get(int& i_out_1, int& i_out_2, int& i_out_3, TIXML_STRING& S_out) {
-        i_out_1 = i_1;
-        i_out_2 = i_2;
-        i_out_3 = i_3;
-        S_out = S_string;
+        i_out_1 = _i_1;
+        i_out_2 = _i_2;
+        i_out_3 = _i_3;
+        S_out = _S_string;
     }
 
    protected:
     /// Integer triplet values
-    int i_1, i_2, i_3;
+    int _i_1, _i_2, _i_3;
     /// String value
-    TIXML_STRING S_string;
+    TIXML_STRING _S_string;
 };
 
 /// The XPath action stack. Not a stack per se, only a placeholder
@@ -69,33 +69,33 @@ class action_store {
     void v_add(int i_1, int i_2, int i_3, const char* cp_string);
     /// Get the current nb of stored elements
     int i_get_size() {
-        return i_size;
+        return _i_size;
     }
     /// Get one element from the placeholder
     void v_get(int i_position, int& i_1, int& i_2, int& i_3, TIXML_STRING& S_out);
-    /// Get the current position. See i_position.
+    /// Get the current position. See _i_position.
     int i_get_position() {
-        return i_position;
+        return _i_position;
     }
-    /// Set the position to an arbitrary value. See i_position.
+    /// Set the position to an arbitrary value. See _i_position.
     void v_set_position(int i_where) {
-        i_position = i_where;
+        _i_position = i_where;
     }
-    /// Decrement the position. See i_position.
+    /// Decrement the position. See _i_position.
     void v_dec_position() {
-        i_position--;
+        _i_position--;
     }
 
    protected:
     /// Used number of elements
-    int i_size;
+    int _i_size;
     /// This value is informative and is not related
     /// to the nb of elements in the placeholder
-    int i_position;
+    int _i_position;
     /// Nb of allocated elements
-    int i_alloc;
+    int _i_alloc;
     /// Pointers to the allocated elements
-    action_item** aipp_list;
+    action_item** _aipp_list;
 };
 
 }  // namespace TinyXPath

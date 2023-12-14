@@ -80,28 +80,28 @@ TiXmlAttribute* XAp_xpath_attribute(const TiXmlNode* XNp_source_tree, const char
 bool o_xpath_int(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, int& i_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     i_res = xp_proc.i_compute_xpath();
-    return xp_proc.e_error == TinyXPath::xpath_processor::e_no_error;
+    return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a double XPath expression, without an error check
 bool o_xpath_double(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, double& d_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     d_res = xp_proc.d_compute_xpath();
-    return xp_proc.e_error == TinyXPath::xpath_processor::e_no_error;
+    return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a bool XPath expression, without an error check
 bool o_xpath_bool(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, bool& o_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     o_res = xp_proc.o_compute_xpath();
-    return xp_proc.e_error == TinyXPath::xpath_processor::e_no_error;
+    return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a string XPath expression, without an error check
 bool o_xpath_string(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, TIXML_STRING& S_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     S_res = xp_proc.S_compute_xpath();
-    return xp_proc.e_error == TinyXPath::xpath_processor::e_no_error;
+    return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a node XPath expression, without an error check
@@ -113,7 +113,7 @@ bool o_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, c
     if (!u_nb)
         return false;
     XNp_node = xp_proc.XNp_get_xpath_node(0);
-    return xp_proc.e_error == TinyXPath::xpath_processor::e_no_error;
+    return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute an attribute XPath expression, without an error check
@@ -125,6 +125,7 @@ bool o_xpath_attribute(const TiXmlNode* XNp_source_tree, const char* cp_xpath_ex
     if (!u_nb)
         return false;
     XAp_attrib = xp_proc.XAp_get_xpath_attribute(0);
-    return xp_proc.e_error == TinyXPath::xpath_processor::e_no_error;
+    return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
+
 }  // namespace TinyXPath
