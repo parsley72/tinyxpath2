@@ -87,7 +87,7 @@ void node_set::v_copy_selected_node_recursive(const TiXmlNode* XNp_root,  ///< T
 
     if ((!cp_lookup) || !strcmp(XNp_root->Value(), cp_lookup))
         v_add_node_in_set(XNp_root);
-    if (XNp_root->Type() == TiXmlNode::ELEMENT) {
+    if (XNp_root->Type() == TiXmlNode::TINYXML_ELEMENT) {
         XAp_attrib = XNp_root->ToElement()->FirstAttribute();
         while (XAp_attrib) {
             v_add_attrib_in_set(XAp_attrib);
@@ -127,7 +127,7 @@ TIXML_STRING node_set::S_get_string_value() const {
     for (u_node = 0; u_node < _u_nb_node; u_node++) {
         if (!_op_attrib[u_node]) {
             XNp_node = (const TiXmlNode*)_vpp_node_set[u_node];
-            if (XNp_node->Type() == TiXmlNode::TEXT)
+            if (XNp_node->Type() == TiXmlNode::TINYXML_TEXT)
                 S_res += XNp_node->Value();
         }
     }
@@ -165,16 +165,16 @@ void node_set::v_add_base_in_set(const TiXmlBase* XBp_member,  ///< Base to add 
           XNp_node = (TiXmlNode *) XBp_member;
           switch (XNp_node->Type())
           {
-             case TiXmlNode::TEXT :
+             case TiXmlNode::TINYXML_TEXT :
                 printf ("text (%s)", XNp_node->ToText()->Value ());
                 break;
-             case TiXmlNode::DOCUMENT :
+             case TiXmlNode::TINYXML_DOCUMENT :
                 printf ("document");
                 break;
-             case TiXmlNode::ELEMENT :
+             case TiXmlNode::TINYXML_ELEMENT :
                 printf ("element <%s>", XNp_node->ToElement()->Value ());
                 break;
-             case TiXmlNode::COMMENT :
+             case TiXmlNode::TINYXML_COMMENT :
                 printf ("comment <%s>", XNp_node->ToComment()->Value ());
                 break;
           }
@@ -219,7 +219,7 @@ void node_set::v_add_all_foll_node(const TiXmlNode* XNp_node,  ///< base node
         XNp_ptr = XNp_ptr->NextSiblingElement();
     }
     XNp_ptr = XNp_node->Parent();
-    if (XNp_ptr && XNp_ptr->Type() == TiXmlNode::ELEMENT)
+    if (XNp_ptr && XNp_ptr->Type() == TiXmlNode::TINYXML_ELEMENT)
         v_add_all_foll_node(XNp_ptr, S_name);
 }
 
@@ -240,7 +240,7 @@ void node_set::v_add_all_prec_node(const TiXmlNode* XNp_node,  ///< base node
         cp_lookup = S_name.c_str();
     XNp_ptr = XNp_node->PreviousSibling();
     while (XNp_ptr) {
-        if (XNp_ptr->Type() == TiXmlNode::ELEMENT) {
+        if (XNp_ptr->Type() == TiXmlNode::TINYXML_ELEMENT) {
             v_add_node_in_set_if_name_or_star(XNp_ptr, S_name);
             v_copy_node_children(XNp_ptr, cp_lookup);
         }
