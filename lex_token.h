@@ -50,8 +50,8 @@ class lex_token {
         if (u_in_size)
             memcpy(_cp_value, bp_in_value, u_in_size);
         _cp_value[u_in_size] = 0;
-        _ltp_next = NULL;
-        _ltp_prev = NULL;
+        _ltp_next = nullptr;
+        _ltp_prev = nullptr;
     }
     /// set the next element in list
     void v_set_next(lex_token* ltp_in_next) {
@@ -85,10 +85,10 @@ class lex_token {
         ltp_ret = this;
         for (i = 0; i < i_nb; i++) {
             if (!ltp_ret)
-                return NULL;
+                return nullptr;
             ltp_ret = ltp_ret->ltp_get_next();
             if (!ltp_ret || !ltp_ret->o_is_valid())
-                return NULL;
+                return nullptr;
         }
         return ltp_ret;
     }

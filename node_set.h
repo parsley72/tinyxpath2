@@ -36,8 +36,8 @@ class node_set {
     /// constructor : creates an empty set
     node_set() {
         _u_nb_node = 0;
-        _vpp_node_set = NULL;
-        _op_attrib = NULL;
+        _vpp_node_set = nullptr;
+        _op_attrib = nullptr;
     }
     /// copy constructor
     node_set(const node_set& ns2);
@@ -48,8 +48,8 @@ class node_set {
         if (_u_nb_node && _op_attrib)
             delete[] _op_attrib;
         _u_nb_node = 0;
-        _vpp_node_set = NULL;
-        _op_attrib = NULL;
+        _vpp_node_set = nullptr;
+        _op_attrib = nullptr;
     }
 
     node_set& operator=(const node_set& ns2);

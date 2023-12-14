@@ -61,7 +61,7 @@ void result_and_next::v_dump() {
 
 /// Constructor
 xpath_stack::xpath_stack() {
-    _rnp_first = NULL;
+    _rnp_first = nullptr;
     _u_size = 0;
 }
 

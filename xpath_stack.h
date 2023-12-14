@@ -48,7 +48,7 @@ class xpath_stack {
     }
     ~xpath_stack();
     void v_push(expression_result er_res);
-    void v_push_int(int i_elem, const char* cp_comment = NULL);
+    void v_push_int(int i_elem, const char* cp_comment = nullptr);
     void v_push_bool(bool o_in);
     void v_push_string(TIXML_STRING S_in);
     void v_push_double(double d_elem);

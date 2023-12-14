@@ -66,7 +66,7 @@ class expression_result {
     }
 
     expression_result() {
-        _XNp_root = NULL;
+        _XNp_root = nullptr;
         _e_type = e_invalid;
         _o_content = false;
         _i_content = 0;

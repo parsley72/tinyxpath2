@@ -41,7 +41,7 @@ namespace TinyXPath {
 /// Exception class for a syntax error
 class syntax_error {
    public:
-    syntax_error(const char* cp_mess = NULL) {
+    syntax_error(const char* cp_mess = nullptr) {
         if (cp_mess && strlen(cp_mess) < sizeof(_ca_mess) - 1)
             strcpy(_ca_mess, cp_mess);
         else

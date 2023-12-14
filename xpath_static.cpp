@@ -61,7 +61,7 @@ TiXmlNode* XNp_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     u_nb = xp_proc.u_compute_xpath_node_set();
     if (!u_nb)
-        return NULL;
+        return nullptr;
     return xp_proc.XNp_get_xpath_node(0);
 }
 
@@ -72,7 +72,7 @@ TiXmlAttribute* XAp_xpath_attribute(const TiXmlNode* XNp_source_tree, const char
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     u_nb = xp_proc.u_compute_xpath_node_set();
     if (!u_nb)
-        return NULL;
+        return nullptr;
     return xp_proc.XAp_get_xpath_attribute(0);
 }
 

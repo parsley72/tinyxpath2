@@ -54,11 +54,11 @@ class token_list {
    public:
     /// constructor
     token_list() {
-        _ltp_first = new lex_token(lex_null, NULL, 0);
+        _ltp_first = new lex_token(lex_null, nullptr, 0);
         _ltp_last = _ltp_first;
         _ltp_first->v_set_prev(_ltp_first);
         _ltp_first->v_set_next(_ltp_first);
-        _ltp_current = NULL;
+        _ltp_current = nullptr;
     }
     /// destructor
     virtual ~token_list() {
@@ -97,7 +97,7 @@ class token_list {
     /// Get next X linear token
     lex_token* ltp_get(int i_offset) {
         if (!_ltp_current)
-            return NULL;
+            return nullptr;
         return _ltp_current->ltp_get_next(i_offset);
     }
 
