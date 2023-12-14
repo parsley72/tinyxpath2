@@ -1,0 +1,8 @@
+{
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+    "C_Cpp.codeAnalysis.clangTidy.args": [
+        "-p",
+        "${workspaceFolder}/build/compile_commands.json"
+    ],
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json"
+}
