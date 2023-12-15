@@ -34,6 +34,8 @@ distribution.
 
 #include <math.h>
 
+#include <stdexcept>
+
 #include "xml_util.h"
 
 using namespace TinyXPath;
@@ -1199,6 +1201,9 @@ Calls one of the following :
 - v_function_substring
 - v_function_sum
 - v_function_true
+- v_function_number
+- v_function_string
+- v_function_boolean
 */
 void xpath_processor::v_execute_function(TIXML_STRING& S_name,  ///< Function name
     unsigned u_nb_arg,                                          ///< Nb of arguments
@@ -1276,6 +1281,17 @@ void xpath_processor::v_execute_function(TIXML_STRING& S_name,  ///< Function na
         v_function_true(u_nb_arg, erpp_arg);
     else
 
+        if (S_name == "number")
+        v_function_number(u_nb_arg, erpp_arg);
+    else
+
+        if (S_name == "string")
+        v_function_string(u_nb_arg, erpp_arg);
+    else
+
+        if (S_name == "boolean")
+        v_function_boolean(u_nb_arg, erpp_arg);
+    else
         throw execution_error(13);
 }
 
@@ -1662,6 +1678,115 @@ void xpath_processor::v_function_true(unsigned u_nb_arg,  ///< Nb of arguments
     if (u_nb_arg)
         throw execution_error(32);
     v_push_bool(true);
+}
+
+/// XPath \b string function
+void xpath_processor::v_function_string(unsigned u_nb_arg,  ///< Nb of arguments
+    expression_result** erpp_arg)                           ///< Argument list
+{
+    if (u_nb_arg != 1)
+        throw execution_error(40);
+
+    node_set* nsp_ptr;
+
+    // From expression_result::o_get_string ()
+    TIXML_STRING S_res;
+    switch (erpp_arg[0]->_e_type) {
+        case e_string:
+            S_res = erpp_arg[0]->S_get_string();
+            break;
+        case e_int:
+            v_assign_int_to_string(S_res, erpp_arg[0]->i_get_int());
+            break;
+        case e_double:
+            v_assign_double_to_string(S_res, erpp_arg[0]->d_get_double());
+            break;
+        case e_node_set:
+            // See XPath 1.0 spec, 4.2 :
+            // An argument is converted to type string as if by calling the string function
+            // ...
+            // A node-set is converted to a string by returning the string-value of the node
+            // in the node-set that is first in document order. If the node-set is empty, an empty string is returned.
+            nsp_ptr = erpp_arg[0]->nsp_get_node_set();
+            if (nsp_ptr->u_get_nb_node_in_set()) {
+                nsp_ptr->v_document_sort(nullptr);
+                if (nsp_ptr->o_is_attrib(0))
+                    S_res = nsp_ptr->XAp_get_attribute_in_set(0)->Value();
+                else
+                    S_res = nsp_ptr->XNp_get_node_in_set(0)->Value();
+            }
+            break;
+        case e_bool:
+            if (erpp_arg[0]->o_get_bool())
+                S_res = "true";
+            else
+                S_res = "false";
+            break;
+        case e_invalid:
+            throw std::runtime_error("Invalid XPath expression");
+    }
+    v_push_string(S_res);
+}
+
+/// XPath \b number function
+void xpath_processor::v_function_number(unsigned u_nb_arg,  ///< Nb of arguments
+    expression_result** erpp_arg)                           ///< Argument list
+{
+    if (u_nb_arg != 1)
+        throw execution_error(40);
+
+    // From expression_result::o_get_int ()
+    int i_res = 0;
+    switch (erpp_arg[0]->_e_type) {
+        case e_int:
+            i_res = erpp_arg[0]->i_get_int();
+            break;
+        case e_bool:
+            i_res = erpp_arg[0]->o_get_bool() ? 1 : 0;
+            break;
+        case e_double:
+            i_res = (int)(erpp_arg[0]->d_get_double());
+            break;
+        default:
+            i_res = atoi(erpp_arg[0]->S_get_string().c_str());
+            break;
+    }
+    v_push_int(i_res);
+}
+
+/// XPath \b boolean function
+void xpath_processor::v_function_boolean(unsigned u_nb_arg,  ///< Nb of arguments
+    expression_result** erpp_arg)                            ///< Argument list
+{
+    if (u_nb_arg != 1)
+        throw execution_error(40);
+
+    // From expression_result::o_get_bool ()
+    bool result = false;
+    switch (erpp_arg[0]->_e_type) {
+        case e_int:
+            result = erpp_arg[0]->i_get_int() != 0;
+        case e_double:
+            result = (erpp_arg[0]->d_get_double() == 0.0);
+        case e_string:
+            result = erpp_arg[0]->S_get_string().length() > 0;
+            break;
+        case e_node_set: {
+            // See XPath 1.0 spec, 3.2 :
+            // An argument is converted to type string as if by calling the string function
+            // ...
+            // A node-set is converted to a string by returning the string-value of the node
+            // in the node-set that is first in document order. If the node-set is empty, an empty string is returned.
+            const node_set* nsp_ptr = erpp_arg[0]->nsp_get_node_set();
+            result = nsp_ptr->u_get_nb_node_in_set() != 0;
+        } break;
+        case e_bool:
+            result = erpp_arg[0]->o_get_bool();
+            break;
+        case e_invalid:
+            throw std::runtime_error("Invalid XPath expression");
+    }
+    v_push_bool(result);
 }
 
 /**

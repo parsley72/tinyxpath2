@@ -261,6 +261,10 @@ int main() {
     v_test_one_string(XEp_main, "substring('12345',2,6)", "2345");
     v_test_one_string(XEp_main, "concat('[',normalize-space('  before and   after      '),']')", "[before and after]");
 
+    v_test_one_string(XEp_main, "string(count(//*))", "6");
+    v_test_one_string(XEp_main, "number(contains('base','as'))", "1");
+    v_test_one_string(XEp_main, "boolean(contains('base','as'))", "true");
+
     // test for u_compute_xpath_node_set
 
     unsigned u_nb;
