@@ -100,7 +100,7 @@ SOURCE=..\tinyxml.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\tinyxml.h
+SOURCE=..\tinyxml2.h
 # End Source File
 # Begin Source File
 

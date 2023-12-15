@@ -25,7 +25,10 @@ distribution.
 #ifndef __NODE_SET_H
 #define __NODE_SET_H
 
-#include "tinyxml.h"
+#include <cassert>
+#include <string>
+
+#include "tinyxml2.h"
 #include "tinyxpath_conf.h"
 
 namespace TinyXPath {
@@ -53,42 +56,42 @@ class node_set {
     }
 
     node_set& operator=(const node_set& ns2);
-    void v_add_base_in_set(const TiXmlBase* XBp_member, bool o_attrib);
+    void v_add_base_in_set(const void* XBp_member, bool o_attrib);
 
     /// Adds an attribute in the node set
-    void v_add_attrib_in_set(const TiXmlAttribute* XAp_attrib) {
+    void v_add_attrib_in_set(const tinyxml2::XMLAttribute* XAp_attrib) {
         v_add_base_in_set(XAp_attrib, true);
     }
 
     /// Adds a node in the node set
-    void v_add_node_in_set(const TiXmlNode* XNp_node) {
+    void v_add_node_in_set(const tinyxml2::XMLNode* XNp_node) {
         v_add_base_in_set(XNp_node, false);
     }
 
-    bool o_exist_in_set(const TiXmlBase* XBp_member);
-    void v_add_all_foll_node(const TiXmlNode* XNp_node, const TIXML_STRING& S_name);
-    void v_add_all_prec_node(const TiXmlNode* XNp_node, const TIXML_STRING& S_name);
+    bool o_exist_in_set(const void* XBp_member);
+    void v_add_all_foll_node(const tinyxml2::XMLNode* XNp_node, const std::string& S_name);
+    void v_add_all_prec_node(const tinyxml2::XMLNode* XNp_node, const std::string& S_name);
 
     /// Add a new node, if the name is "*" or if the name is the same as the node
-    void v_add_node_in_set_if_name_or_star(const TiXmlNode* XNp_node, const TIXML_STRING& S_name) {
+    void v_add_node_in_set_if_name_or_star(const tinyxml2::XMLNode* XNp_node, const std::string& S_name) {
         bool o_keep;
         if (S_name == "*")
             o_keep = true;
         else
             o_keep = !strcmp(XNp_node->Value(), S_name.c_str());
         if (o_keep)
-            v_add_base_in_set(XNp_node, false);
+            v_add_node_in_set(XNp_node);
     }
 
     /// Add a new attrib, if the name is "*" or if the name is the same as the node
-    void v_add_attrib_in_set_if_name_or_star(const TiXmlAttribute* XAp_attrib, const TIXML_STRING& S_name) {
+    void v_add_attrib_in_set_if_name_or_star(const tinyxml2::XMLAttribute* XAp_attrib, const std::string& S_name) {
         bool o_keep;
         if (S_name == "*")
             o_keep = true;
         else
             o_keep = !strcmp(XAp_attrib->Name(), S_name.c_str());
         if (o_keep)
-            v_add_base_in_set(XAp_attrib, true);
+            v_add_attrib_in_set(XAp_attrib);
     }
 
     /// Get nb of nodes in the node set
@@ -96,36 +99,30 @@ class node_set {
         return _u_nb_node;
     }
 
-    /// Get a node or an attribute
-    const TiXmlBase* XBp_get_base_in_set(unsigned u_which) {
-        assert(u_which < _u_nb_node);
-        return (const TiXmlBase*)_vpp_node_set[u_which];
-    }
-
     /// Get a node
-    const TiXmlNode* XNp_get_node_in_set(unsigned u_which) {
+    const tinyxml2::XMLNode* XNp_get_node_in_set(unsigned u_which) {
         assert(u_which < _u_nb_node);
         assert(!o_is_attrib(u_which));
-        return (const TiXmlNode*)_vpp_node_set[u_which];
+        return (const tinyxml2::XMLNode*)_vpp_node_set[u_which];
     }
 
     /// Get an attribute
-    const TiXmlAttribute* XAp_get_attribute_in_set(unsigned u_which) {
+    const tinyxml2::XMLAttribute* XAp_get_attribute_in_set(unsigned u_which) {
         assert(u_which < _u_nb_node);
         assert(o_is_attrib(u_which));
-        return (const TiXmlAttribute*)_vpp_node_set[u_which];
+        return (const tinyxml2::XMLAttribute*)_vpp_node_set[u_which];
     }
 
     /// Check if a node is an attribute or another node. This is needed because TinyXML has a weird exception for
-    /// attributes not being children of TiXmlNode
+    /// attributes not being children of XMLNode
     bool o_is_attrib(unsigned u_which) {
         assert(u_which < _u_nb_node);
         return _op_attrib[u_which];
     }
 
     /// Get a node value. The value is the name for an element, and the attribute value for an attribute
-    TIXML_STRING S_get_value(unsigned u_which) {
-        TIXML_STRING S_res;
+    std::string S_get_value(unsigned u_which) {
+        std::string S_res;
 
         if (o_is_attrib(u_which))
             S_res = XAp_get_attribute_in_set(u_which)->Value();
@@ -144,15 +141,15 @@ class node_set {
         return atof(S_get_value(u_which).c_str());
     }
 
-    void v_copy_node_children(const TiXmlNode* XNp_root);
-    void v_copy_node_children(const TiXmlNode* XNp_root, const char* cp_lookup);
-    void v_copy_selected_node_recursive(const TiXmlNode* XNp_root);
-    void v_copy_selected_node_recursive(const TiXmlNode* XNp_root, const char* cp_lookup);
-    void v_copy_selected_node_recursive_no_attrib(const TiXmlNode* XNp_root, const char* cp_lookup);
-    void v_copy_selected_node_recursive_root_only(const TiXmlNode* XNp_root, const TiXmlNode* XNp_base);
-    TIXML_STRING S_get_string_value() const;
+    void v_copy_node_children(const tinyxml2::XMLNode* XNp_root);
+    void v_copy_node_children(const tinyxml2::XMLNode* XNp_root, const char* cp_lookup);
+    void v_copy_selected_node_recursive(const tinyxml2::XMLNode* XNp_root);
+    void v_copy_selected_node_recursive(const tinyxml2::XMLNode* XNp_root, const char* cp_lookup);
+    void v_copy_selected_node_recursive_no_attrib(const tinyxml2::XMLNode* XNp_root, const char* cp_lookup);
+    void v_copy_selected_node_recursive_root_only(const tinyxml2::XMLNode* XNp_root, const tinyxml2::XMLNode* XNp_base);
+    std::string S_get_string_value() const;
     void v_dump();
-    void v_document_sort(const TiXmlNode* XNp_root);
+    void v_document_sort(const tinyxml2::XMLNode* XNp_root);
 
    protected:
     /// Nb of nodes in the set

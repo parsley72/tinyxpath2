@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/test_tinyxpath",
+            "program": "${workspaceFolder}/build/test_tinyxpath2",
             "MIMode": "gdb",
             "miDebuggerPath": "/usr/bin/gdb",
             "cwd": "${workspaceFolder}/",

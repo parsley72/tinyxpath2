@@ -60,18 +60,17 @@ class error_not_yet : public execution_error {
 class xpath_processor : public xpath_stream {
    public:
     /// Constructor
-    xpath_processor(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
+    xpath_processor(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
     virtual ~xpath_processor() {
     }
     expression_result er_compute_xpath();
-    TIXML_STRING S_compute_xpath();
+    std::string S_compute_xpath();
     int i_compute_xpath();
     bool o_compute_xpath();
     double d_compute_xpath();
     unsigned u_compute_xpath_node_set();
-    void v_get_xpath_base(unsigned u_order, const TiXmlBase*& XBp_res, bool& o_attribute);
-    TiXmlNode* XNp_get_xpath_node(unsigned u_order);
-    TiXmlAttribute* XAp_get_xpath_attribute(unsigned u_order);
+    const tinyxml2::XMLNode* XNp_get_xpath_node(unsigned u_order);
+    const tinyxml2::XMLAttribute* XAp_get_xpath_attribute(unsigned u_order);
     enum { e_no_error, e_error_syntax, e_error_overflow, e_error_execution, e_error_stack } _e_error;
 
    protected:
@@ -81,14 +80,14 @@ class xpath_processor : public xpath_stream {
     xpath_stack _xs_stack;
     action_store _as_action_store;
     void v_execute_stack();
-    void v_pop_one_action(xpath_construct& xc_action, unsigned& u_sub, unsigned& u_ref, TIXML_STRING& S_literal);
+    void v_pop_one_action(xpath_construct& xc_action, unsigned& u_sub, unsigned& u_ref, std::string& S_literal);
     void v_execute_one(xpath_construct xc_rule, bool o_skip_only);
 
     void v_execute_absolute_path(unsigned u_action_position, bool o_with_rel, bool o_everywhere);
     void v_execute_step(int& i_relative_action, bool o_skip_only);
-    bool o_check_predicate(const TiXmlElement* XEp_child, bool o_by_name);
+    bool o_check_predicate(const tinyxml2::XMLElement* XEp_child, bool o_by_name);
 
-    void v_execute_function(TIXML_STRING& S_name, unsigned u_nb_arg, expression_result** erpp_arg);
+    void v_execute_function(std::string& S_name, unsigned u_nb_arg, expression_result** erpp_arg);
     void v_function_ceiling(unsigned u_nb_arg, expression_result** erpp_arg);
     void v_function_concat(unsigned u_nb_arg, expression_result** erpp_arg);
     void v_function_contains(unsigned u_nb_arg, expression_result** erpp_arg);
@@ -128,7 +127,7 @@ class xpath_processor : public xpath_stream {
     void v_push_int(int i_val, const char* cp_comment = "") {
         _xs_stack.v_push_int(i_val, cp_comment);
     }
-    void v_push_string(TIXML_STRING S_val) {
+    void v_push_string(std::string S_val) {
         _xs_stack.v_push_string(S_val);
     }
     void v_push_bool(bool o_val) {
@@ -147,27 +146,27 @@ class xpath_processor : public xpath_stream {
     int i_pop_int() {
         return _xs_stack.i_pop_int();
     }
-    TIXML_STRING S_pop_string() {
+    std::string S_pop_string() {
         return _xs_stack.S_pop_string();
     }
     node_set ns_pop_node_set() {
         return _xs_stack.ns_pop_node_set();
     }
 
-    void v_set_context(const TiXmlElement* XEp_in, bool o_by_name);
-    const TiXmlElement* XEp_get_context() {
+    void v_set_context(const tinyxml2::XMLElement* XEp_in, bool o_by_name);
+    const tinyxml2::XMLElement* XEp_get_context() {
         return _XEp_context;
     }
     /// Current context
-    const TiXmlElement* _XEp_context;
+    const tinyxml2::XMLElement* _XEp_context;
     /// The result of the XPath evaluation, for further node retrieving by v_get_xpath_base
     expression_result _er_result;
     bool _o_is_context_by_name;
 
     /// Base node
-    const TiXmlNode* _XNp_base;
+    const tinyxml2::XMLNode* _XNp_base;
     /// Node above the caller:
-    const TiXmlNode* _XNp_base_parent;
+    const tinyxml2::XMLNode* _XNp_base_parent;
     void v_build_root();
 };
 

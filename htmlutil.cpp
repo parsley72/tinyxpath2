@@ -30,7 +30,12 @@ distribution.
 
 #include "htmlutil.h"
 
-#include "tinyxml.h"
+#include <cassert>
+
+#include "tinyxml2.h"
+
+using namespace std;
+using namespace tinyxml2;
 
 /// Generate some indentation on the HTML or file output
 void v_levelize(int i_level, FILE* Fp_out, bool o_html) {
@@ -44,69 +49,52 @@ void v_levelize(int i_level, FILE* Fp_out, bool o_html) {
 
 /// Dumps an XML tree to an HTML document
 /// \n This is a recursive function, called again at each element in the tree
-void v_out_html(FILE* Fp_out,     ///< Output HTML file
-    const TiXmlNode* XNp_source,  ///< Input XML tree
-    unsigned u_level)             ///< Current level
+void v_out_html(FILE* Fp_out,   ///< Output HTML file
+    const XMLNode* XNp_source,  ///< Input XML tree
+    unsigned u_level)           ///< Current level
 {
-    const TiXmlNode* XNp_child;
-    const TiXmlAttribute* XAp_att;
+    const XMLNode* XNp_child;
+    const XMLAttribute* XAp_att;
 
     XNp_child = XNp_source->FirstChild();
     while (XNp_child) {
-        switch (XNp_child->Type()) {
-            case TiXmlNode::TINYXML_DOCUMENT:
-                fprintf(Fp_out, "\nStart document\n");
-                break;
-
-            case TiXmlNode::TINYXML_ELEMENT:
-                v_levelize((int)u_level, Fp_out, true);
-                fprintf(Fp_out, "&lt;");  // '<'
-                fprintf(Fp_out, "%s", XNp_child->ToElement()->Value());
-                // fprintf (Fp_out, "<small>[%d]</small>", XNp_child -> GetUserValue ());
-                XAp_att = XNp_child->ToElement()->FirstAttribute();
-                while (XAp_att) {
-                    fprintf(Fp_out, " %s='%s'", XAp_att->Name(), XAp_att->Value());
-                    XAp_att = XAp_att->Next();
-                }
-                if (XNp_child->FirstChild())
-                    fprintf(Fp_out, "&gt;<br>\n");  // '>\n'
-                else
-                    fprintf(Fp_out, " /&gt;<br>\n");
-                break;
-
-            case TiXmlNode::TINYXML_COMMENT:
-                fprintf(Fp_out, "&lt;!-- %s --&gt;<br>\n", XNp_child->ToComment()->Value());
-                break;
-            case TiXmlNode::TINYXML_TEXT:
-                fprintf(Fp_out, "%s\n", XNp_child->ToText()->Value());
-                break;
-            case TiXmlNode::TINYXML_UNKNOWN:
-            case TiXmlNode::TINYXML_DECLARATION:
-                break;
-            default:
-                assert(false);
+        if (XNp_child->ToDocument()) {
+            fprintf(Fp_out, "\nStart document\n");
+        } else if (XNp_child->ToElement()) {
+            v_levelize((int)u_level, Fp_out, true);
+            fprintf(Fp_out, "&lt;");  // '<'
+            fprintf(Fp_out, "%s", XNp_child->ToElement()->Value());
+            // fprintf (Fp_out, "<small>[%d]</small>", XNp_child -> GetUserValue ());
+            XAp_att = XNp_child->ToElement()->FirstAttribute();
+            while (XAp_att) {
+                fprintf(Fp_out, " %s='%s'", XAp_att->Name(), XAp_att->Value());
+                XAp_att = XAp_att->Next();
+            }
+            if (XNp_child->FirstChild())
+                fprintf(Fp_out, "&gt;<br>\n");  // '>\n'
+            else
+                fprintf(Fp_out, " /&gt;<br>\n");
+        } else if (XNp_child->ToComment()) {
+            fprintf(Fp_out, "&lt;!-- %s --&gt;<br>\n", XNp_child->ToComment()->Value());
+        } else if (XNp_child->ToText()) {
+            fprintf(Fp_out, "%s\n", XNp_child->ToText()->Value());
+        } else if (XNp_child->ToUnknown()) {
+        } else if (XNp_child->ToDeclaration()) {
+        } else {
+            assert(false);
         }
 
         v_out_html(Fp_out, XNp_child, u_level + 1);
 
-        switch (XNp_child->Type()) {
-            case TiXmlNode::TINYXML_DOCUMENT:
-                fprintf(Fp_out, "\nEnd document\n");
-                break;
-            case TiXmlNode::TINYXML_ELEMENT:
-                if (XNp_child->FirstChild()) {
-                    v_levelize((int)u_level, Fp_out, true);
-                    fprintf(Fp_out, "&lt;");
-                    fprintf(Fp_out, "/%s", XNp_child->ToElement()->Value());
-                    fprintf(Fp_out, "&gt;<br>\n");  // '>\n'
-                }
-                break;
-            case TiXmlNode::TINYXML_COMMENT:
-            case TiXmlNode::TINYXML_TEXT:
-            case TiXmlNode::TINYXML_UNKNOWN:
-            case TiXmlNode::TINYXML_DECLARATION:
-            default:
-                break;
+        if (XNp_child->ToDocument()) {
+            fprintf(Fp_out, "\nEnd document\n");
+        } else if (XNp_child->ToElement()) {
+            if (XNp_child->FirstChild()) {
+                v_levelize((int)u_level, Fp_out, true);
+                fprintf(Fp_out, "&lt;");
+                fprintf(Fp_out, "/%s", XNp_child->ToElement()->Value());
+                fprintf(Fp_out, "&gt;<br>\n");  // '>\n'
+            }
         }
         XNp_child = XNp_child->NextSibling();
     }

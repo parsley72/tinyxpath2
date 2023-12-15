@@ -30,7 +30,9 @@ distribution.
 #ifndef __ACTION_STORE_H
 #define __ACTION_STORE_H
 
-#include "tinyxml.h"
+#include <string>
+
+#include "tinyxml2.h"
 
 namespace TinyXPath {
 
@@ -44,7 +46,7 @@ class action_item {
     }
 
     /// Retrieve the set of values
-    void v_get(int& i_out_1, int& i_out_2, int& i_out_3, TIXML_STRING& S_out) {
+    void v_get(int& i_out_1, int& i_out_2, int& i_out_3, std::string& S_out) {
         i_out_1 = _i_1;
         i_out_2 = _i_2;
         i_out_3 = _i_3;
@@ -55,7 +57,7 @@ class action_item {
     /// Integer triplet values
     int _i_1, _i_2, _i_3;
     /// String value
-    TIXML_STRING _S_string;
+    std::string _S_string;
 };
 
 /// The XPath action stack. Not a stack per se, only a placeholder
@@ -72,7 +74,7 @@ class action_store {
         return _i_size;
     }
     /// Get one element from the placeholder
-    void v_get(int _i_position, int& _i_1, int& _i_2, int& _i_3, TIXML_STRING& S_out);
+    void v_get(int _i_position, int& _i_1, int& _i_2, int& _i_3, std::string& S_out);
     /// Get the current position. See _i_position.
     int i_get_position() {
         return _i_position;

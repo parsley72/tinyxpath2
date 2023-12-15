@@ -43,14 +43,14 @@ class result_and_next;
 class xpath_stack {
    public:
     xpath_stack();
-    void v_set_root(const TiXmlNode* XNp_in_root) {
+    void v_set_root(const tinyxml2::XMLNode* XNp_in_root) {
         _XNp_root = XNp_in_root;
     }
     ~xpath_stack();
     void v_push(expression_result er_res);
     void v_push_int(int i_elem, const char* cp_comment = nullptr);
     void v_push_bool(bool o_in);
-    void v_push_string(TIXML_STRING S_in);
+    void v_push_string(std::string S_in);
     void v_push_double(double d_elem);
     void v_push_node_set(node_set* nsp_ptr);
 
@@ -59,7 +59,7 @@ class xpath_stack {
 
     void v_pop(unsigned u_nb = 1);
     int i_pop_int();
-    TIXML_STRING S_pop_string();
+    std::string S_pop_string();
     bool o_pop_bool();
     node_set ns_pop_node_set();
     /// Return the stack's size
@@ -76,7 +76,7 @@ class xpath_stack {
     /// Stack size
     unsigned _u_size;
     void v_pop_one();
-    const TiXmlNode* _XNp_root;
+    const tinyxml2::XMLNode* _XNp_root;
 };
 
 }  // namespace TinyXPath

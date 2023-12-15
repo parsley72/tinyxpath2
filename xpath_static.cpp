@@ -29,33 +29,38 @@ distribution.
 
 #include "xpath_static.h"
 
+#include <string>
+
+using namespace std;
+using namespace tinyxml2;
+
 namespace TinyXPath {
 /// Static function to compute an integer XPath expression, without an error check
-int i_xpath_int(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr) {
+int i_xpath_int(const XMLNode* XNp_source_tree, const char* cp_xpath_expr) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     return xp_proc.i_compute_xpath();
 }
 
 /// Static function to compute a double XPath expression, without an error check
-double d_xpath_double(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr) {
+double d_xpath_double(const XMLNode* XNp_source_tree, const char* cp_xpath_expr) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     return xp_proc.d_compute_xpath();
 }
 
 /// Static function to compute a bool XPath expression, without an error check
-bool o_xpath_bool(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr) {
+bool o_xpath_bool(const XMLNode* XNp_source_tree, const char* cp_xpath_expr) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     return xp_proc.o_compute_xpath();
 }
 
 /// Static function to compute a string XPath expression, without an error check
-TIXML_STRING S_xpath_string(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr) {
+string S_xpath_string(const XMLNode* XNp_source_tree, const char* cp_xpath_expr) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     return xp_proc.S_compute_xpath();
 }
 
 /// Static function to compute a node XPath expression, without an error check
-TiXmlNode* XNp_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr) {
+const XMLNode* XNp_xpath_node(const XMLNode* XNp_source_tree, const char* cp_xpath_expr) {
     unsigned u_nb;
 
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
@@ -66,7 +71,7 @@ TiXmlNode* XNp_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath
 }
 
 /// Static function to compute an attribute XPath expression, without an error check
-TiXmlAttribute* XAp_xpath_attribute(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr) {
+const XMLAttribute* XAp_xpath_attribute(const XMLNode* XNp_source_tree, const char* cp_xpath_expr) {
     unsigned u_nb;
 
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
@@ -77,35 +82,35 @@ TiXmlAttribute* XAp_xpath_attribute(const TiXmlNode* XNp_source_tree, const char
 }
 
 /// Static function to compute an integer XPath expression, with an error check
-bool o_xpath_int(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, int& i_res) {
+bool o_xpath_int(const XMLNode* XNp_source_tree, const char* cp_xpath_expr, int& i_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     i_res = xp_proc.i_compute_xpath();
     return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a double XPath expression, without an error check
-bool o_xpath_double(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, double& d_res) {
+bool o_xpath_double(const XMLNode* XNp_source_tree, const char* cp_xpath_expr, double& d_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     d_res = xp_proc.d_compute_xpath();
     return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a bool XPath expression, without an error check
-bool o_xpath_bool(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, bool& o_res) {
+bool o_xpath_bool(const XMLNode* XNp_source_tree, const char* cp_xpath_expr, bool& o_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     o_res = xp_proc.o_compute_xpath();
     return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a string XPath expression, without an error check
-bool o_xpath_string(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, TIXML_STRING& S_res) {
+bool o_xpath_string(const XMLNode* XNp_source_tree, const char* cp_xpath_expr, string& S_res) {
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
     S_res = xp_proc.S_compute_xpath();
     return xp_proc._e_error == TinyXPath::xpath_processor::e_no_error;
 }
 
 /// Static function to compute a node XPath expression, without an error check
-bool o_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, const TiXmlNode*& XNp_node) {
+bool o_xpath_node(const XMLNode* XNp_source_tree, const char* cp_xpath_expr, const XMLNode*& XNp_node) {
     unsigned u_nb;
 
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);
@@ -117,7 +122,7 @@ bool o_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, c
 }
 
 /// Static function to compute an attribute XPath expression, without an error check
-bool o_xpath_attribute(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, const TiXmlAttribute*& XAp_attrib) {
+bool o_xpath_attribute(const XMLNode* XNp_source_tree, const char* cp_xpath_expr, const XMLAttribute*& XAp_attrib) {
     unsigned u_nb;
 
     xpath_processor xp_proc(XNp_source_tree, cp_xpath_expr);

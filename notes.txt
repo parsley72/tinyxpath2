@@ -40,7 +40,7 @@ and then use the following set of functions :
 - TinyXPath::d_xpath_double to get a double result
 - TinyXPath::o_xpath_bool to get a bool result
 - TinyXPath::S_xpath_string to get a string result
-- TinyXPath::XNp_xpath_node to get a TiXmlNode
+- TinyXPath::XNp_xpath_node to get a tinyxml2::XMLNode
 - TinyXPath::XAp_xpath_attribute to get a TiXmlAttribute
 
 \n or if you need to know whether there was some error with the XPath evaluation :
@@ -53,7 +53,7 @@ and then use the following set of functions :
 - TinyXPath::o_xpath_attribute 
 
 <h2>Modification to the source tree</h2>
-Be aware that the input tree user value is modified after the call : all user data (TiXmlNode::SetUserData)
+Be aware that the input tree user value is modified after the call : all user data (tinyxml2::XMLNode::SetUserData)
 are replaced by the document order (XPath meaning).
 
 <h2>Namespace</h2>

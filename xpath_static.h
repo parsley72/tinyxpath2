@@ -34,21 +34,23 @@ distribution.
 
 namespace TinyXPath {
 // no check static functions
-extern int i_xpath_int(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
-extern double d_xpath_double(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
-extern bool o_xpath_bool(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
-extern TIXML_STRING S_xpath_string(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
-extern TiXmlNode* XNp_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
-extern TiXmlAttribute* XAp_xpath_attribute(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr);
+extern int i_xpath_int(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
+extern double d_xpath_double(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
+extern bool o_xpath_bool(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
+extern std::string S_xpath_string(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
+const extern tinyxml2::XMLNode* XNp_xpath_node(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
+const extern tinyxml2::XMLAttribute* XAp_xpath_attribute(
+    const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
 
 // check static functions
-extern bool o_xpath_int(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, int& i_res);
-extern bool o_xpath_double(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, double& d_res);
-extern bool o_xpath_bool(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, bool& o_res);
-extern bool o_xpath_string(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, TIXML_STRING& S_res);
-extern bool o_xpath_node(const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, const TiXmlNode*& XNp_node);
+extern bool o_xpath_int(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr, int& i_res);
+extern bool o_xpath_double(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr, double& d_res);
+extern bool o_xpath_bool(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr, bool& o_res);
+extern bool o_xpath_string(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr, std::string& S_res);
+extern bool o_xpath_node(
+    const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr, const tinyxml2::XMLNode*& XNp_node);
 extern bool o_xpath_attribute(
-    const TiXmlNode* XNp_source_tree, const char* cp_xpath_expr, const TiXmlAttribute*& XAp_attrib);
+    const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr, const tinyxml2::XMLAttribute*& XAp_attrib);
 }  // namespace TinyXPath
 
 #endif  // __XPATH_STATIC_H

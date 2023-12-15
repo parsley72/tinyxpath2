@@ -29,6 +29,10 @@ distribution.
 
 #include "action_store.h"
 
+#include <cassert>
+
+using namespace std;
+
 namespace TinyXPath {
 
 /// Allocation unit
@@ -73,7 +77,7 @@ void action_store::v_add(int i_1, int i_2, int i_3, const char* cp_string) {
 }
 
 /// Get one element from the placeholder
-void action_store::v_get(int i_entry, int& i_1, int& i_2, int& i_3, TIXML_STRING& S_out) {
+void action_store::v_get(int i_entry, int& i_1, int& i_2, int& i_3, string& S_out) {
     assert(i_entry >= 0 && i_entry < _i_size);
     assert(_aipp_list[i_entry]);
     _aipp_list[i_entry]->v_get(i_1, i_2, i_3, S_out);

@@ -31,6 +31,8 @@ distribution.
 #ifndef __TOKENLIST_H
 #define __TOKENLIST_H
 
+#include <cassert>
+
 #include "lex_token.h"
 #include "lex_util.h"
 
