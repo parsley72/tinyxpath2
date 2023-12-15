@@ -108,6 +108,10 @@ class xpath_processor : public xpath_stream {
     void v_function_translate(unsigned u_nb_arg, expression_result** erpp_arg);
     void v_function_true(unsigned u_nb_arg, expression_result** erpp_arg);
 
+    void v_function_string(unsigned u_nb_arg, expression_result** erpp_arg);
+    void v_function_number(unsigned u_nb_arg, expression_result** erpp_arg);
+    void v_function_boolean(unsigned u_nb_arg, expression_result** erpp_arg);
+
     void v_function_equal(expression_result** erpp_arg);
     void v_function_not_equal(expression_result** erpp_arg);
     void v_function_equal_node_and_other(expression_result* erp_node, expression_result* erp_non);
