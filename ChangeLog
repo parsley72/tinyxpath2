@@ -34,7 +34,7 @@ Release : March 13th, 2004
 Bug fixes for 1.2.2
 
 - Bug fix in the position() : it was counting the order of a node within it's brotherhood, which 
-was correct only if the search was like *[position()=3] (Thanks Daniel Côté)
+was correct only if the search was like *[position()=3] (Thanks Daniel Cï¿½tï¿½)
 
 Structural changes for 1.2.2
 
@@ -68,6 +68,6 @@ Bug fixes for 1.2
 Structural changes for 1.2
 
 - Group all TinyXPath definitions in a TinyXPath namespace
-- New configuration header for global #defines (tinyxpath_conf.h) and exclude debuging member functions with ifdefs
+- New configuration header for global #defines (tinyxpath_conf.h) and exclude debugging member functions with ifdefs
 - Windows : Project with libraries (debug and release)
 - Update to latest TinyXML code, where user data are defined on the TiXmlBase level

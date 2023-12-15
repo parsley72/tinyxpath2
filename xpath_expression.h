@@ -40,7 +40,7 @@ class expression_result {
     /// String content
     TIXML_STRING _S_content;
 #ifdef TINYXPATH_DEBUG
-    /// Comment. This is for debuging only, for stack dump
+    /// Comment. This is for debugging only, for stack dump
     TIXML_STRING _S_comment;
 #endif
     /// bool content
@@ -132,7 +132,7 @@ class expression_result {
         _e_type = e_double;
         _d_content = d_in;
     }
-    /// Set the comment associated with a stack element. This is for debuging
+    /// Set the comment associated with a stack element. This is for debugging
     void v_set_comment(const char* cp_in) {
 #ifdef TINYXPATH_DEBUG
         _S_comment = cp_in;
