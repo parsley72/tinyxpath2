@@ -26,6 +26,8 @@ distribution.
 
 #include "lex_util.h"
 
+using namespace std;
+
 namespace TinyXPath {
 
 /// Get the expression_result as an int
@@ -57,8 +59,8 @@ double expression_result::d_get_double() {
 }
 
 /// Get the expression_result as a string
-TIXML_STRING expression_result::S_get_string() {
-    TIXML_STRING S_res;
+string expression_result::S_get_string() {
+    string S_res;
     node_set* nsp_ptr;
 
     S_res = "";

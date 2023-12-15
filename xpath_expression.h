@@ -26,7 +26,7 @@ distribution.
 #define __XPATH_EXPR_H
 
 #include "node_set.h"
-#include "tinyxml.h"
+#include "tinyxml2.h"
 #include "tinyxpath_conf.h"
 
 namespace TinyXPath {
@@ -38,10 +38,10 @@ typedef enum { e_bool, e_string, e_int, e_double, e_node_set, e_invalid } e_expr
 class expression_result {
    protected:
     /// String content
-    TIXML_STRING _S_content;
+    std::string _S_content;
 #ifdef TINYXPATH_DEBUG
     /// Comment. This is for debugging only, for stack dump
-    TIXML_STRING _S_comment;
+    std::string _S_comment;
 #endif
     /// bool content
     bool _o_content;
@@ -52,13 +52,13 @@ class expression_result {
     /// node set content
     node_set _ns_set;
     /// Ptr to the root node
-    const TiXmlNode* _XNp_root;
+    const tinyxml2::XMLNode* _XNp_root;
 
    public:
     /// expression type
     e_expression_type _e_type;
     /// Dummy constructor
-    expression_result(const TiXmlNode* XNp_in_root) : _XNp_root(XNp_in_root) {
+    expression_result(const tinyxml2::XMLNode* XNp_in_root) : _XNp_root(XNp_in_root) {
         _e_type = e_invalid;
         _o_content = false;
         _i_content = 0;
@@ -73,7 +73,7 @@ class expression_result {
         _d_content = 0.0;
     }
 
-    void v_set_root(const TiXmlNode* XNp_in) {
+    void v_set_root(const tinyxml2::XMLNode* XNp_in) {
         _XNp_root = XNp_in;
     }
 
@@ -123,7 +123,7 @@ class expression_result {
         _S_content = cp_in;
     }
     /// Set expression_result to a string
-    void v_set_string(TIXML_STRING S_in) {
+    void v_set_string(std::string S_in) {
         _e_type = e_string;
         _S_content = S_in;
     }
@@ -139,7 +139,7 @@ class expression_result {
 #endif
     }
     int i_get_int();
-    TIXML_STRING S_get_string();
+    std::string S_get_string();
     /// Get the expression_result as a string
     const char* cp_get_string() {
         assert(_e_type == e_string);
@@ -153,22 +153,22 @@ class expression_result {
         _ns_set = *nsp_source;
     }
     /// Set the expression_result as a node set
-    void v_set_node_set(TiXmlNode* _XNp_root) {
+    void v_set_node_set(tinyxml2::XMLNode* _XNp_root) {
         _e_type = e_node_set;
         _ns_set.v_copy_node_children(_XNp_root);
     }
     /// Set the expression_result as a node set
-    void v_set_node_set(TiXmlNode* _XNp_root, const char* cp_lookup) {
+    void v_set_node_set(tinyxml2::XMLNode* _XNp_root, const char* cp_lookup) {
         _e_type = e_node_set;
         _ns_set.v_copy_node_children(_XNp_root, cp_lookup);
     }
     /// Set the expression_result as a node set
-    void v_set_node_set_recursive(TiXmlNode* _XNp_root) {
+    void v_set_node_set_recursive(tinyxml2::XMLNode* _XNp_root) {
         _e_type = e_node_set;
         _ns_set.v_copy_selected_node_recursive(_XNp_root);
     }
     /// Set the expression_result as a node set
-    void v_set_node_set_recursive(TiXmlNode* _XNp_root, const char* cp_lookup) {
+    void v_set_node_set_recursive(tinyxml2::XMLNode* _XNp_root, const char* cp_lookup) {
         _e_type = e_node_set;
         _ns_set.v_copy_selected_node_recursive(_XNp_root, cp_lookup);
     }

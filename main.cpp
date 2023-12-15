@@ -9,6 +9,10 @@
 
 #include "htmlutil.h"
 #include "xpath_static.h"
+
+using namespace std;
+using namespace tinyxml2;
+
 /*
  @history:
 
@@ -36,11 +40,11 @@ static void v_out_one_line(const char* cp_expr, const char* cp_res, const char* 
 #include "libxml/xpath.h"
 
 /// Return the text result (if any) of the xpath expression
-TIXML_STRING S_xpath_expr(const xmlDoc* Dp_ptr, const char* cp_xpath_expr) {
+string S_xpath_expr(const xmlDoc* Dp_ptr, const char* cp_xpath_expr) {
     xmlXPathObjectPtr XPOp_ptr;
     xmlXPathContextPtr XPCp_ptr;
     const xmlChar* Cp_ptr;
-    TIXML_STRING S_out;
+    string S_out;
 
     S_out = "";
     if (Dp_ptr) {
@@ -62,8 +66,8 @@ TIXML_STRING S_xpath_expr(const xmlDoc* Dp_ptr, const char* cp_xpath_expr) {
     return S_out;
 }
 
-static void v_test_one_string_libxml(const TiXmlNode* XNp_root, const char* cp_expr, const xmlDoc* Dp_ptr) {
-    TIXML_STRING S_expected, S_res;
+static void v_test_one_string_libxml(const XMLNode* XNp_root, const char* cp_expr, const xmlDoc* Dp_ptr) {
+    string S_expected, S_res;
     bool o_ok;
 
     S_expected = S_xpath_expr(Dp_ptr, cp_expr);
@@ -76,8 +80,8 @@ static void v_test_one_string_libxml(const TiXmlNode* XNp_root, const char* cp_e
 
 #endif
 
-static void v_test_one_string_tiny(const TiXmlNode* XNp_root, const char* cp_expr, const char* cp_expected) {
-    TIXML_STRING S_res;
+static void v_test_one_string_tiny(const XMLNode* XNp_root, const char* cp_expr, const char* cp_expected) {
+    string S_res;
     bool o_ok;
 
     printf("-- expr : [%s] --\n", cp_expr);
@@ -95,26 +99,26 @@ static void v_test_one_string_tiny(const TiXmlNode* XNp_root, const char* cp_exp
 #endif
 
 int main() {
-    TiXmlDocument* XDp_doc;
-    TiXmlElement* XEp_main;
+    XMLDocument* XDp_doc;
+    XMLElement* XEp_main;
     int i_res;
     char ca_res[80];
     bool o_ok, o_res;
     double d_out;
 
-    TIXML_STRING S_res;
+    string S_res;
 
-    XDp_doc = new TiXmlDocument;
-    if (XDp_doc->LoadFile("openoff.xml")) {
+    XDp_doc = new XMLDocument;
+    if (XDp_doc->LoadFile("openoff.xml") == XML_SUCCESS) {
         S_res = TinyXPath::S_xpath_string(
             XDp_doc->RootElement(), "/office:document-content/office:body/office:text/text:p/text()");
         S_res = TinyXPath::S_xpath_string(XDp_doc->RootElement(), "//text:sequence-decls/*[1]/@text:name");
     }
     delete XDp_doc;
 
-    XDp_doc = new TiXmlDocument;
-    if (!XDp_doc->LoadFile("test.xml")) {
-        printf("Can't find test.xml !\n");
+    XDp_doc = new XMLDocument;
+    if (XDp_doc->LoadFile("test.xml") != XML_SUCCESS) {
+        printf("Can't load test.xml !\n");
         return 99;
     }
 
@@ -146,7 +150,7 @@ int main() {
 
     fprintf(Fp_out_html, "<h2>Results</h2>\n");
 
-    TiXmlElement* XEp_sub = XEp_main->FirstChildElement("b");
+    XMLElement* XEp_sub = XEp_main->FirstChildElement("b");
 
     v_test_one_string(XEp_main, "/a/*[name()!='b']", "x");
     v_test_one_string(XEp_main, "//b/@val", "123");
@@ -325,7 +329,7 @@ int main() {
     fprintf(Fp_out_html, "</table>\n");
 
     delete XDp_doc;
-    XDp_doc = new TiXmlDocument();
+    XDp_doc = new XMLDocument();
     XDp_doc->Parse("<xml><text>within</text></xml>");
     XEp_main = XDp_doc->RootElement();
     fprintf(Fp_out_html, "<h2>Input XML tree</h2>\n");
@@ -353,8 +357,8 @@ int main() {
         "href='http://sourceforge.net/export/rss2_projnews.php?group_id=53396&rss_fulltext=1'>TinyXPath RSS "
         "feed</a><br /><br />");
 
-    XDp_doc = new TiXmlDocument;
-    if (!XDp_doc->LoadFile("rss2_projnews.xml")) {
+    XDp_doc = new XMLDocument;
+    if (XDp_doc->LoadFile("rss2_projnews.xml") != XML_SUCCESS) {
         printf("Can't find rss2_projnews.xml !\n");
         return 99;
     }

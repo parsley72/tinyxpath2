@@ -31,7 +31,9 @@ distribution.
 #ifndef __TINYUTIL_H
 #define __TINYUTIL_H
 
-#include "tinyxml.h"
+#include <string>
+
+#include "tinyxml2.h"
 #include "tinyxpath_conf.h"
 
 #ifdef _MSC_VER
@@ -223,9 +225,9 @@ extern const char* cp_disp_class_lex(lexico lex_in);
 extern bool o_is_axis_name(lexico lex_test);
 extern lexico lex_get_class(_byte_ b_in);
 extern lexico lex_test_id(const _byte_* bp_str, unsigned u_size, lexico);
-extern TIXML_STRING S_remove_lead_trail(const char* cp_in);
-extern void v_assign_int_to_string(TIXML_STRING& S_string, int i_val);
-extern void v_assign_double_to_string(TIXML_STRING& S_string, double d_val);
+extern std::string S_remove_lead_trail(const char* cp_in);
+extern void v_assign_int_to_string(std::string& S_string, int i_val);
+extern void v_assign_double_to_string(std::string& S_string, double d_val);
 #ifdef TINYXPATH_DEBUG
 extern const char* cp_disp_construct(xpath_construct xc);
 extern void v_generate_ascii_htm();

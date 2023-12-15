@@ -32,8 +32,7 @@ distribution.
 
 #include "byte_stream.h"
 #include "lex_util.h"
-#include "tinystr.h"
-#include "tinyxml.h"
+#include "tinyxml2.h"
 #include "xpath_syntax.h"
 
 namespace TinyXPath {

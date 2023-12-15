@@ -31,8 +31,9 @@ distribution.
 #ifndef __XPATH_SYNTAX_H
 #define __XPATH_SYNTAX_H
 
-#include <assert.h>
 #include <stdio.h>
+
+#include <cassert>
 
 #include "tokenlist.h"
 

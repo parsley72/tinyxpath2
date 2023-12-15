@@ -30,8 +30,7 @@ distribution.
 
 #include "lex_util.h"
 
-#include <stdio.h>
-#include <string.h>
+using namespace std;
 
 namespace TinyXPath {
 
@@ -229,8 +228,8 @@ lexico lex_test_id(const _byte_* bp_str, unsigned u_size, lexico lex_next) {
 }
 
 /// Removes all leading and trailing white spaces
-TIXML_STRING S_remove_lead_trail(const char* cp_in) {
-    TIXML_STRING S_ret;
+string S_remove_lead_trail(const char* cp_in) {
+    string S_ret;
     const char *cp_start, *cp_end;
     char *cp_new, *cp_out;
 
@@ -259,7 +258,7 @@ TIXML_STRING S_remove_lead_trail(const char* cp_in) {
 }
 
 /// Assign an integer to a string
-void v_assign_int_to_string(TIXML_STRING& S_string, int i_val) {
+void v_assign_int_to_string(string& S_string, int i_val) {
     char ca_int[80];
 
     sprintf(ca_int, "%d", i_val);
@@ -268,7 +267,7 @@ void v_assign_int_to_string(TIXML_STRING& S_string, int i_val) {
 
 /// Assign a double to a string, cleaning any trailing zeroes and the decimal point if there's no
 /// decimal part
-void v_assign_double_to_string(TIXML_STRING& S_string, double d_val) {
+void v_assign_double_to_string(string& S_string, double d_val) {
     char ca_int[80];
 
     sprintf(ca_int, "%f", d_val);

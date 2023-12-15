@@ -29,15 +29,21 @@ distribution.
 
 #include "xml_util.h"
 
+#include <cassert>
+#include <string>
+
+using namespace std;
+using namespace tinyxml2;
+
 namespace TinyXPath {
 
 /// Cardinality in the terms of XPath counts from 1 for the first element
-int i_xml_cardinality(const TiXmlElement* XEp_elem,  ///< Base element. Must not be null
-    bool o_by_name)                                  ///< true if we ask for the cardinality for our name only
+int i_xml_cardinality(const XMLElement* XEp_elem,  ///< Base element. Must not be null
+    bool o_by_name)                                ///< true if we ask for the cardinality for our name only
 {
-    const TiXmlNode* XNp_parent;
-    const TiXmlElement* XEp_child;
-    TIXML_STRING S_name;
+    const XMLNode* XNp_parent;
+    const XMLElement* XEp_child;
+    string S_name;
     int i_res;
 
     assert(XEp_elem);
@@ -72,10 +78,10 @@ int i_xml_cardinality(const TiXmlElement* XEp_elem,  ///< Base element. Must not
 }
 
 /// Family size : Nb of sibling elements (including ourselves)
-int i_xml_family_size(const TiXmlElement* XEp_elem)  ///< Base element. Must not be null
+int i_xml_family_size(const XMLElement* XEp_elem)  ///< Base element. Must not be null
 {
-    const TiXmlElement* XEp_child;
-    const TiXmlNode* XNp_parent;
+    const XMLElement* XEp_child;
+    const XMLNode* XNp_parent;
     int i_res;
 
     assert(XEp_elem);

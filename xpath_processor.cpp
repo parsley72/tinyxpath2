@@ -38,6 +38,8 @@ distribution.
 
 #include "xml_util.h"
 
+using namespace std;
+using namespace tinyxml2;
 using namespace TinyXPath;
 
 #ifdef TINYXPATH_DEBUG
@@ -46,8 +48,8 @@ using namespace TinyXPath;
 #endif
 
 /// xpath_processor constructor
-xpath_processor::xpath_processor(const TiXmlNode* XNp_source_tree,  ///< Source XML tree
-    const char* cp_xpath_expr)                                      ///< XPath expression
+xpath_processor::xpath_processor(const XMLNode* XNp_source_tree,  ///< Source XML tree
+    const char* cp_xpath_expr)                                    ///< XPath expression
     : xpath_stream(cp_xpath_expr) {
     if (XNp_source_tree && cp_xpath_expr)
         _XNp_base = XNp_source_tree;
@@ -69,50 +71,32 @@ unsigned xpath_processor::u_compute_xpath_node_set() {
     return _er_result.nsp_get_node_set()->u_get_nb_node_in_set();
 }
 
-/// Get one of the XML nodes from the resulting node set. Can only be used after a call to u_compute_xpath_node_set
-void xpath_processor::v_get_xpath_base(
-    unsigned u_order,           ///< Order of the node. Must be between 0 and the number of nodes - 1
-    const TiXmlBase*& XBp_res,  ///< Output node
-    bool& o_attrib)             ///< True if the output node is an attribute, false if it's a TiXmlNode
-{
-    XBp_res = nullptr;
-    o_attrib = false;
-    if (_er_result._e_type != e_node_set)
-        return;
-    if (u_order >= _er_result.nsp_get_node_set()->u_get_nb_node_in_set())
-        return;
-    XBp_res = _er_result.nsp_get_node_set()->XBp_get_base_in_set(u_order);
-    o_attrib = _er_result.nsp_get_node_set()->o_is_attrib(u_order);
-}
-
 /// Retrieves an XPath node from the node set. This assumes you know it's not an attribute
-TiXmlNode* xpath_processor::XNp_get_xpath_node(
+const XMLNode* xpath_processor::XNp_get_xpath_node(
     unsigned u_order)  ///< Order of the node. Must be between 0 and the number of nodes - 1
 {
-    bool o_attrib;
-    const TiXmlBase* XBp_res;
-
-    o_attrib = false;
-    XBp_res = nullptr;
-    v_get_xpath_base(u_order, XBp_res, o_attrib);
-    if (o_attrib)
+    if (_er_result._e_type != e_node_set)
         return nullptr;
-    return (TiXmlNode*)XBp_res;
+    if (u_order >= _er_result.nsp_get_node_set()->u_get_nb_node_in_set())
+        return nullptr;
+    if (_er_result.nsp_get_node_set()->o_is_attrib(u_order))
+        return nullptr;
+
+    return _er_result.nsp_get_node_set()->XNp_get_node_in_set(u_order);
 }
 
 /// Retrieves an XPath attribute from the node set. This assumes you know it's an attribute
-TiXmlAttribute* xpath_processor::XAp_get_xpath_attribute(
+const XMLAttribute* xpath_processor::XAp_get_xpath_attribute(
     unsigned u_order)  ///< Order of the node. Must be between 0 and the number of nodes - 1
 {
-    bool o_attrib;
-    const TiXmlBase* XBp_res;
-
-    o_attrib = false;
-    XBp_res = nullptr;
-    v_get_xpath_base(u_order, XBp_res, o_attrib);
-    if (!o_attrib)
+    if (_er_result._e_type != e_node_set)
         return nullptr;
-    return (TiXmlAttribute*)XBp_res;
+    if (u_order >= _er_result.nsp_get_node_set()->u_get_nb_node_in_set())
+        return nullptr;
+    if (!_er_result.nsp_get_node_set()->o_is_attrib(u_order))
+        return nullptr;
+
+    return _er_result.nsp_get_node_set()->XAp_get_attribute_in_set(u_order);
 }
 
 void xpath_processor::v_build_root() {
@@ -173,9 +157,9 @@ expression_result xpath_processor::er_compute_xpath() {
 }
 
 /// Compute an XPath expression and return the result as a string
-TIXML_STRING xpath_processor::S_compute_xpath() {
+string xpath_processor::S_compute_xpath() {
     expression_result er_res(_XNp_base);
-    TIXML_STRING S_res;
+    string S_res;
 
     er_res = er_compute_xpath();
     S_res = er_res.S_get_string();
@@ -239,7 +223,7 @@ void xpath_processor::v_execute_stack() {
 void xpath_processor::v_pop_one_action(xpath_construct& xc_action,  ///< Next rule on placeholder
     unsigned& u_sub,                                                ///< Sub rule
     unsigned& u_ref,                                                ///< Rule optional parameter
-    TIXML_STRING& S_literal)                                        ///< Rule optional string
+    string& S_literal)                                              ///< Rule optional string
 {
     int i_1, i_2, i_3;
 
@@ -257,9 +241,9 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
     xpath_construct xc_action;
     unsigned u_sub;
     unsigned u_variable;
-    TIXML_STRING S_literal;
-    TIXML_STRING S_temp;
-    TIXML_STRING S_name;
+    string S_literal;
+    string S_temp;
+    string S_name;
     expression_result** erpp_arg;
     unsigned u_arg;
     bool o_error;
@@ -891,7 +875,7 @@ void xpath_processor::v_execute_absolute_path(
     if (o_with_rel) {
         int i_1, i_2, i_3;
         int i_bak_position, i_current, i_first, i_relative;
-        TIXML_STRING S_lit;
+        string S_lit;
 
         // compute position of the first (absolute) step
         i_current = _as_action_store.i_get_position();
@@ -947,11 +931,11 @@ void xpath_processor ::v_execute_step(
     int i_axis_type, i_end_store, i_node_store, i_pred_store;
     unsigned u_nb_node, u_node, u_pred, u_sub, u_variable;
     xpath_construct xc_action;
-    TIXML_STRING S_literal, S_name;
-    const TiXmlElement *XEp_child, *XEp_elem;
-    const TiXmlNode* XNp_father;
-    const TiXmlAttribute* XAp_attrib;
-    const TiXmlNode *XNp_next, *XNp_parent;
+    string S_literal, S_name;
+    const XMLElement *XEp_child, *XEp_elem;
+    const XMLNode* XNp_father;
+    const XMLAttribute* XAp_attrib;
+    const XMLNode *XNp_next, *XNp_parent;
     node_set ns_source, ns_target;
 
     if (!o_skip_only) {
@@ -1068,7 +1052,7 @@ void xpath_processor ::v_execute_step(
                         case lex_preceding_sibling:
                             XNp_next = XNp_father->PreviousSibling();
                             while (XNp_next) {
-                                if (XNp_next->Type() == TiXmlNode::TINYXML_ELEMENT)
+                                if (XNp_next->ToElement())
                                     ns_target.v_add_node_in_set_if_name_or_star(XNp_next, S_name);
                                 XNp_next = XNp_next->PreviousSibling();
                             }
@@ -1106,7 +1090,7 @@ void xpath_processor ::v_execute_step(
                         case lex_comment:
                             XNp_next = XNp_father->FirstChild();
                             while (XNp_next) {
-                                if (XNp_next->Type() == TiXmlNode::TINYXML_COMMENT)
+                                if (XNp_next->ToComment())
                                     ns_target.v_add_node_in_set(XNp_next);
                                 XNp_next = XNp_next->NextSibling();
                             }
@@ -1114,7 +1098,7 @@ void xpath_processor ::v_execute_step(
                         case lex_text:
                             XNp_next = XNp_father->FirstChild();
                             while (XNp_next) {
-                                if (XNp_next->Type() == TiXmlNode::TINYXML_TEXT)
+                                if (XNp_next->ToText())
                                     ns_target.v_add_node_in_set(XNp_next);
                                 XNp_next = XNp_next->NextSibling();
                             }
@@ -1161,7 +1145,7 @@ void xpath_processor ::v_execute_step(
 /// is equal to the context position and will be converted to false otherwise; if the result
 /// is not a number, then the result will be converted as if by a call to the boolean function.
 /// Thus a location path para[3] is equivalent to para[position()=3].
-bool xpath_processor::o_check_predicate(const TiXmlElement* XEp_child, bool o_by_name) {
+bool xpath_processor::o_check_predicate(const XMLElement* XEp_child, bool o_by_name) {
     expression_result* erp_top;
     bool o_keep;
 
@@ -1205,9 +1189,9 @@ Calls one of the following :
 - v_function_string
 - v_function_boolean
 */
-void xpath_processor::v_execute_function(TIXML_STRING& S_name,  ///< Function name
-    unsigned u_nb_arg,                                          ///< Nb of arguments
-    expression_result** erpp_arg)                               ///< Argument list
+void xpath_processor::v_execute_function(string& S_name,  ///< Function name
+    unsigned u_nb_arg,                                    ///< Nb of arguments
+    expression_result** erpp_arg)                         ///< Argument list
 {
     if (S_name == "ceiling")
         v_function_ceiling(u_nb_arg, erpp_arg);
@@ -1322,7 +1306,7 @@ void xpath_processor::v_function_ceiling(unsigned u_nb_arg,  ///< Nb of argument
 void xpath_processor::v_function_concat(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                           ///< Argument list
 {
-    TIXML_STRING S_res;
+    string S_res;
     unsigned u_arg;
 
     if (!u_nb_arg)
@@ -1337,7 +1321,7 @@ void xpath_processor::v_function_concat(unsigned u_nb_arg,  ///< Nb of arguments
 void xpath_processor::v_function_contains(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                             ///< Argument list
 {
-    TIXML_STRING S_arg_1, S_arg_2;
+    string S_arg_1, S_arg_2;
 
     if (u_nb_arg != 2)
         throw execution_error(16);
@@ -1398,7 +1382,7 @@ void xpath_processor::v_function_floor(unsigned u_nb_arg,  ///< Nb of arguments
 void xpath_processor::v_function_last(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                         ///< Argument list
 {
-    const TiXmlElement* XEp_context;
+    const XMLElement* XEp_context;
 
     if (u_nb_arg)
         throw execution_error(20);
@@ -1413,7 +1397,7 @@ void xpath_processor::v_function_last(unsigned u_nb_arg,  ///< Nb of arguments
 void xpath_processor::v_function_name(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                         ///< Argument list
 {
-    TIXML_STRING S_res;
+    string S_res;
     node_set* nsp_set;
 
     switch (u_nb_arg) {
@@ -1444,7 +1428,7 @@ void xpath_processor::v_function_name(unsigned u_nb_arg,  ///< Nb of arguments
 void xpath_processor::v_function_normalize_space(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                                    ///< Argument list
 {
-    TIXML_STRING S_arg, S_res;
+    string S_arg, S_res;
 
     if (u_nb_arg != 1)
         throw execution_error(23);
@@ -1466,7 +1450,7 @@ void xpath_processor::v_function_not(unsigned u_nb_arg,  ///< Nb of arguments
 void xpath_processor::v_function_position(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                             ///< Argument list
 {
-    const TiXmlElement* XEp_context;
+    const XMLElement* XEp_context;
 
     if (u_nb_arg)
         throw execution_error(25);
@@ -1480,7 +1464,7 @@ void xpath_processor::v_function_position(unsigned u_nb_arg,  ///< Nb of argumen
 void xpath_processor::v_function_starts_with(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                                ///< Argument list
 {
-    TIXML_STRING S_arg_1, S_arg_2;
+    string S_arg_1, S_arg_2;
 
     if (u_nb_arg != 2)
         throw execution_error(27);
@@ -1493,7 +1477,7 @@ void xpath_processor::v_function_starts_with(unsigned u_nb_arg,  ///< Nb of argu
 void xpath_processor::v_function_string_length(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                                  ///< Argument list
 {
-    TIXML_STRING S_arg;
+    string S_arg;
 
     if (u_nb_arg != 1)
         throw execution_error(28);
@@ -1512,7 +1496,7 @@ continuing to the end of the string. For example, substring("12345",2) returns "
 void xpath_processor::v_function_substring(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                              ///< Argument list
 {
-    TIXML_STRING S_base, S_ret;
+    string S_base, S_ret;
     int i_length, i_start;
     const char* cp_base;
     char* cp_work;
@@ -1586,9 +1570,9 @@ void xpath_processor::v_function_sum(unsigned u_nb_arg,  ///< Nb of arguments
 void xpath_processor::v_function_text(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                         ///< Argument list
 {
-    const TiXmlElement* XEp_context;
-    const TiXmlNode* XNp_child;
-    TIXML_STRING S_res;
+    const XMLElement* XEp_context;
+    const XMLNode* XNp_child;
+    string S_res;
 
     if (u_nb_arg)
         throw execution_error(38);
@@ -1597,7 +1581,7 @@ void xpath_processor::v_function_text(unsigned u_nb_arg,  ///< Nb of arguments
         throw execution_error(39);
     XNp_child = XEp_context->FirstChild();
     while (XNp_child) {
-        if (XNp_child->Type() == TiXmlNode::TINYXML_TEXT)
+        if (XNp_child->ToText())
             S_res += XNp_child->Value();
         XNp_child = XNp_child->NextSibling();
     }
@@ -1612,15 +1596,15 @@ void xpath_processor::v_function_text(unsigned u_nb_arg,  ///< Nb of arguments
 void xpath_processor::v_function_translate(unsigned u_nb_arg,  ///< Nb of arguments
     expression_result** erpp_arg)                              ///< Argument list
 {
-    TIXML_STRING S_translated;
+    string S_translated;
     char* cp_translated = nullptr;
     // pre-conditions
     if (u_nb_arg != 3)
         throw execution_error(40);
 
-    TIXML_STRING S_translate_me = erpp_arg[0]->S_get_string();
-    TIXML_STRING S_translation_table_lhs = erpp_arg[1]->S_get_string();
-    TIXML_STRING S_translation_table_rhs = erpp_arg[2]->S_get_string();
+    string S_translate_me = erpp_arg[0]->S_get_string();
+    string S_translation_table_lhs = erpp_arg[1]->S_get_string();
+    string S_translation_table_rhs = erpp_arg[2]->S_get_string();
 
     // Strings S_translation_table_lhs and S_translation_table_rhs represent
     // the translation  table's left hand side and right hand side respectively
@@ -1690,7 +1674,7 @@ void xpath_processor::v_function_string(unsigned u_nb_arg,  ///< Nb of arguments
     node_set* nsp_ptr;
 
     // From expression_result::o_get_string ()
-    TIXML_STRING S_res;
+    string S_res;
     switch (erpp_arg[0]->_e_type) {
         case e_string:
             S_res = erpp_arg[0]->S_get_string();
@@ -1909,12 +1893,16 @@ void xpath_processor::v_function_equal_2_node(expression_result* erp_node_set_, 
 void xpath_processor::v_function_union(node_set& ns_1, node_set& ns_2) {
     node_set ns_target;
     unsigned u_node;
-    const TiXmlBase* XBp_base;
 
     ns_target = ns_1;
     for (u_node = 0; u_node < ns_2.u_get_nb_node_in_set(); u_node++) {
-        XBp_base = ns_2.XBp_get_base_in_set(u_node);
-        ns_target.v_add_base_in_set(XBp_base, ns_2.o_is_attrib(u_node));
+        if (ns_2.o_is_attrib(u_node)) {
+            const XMLAttribute* XAp_attrib = ns_2.XAp_get_attribute_in_set(u_node);
+            ns_target.v_add_attrib_in_set(XAp_attrib);
+        } else {
+            const XMLNode* XNp_node = ns_2.XNp_get_node_in_set(u_node);
+            ns_target.v_add_node_in_set(XNp_node);
+        }
     }
     v_push_node_set(&ns_target);
 }
@@ -2076,7 +2064,7 @@ void xpath_processor::v_function_opposite() {
 }
 
 /// Set the current context node for predicate evaluations
-void xpath_processor::v_set_context(const TiXmlElement* XEp_in,  ///< Context node
+void xpath_processor::v_set_context(const XMLElement* XEp_in,  ///< Context node
     bool o_by_name)  ///< true if the current node search is by name, false if it's a *
 {
     _XEp_context = XEp_in;

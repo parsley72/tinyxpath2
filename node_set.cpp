@@ -24,6 +24,9 @@ distribution.
 
 #include "node_set.h"
 
+using namespace std;
+using namespace tinyxml2;
+
 namespace TinyXPath {
 
 /// Copy constructor
@@ -47,16 +50,16 @@ node_set& node_set::operator=(const node_set& ns2) {
 }
 
 /// Copy all element children of a node to the node_set
-void node_set::v_copy_node_children(const TiXmlNode* XNp_root)  ///< The father of the nodes to be copied
+void node_set::v_copy_node_children(const XMLNode* XNp_root)  ///< The father of the nodes to be copied
 {
     v_copy_node_children(XNp_root, nullptr);
 }
 
 /// Copy all element children of a node to the node_set, if their name matches a given name
-void node_set::v_copy_node_children(const TiXmlNode* XNp_root,  ///< The father of the nodes to be copied
-    const char* cp_lookup)                                      ///< Lookup name (or nullptr)
+void node_set::v_copy_node_children(const XMLNode* XNp_root,  ///< The father of the nodes to be copied
+    const char* cp_lookup)                                    ///< Lookup name (or nullptr)
 {
-    const TiXmlNode* XNp_child;
+    const XMLNode* XNp_child;
 
     XNp_child = XNp_root->FirstChildElement();
     while (XNp_child) {
@@ -67,27 +70,27 @@ void node_set::v_copy_node_children(const TiXmlNode* XNp_root,  ///< The father 
 }
 
 /// Copy all nodes in the tree to the node_set
-void node_set::v_copy_selected_node_recursive(const TiXmlNode* XNp_root)  ///< The node to be copied
+void node_set::v_copy_selected_node_recursive(const XMLNode* XNp_root)  ///< The node to be copied
 {
     v_copy_selected_node_recursive(XNp_root, nullptr);
 }
 
 /// Copy all nodes in the tree to the node_set, knowing that we are copying the root
-void node_set::v_copy_selected_node_recursive_root_only(const TiXmlNode* XNp_root, const TiXmlNode* XNp_base) {
+void node_set::v_copy_selected_node_recursive_root_only(const XMLNode* XNp_root, const XMLNode* XNp_base) {
     v_add_node_in_set(XNp_root);
     v_copy_selected_node_recursive(XNp_base, nullptr);
 }
 
 /// Copy all nodes in the tree to the node_set
-void node_set::v_copy_selected_node_recursive(const TiXmlNode* XNp_root,  ///< The node to be copied
-    const char* cp_lookup)                                                ///< Lookup name (or nullptr)
+void node_set::v_copy_selected_node_recursive(const XMLNode* XNp_root,  ///< The node to be copied
+    const char* cp_lookup)                                              ///< Lookup name (or nullptr)
 {
-    const TiXmlAttribute* XAp_attrib;
-    const TiXmlNode* XNp_child;
+    const XMLAttribute* XAp_attrib;
+    const XMLNode* XNp_child;
 
     if ((!cp_lookup) || !strcmp(XNp_root->Value(), cp_lookup))
         v_add_node_in_set(XNp_root);
-    if (XNp_root->Type() == TiXmlNode::TINYXML_ELEMENT) {
+    if (XNp_root->ToElement()) {
         XAp_attrib = XNp_root->ToElement()->FirstAttribute();
         while (XAp_attrib) {
             v_add_attrib_in_set(XAp_attrib);
@@ -103,10 +106,10 @@ void node_set::v_copy_selected_node_recursive(const TiXmlNode* XNp_root,  ///< T
 
 /// Copy all nodes in the tree to the node_set, excluding attributes
 void node_set::v_copy_selected_node_recursive_no_attrib(
-    const TiXmlNode* XNp_root,  ///< Node whole children are to be copied
-    const char* cp_lookup)      ///< Lookup name or nullptr
+    const XMLNode* XNp_root,  ///< Node whole children are to be copied
+    const char* cp_lookup)    ///< Lookup name or nullptr
 {
-    const TiXmlElement* XEp_child;
+    const XMLElement* XEp_child;
 
     XEp_child = XNp_root->FirstChildElement();
     while (XEp_child) {
@@ -118,16 +121,16 @@ void node_set::v_copy_selected_node_recursive_no_attrib(
 }
 
 /// Return the string value aka concatenation of all text items
-TIXML_STRING node_set::S_get_string_value() const {
-    TIXML_STRING S_res;
-    const TiXmlNode* XNp_node;
+string node_set::S_get_string_value() const {
+    string S_res;
+    const XMLNode* XNp_node;
     unsigned u_node;
 
     S_res = "";
     for (u_node = 0; u_node < _u_nb_node; u_node++) {
         if (!_op_attrib[u_node]) {
-            XNp_node = (const TiXmlNode*)_vpp_node_set[u_node];
-            if (XNp_node->Type() == TiXmlNode::TINYXML_TEXT)
+            XNp_node = (const XMLNode*)_vpp_node_set[u_node];
+            if (XNp_node->ToText())
                 S_res += XNp_node->Value();
         }
     }
@@ -135,7 +138,7 @@ TIXML_STRING node_set::S_get_string_value() const {
 }
 
 /// Checks if a node exist in the node set
-bool node_set::o_exist_in_set(const TiXmlBase* XBp_member)  ///< Check if a base exist in the node set
+bool node_set::o_exist_in_set(const void* XBp_member)  ///< Check if a base exist in the node set
 {
     unsigned u_node;
 
@@ -146,8 +149,8 @@ bool node_set::o_exist_in_set(const TiXmlBase* XBp_member)  ///< Check if a base
 }
 
 /// Adds a new node in the node set
-void node_set::v_add_base_in_set(const TiXmlBase* XBp_member,  ///< Base to add (node or attribute)
-    bool o_attrib)  ///< true if the base is an attribute, false if it's a node
+void node_set::v_add_base_in_set(const void* XBp_member,  ///< Base to add (node or attribute)
+    bool o_attrib)                                        ///< true if the base is an attribute, false if it's a node
 {
     const void** vpp_new_list;
     bool* op_new_list;
@@ -158,23 +161,23 @@ void node_set::v_add_base_in_set(const TiXmlBase* XBp_member,  ///< Base to add 
     /*
        printf ("add ");
        if (o_attrib)
-          printf ("attrib %s='%s'", ((TiXmlAttribute *) XBp_member)->Name(),((TiXmlAttribute *) XBp_member)->Value());
+          printf ("attrib %s='%s'", ((XMLAttribute *) XBp_member)->Name(),((XMLAttribute *) XBp_member)->Value());
        else
        {
-          TiXmlNode * XNp_node;
-          XNp_node = (TiXmlNode *) XBp_member;
+          XMLNode * XNp_node;
+          XNp_node = (XMLNode *) XBp_member;
           switch (XNp_node->Type())
           {
-             case TiXmlNode::TINYXML_TEXT :
+             case XMLNode::TINYXML_TEXT :
                 printf ("text (%s)", XNp_node->ToText()->Value ());
                 break;
-             case TiXmlNode::TINYXML_DOCUMENT :
+             case XMLNode::TINYXML_DOCUMENT :
                 printf ("document");
                 break;
-             case TiXmlNode::TINYXML_ELEMENT :
+             case XMLNode::TINYXML_ELEMENT :
                 printf ("element <%s>", XNp_node->ToElement()->Value ());
                 break;
-             case TiXmlNode::TINYXML_COMMENT :
+             case XMLNode::TINYXML_COMMENT :
                 printf ("comment <%s>", XNp_node->ToComment()->Value ());
                 break;
           }
@@ -190,7 +193,7 @@ void node_set::v_add_base_in_set(const TiXmlBase* XBp_member,  ///< Base to add 
         memcpy(op_new_list, _op_attrib, _u_nb_node * sizeof(bool));
         delete[] _op_attrib;
     }
-    vpp_new_list[_u_nb_node] = (const void*)XBp_member;
+    vpp_new_list[_u_nb_node] = XBp_member;
     _vpp_node_set = vpp_new_list;
     op_new_list[_u_nb_node] = o_attrib;
     _op_attrib = op_new_list;
@@ -202,10 +205,10 @@ void node_set::v_add_base_in_set(const TiXmlBase* XBp_member,  ///< Base to add 
 /// the following axis contains all nodes in the same document as the context
 /// node that are after the context node in document order, excluding any
 /// descendants and excluding attribute nodes and namespace nodes
-void node_set::v_add_all_foll_node(const TiXmlNode* XNp_node,  ///< base node
-    const TIXML_STRING& S_name)                                ///< lookup name (or "*")
+void node_set::v_add_all_foll_node(const XMLNode* XNp_node,  ///< base node
+    const string& S_name)                                    ///< lookup name (or "*")
 {
-    const TiXmlNode* XNp_ptr;
+    const XMLNode* XNp_ptr;
     const char* cp_lookup;
 
     if (S_name == "*")
@@ -219,7 +222,7 @@ void node_set::v_add_all_foll_node(const TiXmlNode* XNp_node,  ///< base node
         XNp_ptr = XNp_ptr->NextSiblingElement();
     }
     XNp_ptr = XNp_node->Parent();
-    if (XNp_ptr && XNp_ptr->Type() == TiXmlNode::TINYXML_ELEMENT)
+    if (XNp_ptr && XNp_ptr->ToElement())
         v_add_all_foll_node(XNp_ptr, S_name);
 }
 
@@ -228,10 +231,10 @@ void node_set::v_add_all_foll_node(const TiXmlNode* XNp_node,  ///< base node
 /// the preceding axis contains all nodes in the same document as the context
 /// node that are before the context node in document order, excluding any
 /// ancestors and excluding attribute nodes and namespace nodes
-void node_set::v_add_all_prec_node(const TiXmlNode* XNp_node,  ///< base node
-    const TIXML_STRING& S_name)                                ///< lookup name (or "*")
+void node_set::v_add_all_prec_node(const XMLNode* XNp_node,  ///< base node
+    const string& S_name)                                    ///< lookup name (or "*")
 {
-    const TiXmlNode* XNp_ptr;
+    const XMLNode* XNp_ptr;
     const char* cp_lookup;
 
     if (S_name == "*")
@@ -240,7 +243,7 @@ void node_set::v_add_all_prec_node(const TiXmlNode* XNp_node,  ///< base node
         cp_lookup = S_name.c_str();
     XNp_ptr = XNp_node->PreviousSibling();
     while (XNp_ptr) {
-        if (XNp_ptr->Type() == TiXmlNode::TINYXML_ELEMENT) {
+        if (XNp_ptr->ToElement()) {
             v_add_node_in_set_if_name_or_star(XNp_ptr, S_name);
             v_copy_node_children(XNp_ptr, cp_lookup);
         }
@@ -251,38 +254,39 @@ void node_set::v_add_all_prec_node(const TiXmlNode* XNp_node,  ///< base node
 /// Internal utility class for the node set sorting
 class ptr_2_and_flag {
    public:
-    const void* vp_node;
-    const TiXmlNode* XNp_root;
-    bool o_flag;
+    const void* _vp_node;
+    const XMLNode* _XNp_root;
+    const XMLAttribute* _XAp_root;
+    bool _o_flag;
 };
 
 enum { e_not_found, e_lower, e_higher, e_same };
 
 /// Find which node is first in tree, in document order (recursive calls)
-static int i_compare_node_in_tree(const TiXmlNode* XNp_root, const TiXmlBase* XBp_1, const TiXmlBase* XBp_2) {
-    const TiXmlNode* XNp_child;
-    const TiXmlAttribute* XAp_attrib;
+static int i_compare_node_in_tree(const XMLNode* XNp_root, const ptr_2_and_flag* XBp_1, const ptr_2_and_flag* XBp_2) {
+    const XMLNode* XNp_child;
+    const XMLAttribute* XAp_attrib;
     int i_res;
 
     if (!XNp_root || !XBp_1 || !XBp_2)
         return e_not_found;
-    if (XNp_root == XBp_1)
-        if (XNp_root == XBp_2)
+    if (!XBp_1->_o_flag && (XNp_root == static_cast<const XMLNode*>(XBp_1->_vp_node)))
+        if (!XBp_2->_o_flag && (XNp_root == static_cast<const XMLNode*>(XBp_2->_vp_node)))
             return e_same;
         else
             return e_lower;
-    else if (XNp_root == XBp_2)
+    else if (!XBp_2->_o_flag && (XNp_root == static_cast<const XMLNode*>(XBp_2->_vp_node)))
         return e_higher;
     if (XNp_root->ToElement()) {
         // We have an element in the tree, let's see if one of the argument is an attribute of this element
         XAp_attrib = XNp_root->ToElement()->FirstAttribute();
         while (XAp_attrib) {
-            if (XAp_attrib == XBp_1)
-                if (XAp_attrib == XBp_2)
+            if (XBp_1->_o_flag && (XAp_attrib == static_cast<const XMLAttribute*>(XBp_1->_vp_node)))
+                if (XBp_2->_o_flag && (XAp_attrib == static_cast<const XMLAttribute*>(XBp_2->_vp_node)))
                     return e_same;
                 else
                     return e_lower;
-            else if (XAp_attrib == XBp_2)
+            else if (XBp_2->_o_flag && (XAp_attrib == static_cast<const XMLAttribute*>(XBp_2->_vp_node)))
                 return e_higher;
             XAp_attrib = XAp_attrib->Next();
         }
@@ -306,8 +310,7 @@ static int i_compare_ptr_2_and_flag(const void* vp_1,  ///< Ptr to first element
 
     p2afp_1 = (const ptr_2_and_flag*)vp_1;
     p2afp_2 = (const ptr_2_and_flag*)vp_2;
-    i_res = i_compare_node_in_tree(
-        p2afp_1->XNp_root, (const TiXmlBase*)p2afp_1->vp_node, (const TiXmlBase*)p2afp_2->vp_node);
+    i_res = i_compare_node_in_tree(p2afp_1->_XNp_root, p2afp_1, p2afp_2);
     switch (i_res) {
         case e_lower:
             return -1;
@@ -319,7 +322,7 @@ static int i_compare_ptr_2_and_flag(const void* vp_1,  ///< Ptr to first element
 
 /// Sort the node set according to the document order.
 /// \n We do sort these nodes on the fly, comparing parents and orders for each
-void node_set::v_document_sort(const TiXmlNode* XNp_root) {
+void node_set::v_document_sort(const XMLNode* XNp_root) {
     ptr_2_and_flag* p2afp_list;
     unsigned u_node;
 
@@ -328,14 +331,14 @@ void node_set::v_document_sort(const TiXmlNode* XNp_root) {
 
     p2afp_list = new ptr_2_and_flag[_u_nb_node];
     for (u_node = 0; u_node < _u_nb_node; u_node++) {
-        p2afp_list[u_node].vp_node = _vpp_node_set[u_node];
-        p2afp_list[u_node].o_flag = _op_attrib[u_node];
-        p2afp_list[u_node].XNp_root = XNp_root;
+        p2afp_list[u_node]._vp_node = _vpp_node_set[u_node];
+        p2afp_list[u_node]._o_flag = _op_attrib[u_node];
+        p2afp_list[u_node]._XNp_root = XNp_root;
     }
     qsort(p2afp_list, _u_nb_node, sizeof(ptr_2_and_flag), i_compare_ptr_2_and_flag);
     for (u_node = 0; u_node < _u_nb_node; u_node++) {
-        _vpp_node_set[u_node] = p2afp_list[u_node].vp_node;
-        _op_attrib[u_node] = p2afp_list[u_node].o_flag;
+        _vpp_node_set[u_node] = p2afp_list[u_node]._vp_node;
+        _op_attrib[u_node] = p2afp_list[u_node]._o_flag;
     }
     delete[] p2afp_list;
 }
@@ -343,8 +346,8 @@ void node_set::v_document_sort(const TiXmlNode* XNp_root) {
 /// Debug function to print the content of a node set to stdout
 void node_set::v_dump() {
     unsigned u_node;
-    const TiXmlAttribute* XAp_att;
-    const TiXmlNode* XNp_node;
+    const XMLAttribute* XAp_att;
+    const XMLNode* XNp_node;
 
     printf("-- start node set (%d items) --\n", _u_nb_node);
     for (u_node = 0; u_node < _u_nb_node; u_node++) {

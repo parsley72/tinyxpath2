@@ -31,6 +31,8 @@ distribution.
 
 #include "xpath_processor.h"
 
+using namespace std;
+
 namespace TinyXPath {
 
 /// xpath_stack element. Derives from expression_result, and also contains a pointer to the next element on the stack
@@ -81,8 +83,8 @@ int xpath_stack::i_pop_int() {
 }
 
 /// Pops the top string from the stack
-TIXML_STRING xpath_stack::S_pop_string() {
-    TIXML_STRING S_res;
+string xpath_stack::S_pop_string() {
+    string S_res;
 
     S_res = erp_top()->S_get_string();
     v_pop();
@@ -155,7 +157,7 @@ void xpath_stack::v_push_bool(bool o_in) {
 }
 
 /// Push a string on the stack
-void xpath_stack::v_push_string(TIXML_STRING S_in) {
+void xpath_stack::v_push_string(string S_in) {
     expression_result er_res(_XNp_root);
     er_res.v_set_string(S_in);
     v_push(er_res);
