@@ -49,12 +49,6 @@ node_set& node_set::operator=(const node_set& ns2) {
     return *this;
 }
 
-/// Copy all element children of a node to the node_set
-void node_set::v_copy_node_children(const XMLNode* XNp_root)  ///< The father of the nodes to be copied
-{
-    v_copy_node_children(XNp_root, nullptr);
-}
-
 /// Copy all element children of a node to the node_set, if their name matches a given name
 void node_set::v_copy_node_children(const XMLNode* XNp_root,  ///< The father of the nodes to be copied
     const char* cp_lookup)                                    ///< Lookup name (or nullptr)

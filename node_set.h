@@ -141,8 +141,7 @@ class node_set {
         return atof(S_get_value(u_which).c_str());
     }
 
-    void v_copy_node_children(const tinyxml2::XMLNode* XNp_root);
-    void v_copy_node_children(const tinyxml2::XMLNode* XNp_root, const char* cp_lookup);
+    void v_copy_node_children(const tinyxml2::XMLNode* XNp_root, const char* cp_lookup = nullptr);
     void v_copy_selected_node_recursive(const tinyxml2::XMLNode* XNp_root);
     void v_copy_selected_node_recursive(const tinyxml2::XMLNode* XNp_root, const char* cp_lookup);
     void v_copy_selected_node_recursive_no_attrib(const tinyxml2::XMLNode* XNp_root, const char* cp_lookup);
