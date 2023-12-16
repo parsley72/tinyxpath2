@@ -25,6 +25,8 @@ distribution.
 #ifndef __XPATH_EXPR_H
 #define __XPATH_EXPR_H
 
+#include <stdexcept>
+
 #include "node_set.h"
 #include "tinyxml2.h"
 #include "tinyxpath_conf.h"
@@ -101,6 +103,8 @@ class expression_result {
             case e_node_set:
                 _ns_set = er_2._ns_set;
                 break;
+            case e_invalid:
+                throw std::runtime_error("Invalid XPath expression");
         }
 #ifdef TINYXPATH_DEBUG
         _S_comment = er_2._S_comment;

@@ -30,6 +30,8 @@ distribution.
 #ifndef __XPATH_STREAM_H
 #define __XPATH_STREAM_H
 
+#include <stdexcept>
+
 #include "byte_stream.h"
 #include "lex_util.h"
 #include "tinyxml2.h"
@@ -189,6 +191,8 @@ class xpath_stream : public byte_stream {
                             break;
                     }
                     break;
+                case s_end:
+                    throw std::runtime_error("Invalid XPath expression");
             }
             if (lex_next == lex_null)
                 state = s_end;

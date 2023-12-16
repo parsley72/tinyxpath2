@@ -111,40 +111,46 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             }
             break;
 
-        case xpath_absolute_location_path:
+        case xpath_absolute_location_path: {
             // [2]   AbsoluteLocationPath	::=   '/' RelativeLocationPath?
             // 					         | AbbreviatedAbsoluteLocationPath
             if (!ltp_get(0))
                 return false;
             i_action_counter = i_get_action_counter();
-            switch (ltp_get(0)->lex_get_value()) {
-                case lex_slash:
-                    v_inc_current(1);
-                    ltp_freeze = ltp_get(0);
-                    o_temp = o_recognize(xpath_relative_location_path, false);
-                    if (o_temp) {
-                        v_set_current(ltp_freeze);
-                        o_recognize(xpath_relative_location_path, o_final);
+            lex_token* token = ltp_get(0);
+            if (token) {
+                switch (token->lex_get_value()) {
+                    case lex_slash:
+                        v_inc_current(1);
+                        ltp_freeze = ltp_get(0);
+                        o_temp = o_recognize(xpath_relative_location_path, false);
+                        if (o_temp) {
+                            v_set_current(ltp_freeze);
+                            o_recognize(xpath_relative_location_path, o_final);
+                            if (o_final)
+                                v_action(xpath_absolute_location_path, xpath_absolute_location_path_slash_rel,
+                                    i_action_counter);
+                        } else {
+                            v_set_current(ltp_freeze);
+                            if (o_final)
+                                v_action(
+                                    xpath_absolute_location_path, xpath_absolute_location_path_slash, i_action_counter);
+                        }
+                        break;
+                    case lex_2_slash:
+                        if (!o_recognize(xpath_abbreviated_absolute_location_path, o_final))
+                            return false;
                         if (o_final)
                             v_action(
-                                xpath_absolute_location_path, xpath_absolute_location_path_slash_rel, i_action_counter);
-                    } else {
-                        v_set_current(ltp_freeze);
-                        if (o_final)
-                            v_action(
-                                xpath_absolute_location_path, xpath_absolute_location_path_slash, i_action_counter);
-                    }
-                    break;
-                case lex_2_slash:
-                    if (!o_recognize(xpath_abbreviated_absolute_location_path, o_final))
+                                xpath_absolute_location_path, xpath_absolute_location_path_abbrev, i_action_counter);
+                        break;
+                    default:
                         return false;
-                    if (o_final)
-                        v_action(xpath_absolute_location_path, xpath_absolute_location_path_abbrev, i_action_counter);
-                    break;
-                default:
-                    return false;
+                }
+            } else {
+                return false;
             }
-            break;
+        } break;
 
         case xpath_relative_location_path:
             //
@@ -292,8 +298,9 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         v_action(xpath_node_test, xpath_node_test_reserved_keyword, ltp_get(0)->lex_get_value());
                     v_inc_current(3);
                     break;
-                case lex_processing_instruction:
-                    if (ltp_get(2) && ltp_get(2)->lex_get_value() == lex_cparen) {
+                case lex_processing_instruction: {
+                    lex_token* token = ltp_get(2);
+                    if (token && token->lex_get_value() == lex_cparen) {
                         // single
                         v_inc_current(3);
                         if (o_final)
@@ -306,7 +313,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                                 ltp_get(0)->cp_get_literal());
                         v_inc_current(1);
                     }
-                    break;
+                } break;
                 default:
                     if (!o_recognize(xpath_name_test, o_final))
                         return false;
@@ -838,16 +845,19 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             // 				            | QName
             if (!ltp_get(0))
                 return false;
-            switch (ltp_get(0)->lex_get_value()) {
-                case lex_star:
+
+            {
+                lexico lexVal = ltp_get(0)->lex_get_value();
+                if (lexVal == lex_star) {
                     v_inc_current(1);
                     if (o_final)
                         v_action(xpath_name_test, xpath_name_test_star);
-                    break;
-                case lex_ncname:
+                } else if (lexVal == lex_ncname) {
                     o_qname = false;
-                    if (ltp_get(1) && ltp_get(2) && ltp_get(1)->lex_get_value() == lex_colon) {
-                        if (ltp_get(2)->lex_get_value() == lex_star) {
+                    lex_token* token1 = ltp_get(1);
+                    lex_token* token2 = ltp_get(2);
+                    if (token1 && token2 && token1->lex_get_value() == lex_colon) {
+                        if (token2->lex_get_value() == lex_star) {
                             v_inc_current(3);
                             if (o_final)
                                 v_action(xpath_name_test, xpath_name_test_ncname);
@@ -861,7 +871,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         if (o_final)
                             v_action(xpath_name_test, xpath_name_test_qname);
                     }
-                    break;
+                }
             }
             break;
 

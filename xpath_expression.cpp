@@ -95,6 +95,8 @@ string expression_result::S_get_string() {
             else
                 S_res = "false";
             break;
+        case e_invalid:
+            throw std::runtime_error("Invalid XPath expression");
     }
     return S_res;
 }
@@ -127,6 +129,8 @@ bool expression_result::o_get_bool() {
             return nsp_ptr->u_get_nb_node_in_set() != 0;
         case e_bool:
             return _o_content;
+        case e_invalid:
+            throw std::runtime_error("Invalid XPath expression");
     }
     return false;
 }

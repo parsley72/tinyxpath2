@@ -36,7 +36,7 @@ namespace TinyXPath {
 */
 class byte_stream {
     /// Length of the total string, + 1
-    unsigned _u_length;
+    size_t _u_length;
     /// Total string
     _byte_* _bp_in;
     /// Current read position
@@ -49,12 +49,21 @@ class byte_stream {
    public:
     /// constructor
     byte_stream(const char* cp_in) {
-        _u_length = strlen(cp_in) + 1;
-        _bp_in = new _byte_[_u_length];
-        memcpy(_bp_in, cp_in, _u_length);
-        _bp_current = _bp_in;
-        _bp_end = _bp_in + _u_length - 1;
-        _o_valid = (_bp_current != _bp_end);
+        if (cp_in) {
+            _u_length = strlen(cp_in) + 1;
+            _bp_in = new _byte_[_u_length];
+            memcpy(_bp_in, cp_in, _u_length);
+            _bp_current = _bp_in;
+            _bp_end = _bp_in + _u_length - 1;
+            _o_valid = (_bp_current != _bp_end);
+        } else {
+            _u_length = 1;
+            _bp_in = new _byte_[_u_length];
+            _bp_in[0] = 0;
+            _bp_current = _bp_in;
+            _bp_end = _bp_in + _u_length - 1;
+            _o_valid = (_bp_current != _bp_end);
+        }
     }
     /// destructor
     ~byte_stream() {

@@ -65,6 +65,7 @@ void result_and_next::v_dump() {
 xpath_stack::xpath_stack() {
     _rnp_first = nullptr;
     _u_size = 0;
+    _XNp_root = nullptr;
 }
 
 /// Destructor

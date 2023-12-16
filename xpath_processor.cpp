@@ -50,7 +50,7 @@ using namespace TinyXPath;
 /// xpath_processor constructor
 xpath_processor::xpath_processor(const XMLNode* XNp_source_tree,  ///< Source XML tree
     const char* cp_xpath_expr)                                    ///< XPath expression
-    : xpath_stream(cp_xpath_expr) {
+    : xpath_stream(cp_xpath_expr), _e_error(e_no_error) {
     if (XNp_source_tree && cp_xpath_expr)
         _XNp_base = XNp_source_tree;
     else
@@ -874,7 +874,7 @@ void xpath_processor::v_execute_absolute_path(
 
     if (o_with_rel) {
         int i_1, i_2, i_3;
-        int i_bak_position, i_current, i_first, i_relative;
+        int i_current, i_first, i_relative;
         string S_lit;
 
         // compute position of the first (absolute) step
@@ -892,7 +892,6 @@ void xpath_processor::v_execute_absolute_path(
             i_first = i_relative;
         }
         // i_first = i_3 - 1;
-        i_bak_position = _as_action_store.i_get_position();
         _as_action_store.v_set_position(i_first);
         if (o_everywhere)
             i_relative_action = -1;
@@ -1411,11 +1410,13 @@ void xpath_processor::v_function_name(unsigned u_nb_arg,  ///< Nb of arguments
             S_res = "";
             if (erpp_arg[0]->_e_type == e_node_set) {
                 nsp_set = erpp_arg[0]->nsp_get_node_set();
-                if (nsp_set->u_get_nb_node_in_set())
-                    if (nsp_set->o_is_attrib(0))
+                if (nsp_set->u_get_nb_node_in_set()) {
+                    if (nsp_set->o_is_attrib(0)) {
                         S_res = nsp_set->XAp_get_attribute_in_set(0)->Name();
-                    else
+                    } else {
                         S_res = nsp_set->XNp_get_node_in_set(0)->Value();
+                    }
+                }
             }
             break;
         default:
@@ -1482,7 +1483,7 @@ void xpath_processor::v_function_string_length(unsigned u_nb_arg,  ///< Nb of ar
     if (u_nb_arg != 1)
         throw execution_error(28);
     S_arg = erpp_arg[0]->S_get_string();
-    v_push_int(S_arg.length(), "string-length");
+    v_push_int(static_cast<int>(S_arg.length()), "string-length");
 }
 
 /**

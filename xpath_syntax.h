@@ -43,10 +43,13 @@ namespace TinyXPath {
 class syntax_error {
    public:
     syntax_error(const char* cp_mess = nullptr) {
-        if (cp_mess && strlen(cp_mess) < sizeof(_ca_mess) - 1)
-            strcpy(_ca_mess, cp_mess);
-        else
+        if (cp_mess && strlen(cp_mess) < sizeof(_ca_mess) - 1) {
+            const size_t length = strlen(cp_mess);
+            strncpy(_ca_mess, cp_mess, length);
+            _ca_mess[length] = 0;
+        } else {
             _ca_mess[0] = 0;
+        }
     }
     char _ca_mess[200];
 };
@@ -63,10 +66,9 @@ class token_syntax_decoder : public token_list {
     bool o_recognize(xpath_construct xc_current, bool o_final);
 
    public:
-    token_syntax_decoder() : token_list() {
+    token_syntax_decoder() : token_list(), _u_nb_recurs(0) {
     }
-    virtual ~token_syntax_decoder() {
-    }
+    virtual ~token_syntax_decoder() = default;
     void v_syntax_decode();
     /// Pure virtual : action taken when processing the rule
     virtual void v_action(

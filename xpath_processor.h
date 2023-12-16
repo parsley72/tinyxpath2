@@ -61,8 +61,7 @@ class xpath_processor : public xpath_stream {
    public:
     /// Constructor
     xpath_processor(const tinyxml2::XMLNode* XNp_source_tree, const char* cp_xpath_expr);
-    virtual ~xpath_processor() {
-    }
+    virtual ~xpath_processor() = default;
     expression_result er_compute_xpath();
     std::string S_compute_xpath();
     int i_compute_xpath();

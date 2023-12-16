@@ -39,48 +39,54 @@ void token_list::v_tokenize_expression() {
     v_set_current_top();
     while (ltp_get(1)) {
         switch (ltp_get(0)->lex_get_value()) {
-            case lex_colon:
-                if (ltp_get(1)->lex_get_value() == lex_colon) {
+            case lex_colon: {
+                lex_token* token = ltp_get(1);
+                if (token != nullptr && token->lex_get_value() == lex_colon) {
                     v_replace_current(lex_2_colon, "::");
                     v_delete_next();
                 } else
                     v_inc_current(1);
-                break;
-            case lex_slash:
-                if (ltp_get(1)->lex_get_value() == lex_slash) {
+            } break;
+            case lex_slash: {
+                lex_token* token = ltp_get(1);
+                if (token != nullptr && token->lex_get_value() == lex_slash) {
                     v_replace_current(lex_2_slash, "//");
                     v_delete_next();
                 } else
                     v_inc_current(1);
-                break;
-            case lex_exclam:
-                if (ltp_get(1)->lex_get_value() == lex_equal) {
+            } break;
+            case lex_exclam: {
+                lex_token* token = ltp_get(1);
+                if (token != nullptr && token->lex_get_value() == lex_equal) {
                     v_replace_current(lex_not_equal, "!=");
                     v_delete_next();
                 } else
                     v_inc_current(1);
-                break;
-            case lex_lt:
-                if (ltp_get(1)->lex_get_value() == lex_equal) {
+            } break;
+            case lex_lt: {
+                lex_token* token = ltp_get(1);
+                if (token != nullptr && token->lex_get_value() == lex_equal) {
                     v_replace_current(lex_lt_equal, "<=");
                     v_delete_next();
                 } else
                     v_inc_current(1);
-                break;
-            case lex_gt:
-                if (ltp_get(1)->lex_get_value() == lex_equal) {
+            } break;
+            case lex_gt: {
+                lex_token* token = ltp_get(1);
+                if (token != nullptr && token->lex_get_value() == lex_equal) {
                     v_replace_current(lex_gt_equal, ">=");
                     v_delete_next();
                 } else
                     v_inc_current(1);
-                break;
-            case lex_dot:
-                if (ltp_get(1)->lex_get_value() == lex_dot) {
+            } break;
+            case lex_dot: {
+                lex_token* token = ltp_get(1);
+                if (token != nullptr && token->lex_get_value() == lex_dot) {
                     v_replace_current(lex_2_dot, "..");
                     v_delete_next();
                 } else
                     v_inc_current(1);
-                break;
+            } break;
             case lex_space:
                 v_delete_current();
                 break;

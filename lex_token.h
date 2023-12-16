@@ -100,11 +100,9 @@ class lex_token {
 
     /// Set the string value of a lexical element
     void v_set(lexico lex_in, const char* cp_repre) {
-        unsigned u_length;
-
         _l_enum = lex_in;
         delete[] _cp_value;
-        u_length = strlen(cp_repre);
+        const size_t u_length = strlen(cp_repre);
         _cp_value = new char[u_length + 1];
         strcpy(_cp_value, cp_repre);
     }
