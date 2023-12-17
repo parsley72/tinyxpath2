@@ -45,79 +45,79 @@ namespace TinyXPath {
 typedef unsigned char _byte_;
 
 /// Lexical XPath elements
-enum lexico {
+enum class lex {
     // single chars
 
-    lex_null,
-    lex_none,
-    lex_space,
-    lex_digit,
-    lex_bchar,
-    lex_extend,
-    lex_slash,
-    lex_at,
-    lex_dot,
-    lex_minus,
-    lex_under,
-    lex_colon,
-    lex_scolon,
-    lex_2_quote,
-    lex_1_quote,
-    lex_dollar,
-    lex_oparen,
-    lex_cparen,
-    lex_star,
-    lex_plus,
-    lex_comma,
-    lex_lt,
-    lex_gt,
-    lex_equal,
-    lex_obrack,
-    lex_cbrack,
-    lex_orchar,
-    lex_exclam,
+    null,
+    none,
+    space,
+    digit,
+    bchar,
+    extend,
+    slash,
+    at,
+    dot,
+    minus,
+    under,
+    colon,
+    scolon,
+    two_quote,
+    one_quote,
+    dollar,
+    oparen,
+    cparen,
+    star,
+    plus,
+    comma,
+    lt,
+    gt,
+    equal,
+    obrack,
+    cbrack,
+    orchar,
+    exclam,
 
     // constructions
 
-    lex_ncname,
-    lex_number,
-    lex_literal,
-    lex_2_colon,
-    lex_2_slash,
-    lex_2_dot,
-    lex_not_equal,
-    lex_lt_equal,
-    lex_gt_equal,
+    ncname,
+    number,
+    literal,
+    two_colon,
+    two_slash,
+    two_dot,
+    not_equal,
+    lt_equal,
+    gt_equal,
 
     // keywords
 
-    lex_start_keyword,
-    lex_or = lex_start_keyword,
-    lex_and,
-    lex_mod,
-    lex_div,
+    start_keyword,
+    _or = start_keyword,
+    _and,
+    mod,
+    div,
 
-    lex_start_axis_name,
-    lex_ancestor = lex_start_axis_name,
-    lex_ancestor_or_self,
-    lex_attribute,
-    lex_child,
-    lex_descendant,
-    lex_descendant_or_self,
-    lex_following,
-    lex_following_sibling,
-    lex_namespace,
-    lex_parent,
-    lex_preceding,
-    lex_preceding_sibling,
-    lex_self,
-    lex_end_axis_name = lex_self,
+    start_axis_name,
+    ancestor = start_axis_name,
+    ancestor_or_self,
+    attribute,
+    child,
+    descendant,
+    descendant_or_self,
+    following,
+    following_sibling,
+    _namespace,
+    parent,
+    preceding,
+    preceding_sibling,
+    self,
+    end_axis_name = self,
 
-    lex_processing_instruction,
-    lex_comment,
-    lex_node,
-    lex_text,
-    lex_end_keyword = lex_text
+    processing_instruction,
+    comment,
+    node,
+    text,
+    end_keyword = text
 
 };
 
@@ -221,10 +221,10 @@ enum xpath_sub {
     dummy
 };
 
-extern const char* cp_disp_class_lex(lexico lex_in);
-extern bool o_is_axis_name(lexico lex_test);
-extern lexico lex_get_class(_byte_ b_in);
-extern lexico lex_test_id(const _byte_* bp_str, unsigned u_size, lexico);
+extern const char* cp_disp_class_lex(lex lex_in);
+extern bool o_is_axis_name(lex lex_test);
+extern lex lex_get_class(_byte_ b_in);
+extern lex lex_test_id(const _byte_* bp_str, unsigned u_size, lex);
 extern std::string S_remove_lead_trail(const char* cp_in);
 extern void v_assign_int_to_string(std::string& S_string, int i_val);
 extern void v_assign_double_to_string(std::string& S_string, double d_val);

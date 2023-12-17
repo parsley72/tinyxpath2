@@ -72,7 +72,7 @@ class token_syntax_decoder : public token_list {
     void v_syntax_decode();
     /// Pure virtual : action taken when processing the rule
     virtual void v_action(
-        xpath_construct xc_rule, unsigned u_sub, unsigned u_variable = 0, const char* cp_literal = "") = 0;
+        xpath_construct xc_rule, unsigned u_sub, lex u_variable = lex::null, const char* cp_literal = "") = 0;
     virtual int i_get_action_counter() = 0;
 };
 

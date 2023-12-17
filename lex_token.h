@@ -38,7 +38,7 @@ class lex_token {
     /// Representation
     char* _cp_value = nullptr;
     /// lexical value
-    lexico _l_enum;
+    lex _l_enum;
     /// pointer to next element
     lex_token* _ltp_next = nullptr;
     lex_token* _ltp_prev = nullptr;
@@ -48,7 +48,7 @@ class lex_token {
     lex_token& operator=(lex_token& other) = delete;
 
     /// constructor
-    lex_token(lexico l_in_enum, const _byte_* bp_in_value, unsigned u_in_size)
+    lex_token(lex l_in_enum, const _byte_* bp_in_value, unsigned u_in_size)
         : _cp_value(new char[u_in_size + 1]), _l_enum(l_in_enum) {
         if (u_in_size) {
             memcpy(_cp_value, bp_in_value, u_in_size);
@@ -98,12 +98,12 @@ class lex_token {
     }
 
     /// return the value of a lexical element
-    lexico lex_get_value() const {
+    lex lex_get_value() const {
         return _l_enum;
     }
 
     /// Set the string value of a lexical element
-    void v_set(lexico lex_in, const char* cp_repre) {
+    void v_set(lex lex_in, const char* cp_repre) {
         _l_enum = lex_in;
         delete[] _cp_value;
         const size_t u_length = strlen(cp_repre);
@@ -118,7 +118,7 @@ class lex_token {
 
     /// check if the lexical element is valid
     bool o_is_valid() const {
-        return (_l_enum != lex_null);
+        return (_l_enum != lex::null);
     }
 };
 

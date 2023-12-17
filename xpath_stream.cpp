@@ -50,7 +50,7 @@ class token_redef : public token_syntax_decoder {
     }
     /// dispatcher of the xpath_stream::v_action
     virtual void v_action(
-        xpath_construct xc_rule, unsigned u_sub, unsigned u_variable = 0, const char* cp_literal = "") {
+        xpath_construct xc_rule, unsigned u_sub, lex u_variable = lex::null, const char* cp_literal = "") {
         _xsp_stream->v_action(xc_rule, u_sub, u_variable, cp_literal);
     }
     /// dispatcher of the xpath_stream::i_get_action_counter

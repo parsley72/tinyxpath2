@@ -73,7 +73,7 @@ class xpath_processor : public xpath_stream {
     enum { e_no_error, e_error_syntax, e_error_overflow, e_error_execution, e_error_stack } _e_error;
 
    protected:
-    void v_action(xpath_construct, unsigned, unsigned, const char*) override;
+    void v_action(xpath_construct, unsigned, lex, const char*) override;
     int i_get_action_counter() override;
 
     xpath_stack _xs_stack;

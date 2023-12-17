@@ -93,8 +93,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (!ltp_get(0))
                 return false;
             switch (ltp_get(0)->lex_get_value()) {
-                case lex_slash:
-                case lex_2_slash:
+                case lex::slash:
+                case lex::two_slash:
                     if (!o_recognize(xpath_absolute_location_path, o_final))
                         return false;
                     if (o_final)
@@ -114,11 +114,11 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             // 					         | AbbreviatedAbsoluteLocationPath
             if (!ltp_get(0))
                 return false;
-            const int i_action_counter = i_get_action_counter();
+            const lex action_counter = static_cast<lex>(i_get_action_counter());
             lex_token* token = ltp_get(0);
             if (token) {
                 switch (token->lex_get_value()) {
-                    case lex_slash:
+                    case lex::slash:
                         v_inc_current(1);
                         ltp_freeze = ltp_get(0);
                         o_temp = o_recognize(xpath_relative_location_path, false);
@@ -127,23 +127,22 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             o_recognize(xpath_relative_location_path, o_final);
                             if (o_final) {
                                 v_action(xpath_absolute_location_path, xpath_absolute_location_path_slash_rel,
-                                    i_action_counter);
+                                    action_counter);
                             }
                         } else {
                             v_set_current(ltp_freeze);
                             if (o_final) {
                                 v_action(
-                                    xpath_absolute_location_path, xpath_absolute_location_path_slash, i_action_counter);
+                                    xpath_absolute_location_path, xpath_absolute_location_path_slash, action_counter);
                             }
                         }
                         break;
-                    case lex_2_slash:
+                    case lex::two_slash:
                         if (!o_recognize(xpath_abbreviated_absolute_location_path, o_final)) {
                             return false;
                         }
                         if (o_final) {
-                            v_action(
-                                xpath_absolute_location_path, xpath_absolute_location_path_abbrev, i_action_counter);
+                            v_action(xpath_absolute_location_path, xpath_absolute_location_path_abbrev, action_counter);
                         }
                         break;
                     default:
@@ -161,30 +160,30 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             // 					         | AbbreviatedRelativeLocationPath
             // [11]   AbbreviatedRelativeLocationPath	::=   RelativeLocationPath '//' Step
             //
-            const int i_action_counter = i_get_action_counter();
+            const lex action_counter = static_cast<lex>(i_get_action_counter());
             if (!o_recognize(xpath_step, o_final)) {
                 return false;
             }
-            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_slash) {
+            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::slash) {
                 v_inc_current(1);
                 if (!o_recognize(xpath_relative_location_path, o_final)) {
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_relative_location_path, xpath_relative_location_path_rel_step, i_action_counter);
+                    v_action(xpath_relative_location_path, xpath_relative_location_path_rel_step, action_counter);
                 }
-            } else if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_2_slash) {
+            } else if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::two_slash) {
                 v_inc_current(1);
                 if (!o_recognize(xpath_relative_location_path, o_final)) {
                     return false;
                 }
                 if (o_final) {
                     v_action(xpath_relative_location_path, xpath_relative_location_path_rel_double_slash_step,
-                        i_action_counter);
+                        action_counter);
                 }
             } else {
                 if (o_final) {
-                    v_action(xpath_relative_location_path, xpath_relative_location_path_step, i_action_counter);
+                    v_action(xpath_relative_location_path, xpath_relative_location_path_step, action_counter);
                 }
             }
         } break;
@@ -196,8 +195,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             switch (ltp_get(0)->lex_get_value()) {
-                case lex_dot:
-                case lex_2_dot: {
+                case lex::dot:
+                case lex::two_dot: {
                     if (!o_recognize(xpath_abbrieviated_step, o_final)) {
                         return false;
                     }
@@ -214,7 +213,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     }
                     o_found = true;
                     unsigned u_nb_predicate = 0;
-                    while (o_found && ltp_get(0) && ltp_get(0)->lex_get_value() == lex_obrack) {
+                    while (o_found && ltp_get(0) && ltp_get(0)->lex_get_value() == lex::obrack) {
                         ltp_freeze = ltp_get(0);
                         if (!o_recognize(xpath_predicate, false)) {
                             o_found = false;
@@ -225,7 +224,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         }
                     }
                     if (o_final) {
-                        v_action(xpath_step, xpath_step_full, u_nb_predicate);
+                        v_action(xpath_step, xpath_step_full, static_cast<lex>(u_nb_predicate));
                         break;
                     }
                 }
@@ -241,7 +240,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             o_empty = false;
             if (ltp_get(0)) {
                 switch (ltp_get(0)->lex_get_value()) {
-                    case lex_at:
+                    case lex::at:
                         v_inc_current(1);
                         if (o_final) {
                             v_action(xpath_axis_specifier, xpath_axis_specifier_at);
@@ -255,7 +254,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             if (!ltp_get(0)) {
                                 return false;
                             }
-                            if (ltp_get(0)->lex_get_value() != lex_2_colon) {
+                            if (ltp_get(0)->lex_get_value() != lex::two_colon) {
                                 return false;
                             }
                             v_inc_current(1);
@@ -315,26 +314,26 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             switch (ltp_get(0)->lex_get_value()) {
-                case lex_comment:
-                case lex_text:
-                case lex_node:
+                case lex::comment:
+                case lex::text:
+                case lex::node:
                     if (o_final)
                         v_action(xpath_node_test, xpath_node_test_reserved_keyword, ltp_get(0)->lex_get_value());
                     v_inc_current(3);
                     break;
-                case lex_processing_instruction: {
+                case lex::processing_instruction: {
                     lex_token* token = ltp_get(2);
-                    if (token && token->lex_get_value() == lex_cparen) {
+                    if (token && token->lex_get_value() == lex::cparen) {
                         // single
                         v_inc_current(3);
                         if (o_final) {
-                            v_action(xpath_node_test, xpath_node_test_pi, lex_processing_instruction);
+                            v_action(xpath_node_test, xpath_node_test_pi, lex::processing_instruction);
                         }
                     } else {
                         // with literal
                         v_inc_current(3);
                         if (o_final) {
-                            v_action(xpath_node_test, xpath_node_test_pi_lit, lex_processing_instruction,
+                            v_action(xpath_node_test, xpath_node_test_pi_lit, lex::processing_instruction,
                                 ltp_get(0)->cp_get_literal());
                         }
                         v_inc_current(1);
@@ -353,14 +352,14 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (!ltp_get(1)) {
                 return false;
             }
-            if (ltp_get(0)->lex_get_value() != lex_obrack) {
+            if (ltp_get(0)->lex_get_value() != lex::obrack) {
                 return false;
             }
             v_inc_current(1);
             if (!o_recognize(xpath_predicate_expr, o_final)) {
                 return false;
             }
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cbrack) {
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex::cbrack) {
                 return false;
             }
             v_inc_current(1);
@@ -381,7 +380,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
 
         case xpath_abbreviated_absolute_location_path: {
             // [10]   AbbreviatedAbsoluteLocationPath	::=   '//' RelativeLocationPath
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_2_slash) {
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex::two_slash) {
                 return false;
             }
             v_inc_current(1);
@@ -401,13 +400,13 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             switch (ltp_get(0)->lex_get_value()) {
-                case lex_dot: {
+                case lex::dot: {
                     v_inc_current(1);
                     if (o_final) {
                         v_action(xpath_abbrieviated_step, 0);
                     }
                 } break;
-                case lex_2_dot: {
+                case lex::two_dot: {
                     v_inc_current(1);
                     if (o_final) {
                         v_action(xpath_abbrieviated_step, 1);
@@ -445,7 +444,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             switch (ltp_get(0)->lex_get_value()) {
-                case lex_dollar:
+                case lex::dollar:
                     if (!o_recognize(xpath_variable_reference, o_final)) {
                         return false;
                     }
@@ -453,12 +452,12 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         v_action(xpath_primary_expr, xpath_primary_expr_variable);
                     }
                     break;
-                case lex_oparen:
+                case lex::oparen:
                     v_inc_current(1);
                     if (!o_recognize(xpath_expr, o_final)) {
                         return false;
                     }
-                    if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cparen) {
+                    if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex::cparen) {
                         return false;
                     }
                     v_inc_current(1);
@@ -466,13 +465,17 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         v_action(xpath_primary_expr, xpath_primary_expr_paren_expr);
                     }
                     break;
+                case lex::literal:
                     if (o_final) {
-                        v_action(xpath_primary_expr, xpath_primary_expr_literal, 0, ltp_get(0)->cp_get_literal());
+                        v_action(
+                            xpath_primary_expr, xpath_primary_expr_literal, lex::null, ltp_get(0)->cp_get_literal());
                     }
                     v_inc_current(1);
                     break;
+                case lex::number:
                     if (o_final) {
-                        v_action(xpath_primary_expr, xpath_primary_expr_number, 0, ltp_get(0)->cp_get_literal());
+                        v_action(
+                            xpath_primary_expr, xpath_primary_expr_number, lex::null, ltp_get(0)->cp_get_literal());
                     }
                     v_inc_current(1);
                     break;
@@ -494,12 +497,12 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             switch (ltp_get(0)->lex_get_value()) {
-                case lex_comment:
-                case lex_text:
-                case lex_node:
-                case lex_processing_instruction: {
+                case lex::comment:
+                case lex::text:
+                case lex::node:
+                case lex::processing_instruction: {
                     if (o_final) {
-                        v_action(xpath_xml_local_part, 0, 0, ltp_get(0)->cp_get_literal());
+                        v_action(xpath_xml_local_part, 0, lex::null, ltp_get(0)->cp_get_literal());
                         v_action(xpath_xml_q_name, xpath_xml_q_name_simple);
                     }
                     v_inc_current(1);
@@ -510,14 +513,14 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     }
                 } break;
             }
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_oparen) {
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex::oparen) {
                 return false;
             }
             v_inc_current(1);
             if (!ltp_get(0)) {
                 return false;
             }
-            if (ltp_get(0)->lex_get_value() == lex_cparen) {
+            if (ltp_get(0)->lex_get_value() == lex::cparen) {
                 v_inc_current(1);
                 if (o_final) {
                     v_action(xpath_function_call, 0);
@@ -528,7 +531,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 unsigned u_nb_argument = 0;
                 while (o_found) {
                     if (u_nb_argument) {
-                        if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_comma) {
+                        if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex::comma) {
                             o_found = false;
                         } else {
                             v_inc_current(1);
@@ -544,12 +547,12 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     }
                 }
                 v_set_current(ltp_freeze);
-                if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cparen) {
+                if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex::cparen) {
                     return false;
                 }
                 v_inc_current(1);
                 if (o_final) {
-                    v_action(xpath_function_call, 1, u_nb_argument);
+                    v_action(xpath_function_call, 1, static_cast<lex>(u_nb_argument));
                 }
             }
         } break;
@@ -572,7 +575,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (!o_recognize(xpath_path_expr, o_final)) {
                 return false;
             }
-            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_orchar) {
+            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::orchar) {
                 v_inc_current(1);
                 if (!o_recognize(xpath_union_expr, o_final)) {
                     return false;
@@ -600,13 +603,14 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             } else {
                 v_set_current(ltp_freeze);
                 o_recognize(xpath_filter_expr, o_final);
-                if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_slash) {
+                if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::slash) {
                     v_inc_current(1);
                     if (!o_recognize(xpath_relative_location_path, o_final)) {
                         o_location_path = true;
                     } else if (o_final) {
                         v_action(xpath_path_expr, xpath_path_expr_slash);
                     }
+                } else if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::two_slash) {
                     v_inc_current(1);
                     if (!o_recognize(xpath_relative_location_path, o_final)) {
                         o_location_path = true;
@@ -639,7 +643,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (!o_recognize(xpath_primary_expr, o_final)) {
                 return false;
             }
-            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_obrack) {
+            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::obrack) {
                 if (!o_recognize(xpath_predicate, o_final)) {
                     return false;
                 }
@@ -660,7 +664,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (!o_recognize(xpath_and_expr, o_final)) {
                 return false;
             }
-            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_or) {
+            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::_or) {
                 v_inc_current(1);
                 if (!o_recognize(xpath_and_expr, o_final)) {
                     return false;
@@ -673,7 +677,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 v_action(xpath_or_expr, xpath_or_expr_simple);
             }
             if (o_test_more) {
-                while (ltp_get(0) && (ltp_get(0)->lex_get_value() == lex_or)) {
+                while (ltp_get(0) && (ltp_get(0)->lex_get_value() == lex::_or)) {
                     v_inc_current(1);
                     if (!o_recognize(xpath_and_expr, o_final)) {
                         return false;
@@ -693,7 +697,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (!o_recognize(xpath_equality_expr, o_final)) {
                 return false;
             }
-            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_and) {
+            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::_and) {
                 v_inc_current(1);
                 if (!o_recognize(xpath_equality_expr, o_final)) {
                     return false;
@@ -717,7 +721,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             }
             if (ltp_get(0)) {
                 switch (ltp_get(0)->lex_get_value()) {
-                    case lex_equal:
+                    case lex::equal:
                         v_inc_current(1);
                         if (!o_recognize(xpath_relational_expr, o_final)) {
                             return false;
@@ -727,7 +731,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         }
                         break;
 
-                    case lex_not_equal:
+                    case lex::not_equal:
                         v_inc_current(1);
                         if (!o_recognize(xpath_relational_expr, o_final)) {
                             return false;
@@ -763,7 +767,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             }
             if (ltp_get(0)) {
                 switch (ltp_get(0)->lex_get_value()) {
-                    case lex_lt:
+                    case lex::lt:
                         v_inc_current(1);
                         if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
@@ -772,7 +776,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             v_action(xpath_relational_expr, xpath_relational_expr_lt);
                         }
                         break;
-                    case lex_gt:
+                    case lex::gt:
                         v_inc_current(1);
                         if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
@@ -781,7 +785,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             v_action(xpath_relational_expr, xpath_relational_expr_gt);
                         }
                         break;
-                    case lex_lt_equal:
+                    case lex::lt_equal:
                         v_inc_current(1);
                         if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
@@ -790,7 +794,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             v_action(xpath_relational_expr, xpath_relational_expr_lte);
                         }
                         break;
-                    case lex_gt_equal:
+                    case lex::gt_equal:
                         v_inc_current(1);
                         if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
@@ -821,7 +825,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             o_test_more = false;
             if (ltp_get(0)) {
                 switch (ltp_get(0)->lex_get_value()) {
-                    case lex_plus:
+                    case lex::plus:
                         v_inc_current(1);
                         if (!o_recognize(xpath_multiplicative_expr, o_final)) {
                             return false;
@@ -831,7 +835,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         }
                         o_test_more = true;
                         break;
-                    case lex_minus:
+                    case lex::minus:
                         v_inc_current(1);
                         if (!o_recognize(xpath_multiplicative_expr, o_final)) {
                             return false;
@@ -851,8 +855,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 v_action(xpath_additive_expr, xpath_additive_expr_simple);
             if (o_test_more) {
                 while (ltp_get(0) &&
-                       (ltp_get(0)->lex_get_value() == lex_plus || ltp_get(0)->lex_get_value() == lex_minus)) {
-                    if (ltp_get(0)->lex_get_value() == lex_plus) {
+                       (ltp_get(0)->lex_get_value() == lex::plus || ltp_get(0)->lex_get_value() == lex::minus)) {
+                    if (ltp_get(0)->lex_get_value() == lex::plus) {
                         v_inc_current(1);
                         if (!o_recognize(xpath_multiplicative_expr, o_final)) {
                             return false;
@@ -884,7 +888,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             if (ltp_get(0)) {
                 switch (ltp_get(0)->lex_get_value()) {
-                    case lex_star:
+                    case lex::star:
                         //
                         // [34]   MultiplyOperator		::=   '*'
                         //
@@ -896,7 +900,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             v_action(xpath_multiplicative_expr, xpath_multiplicative_expr_star);
                         }
                         break;
-                    case lex_div:
+                    case lex::div:
                         v_inc_current(1);
                         if (!o_recognize(xpath_unary_expr, o_final)) {
                             return false;
@@ -905,7 +909,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             v_action(xpath_multiplicative_expr, xpath_multiplicative_expr_div);
                         }
                         break;
-                    case lex_mod:
+                    case lex::mod:
                         v_inc_current(1);
                         if (!o_recognize(xpath_unary_expr, o_final)) {
                             return false;
@@ -930,7 +934,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             // [27]   UnaryExpr			::=   UnionExpr
             // 					         | '-' UnaryExpr
             //
-            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_minus) {
+            if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::minus) {
                 v_inc_current(1);
                 if (!o_recognize(xpath_unary_expr, o_final)) {
                     return false;
@@ -953,7 +957,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (!ltp_get(0) || !ltp_get(1)) {
                 return false;
             }
-            if (ltp_get(0)->lex_get_value() != lex_dollar) {
+            if (ltp_get(0)->lex_get_value() != lex::dollar) {
                 return false;
             }
             v_inc_current(1);
@@ -973,18 +977,18 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
 
             {
-                lexico lexVal = ltp_get(0)->lex_get_value();
-                if (lexVal == lex_star) {
+                lex lexVal = ltp_get(0)->lex_get_value();
+                if (lexVal == lex::star) {
                     v_inc_current(1);
                     if (o_final) {
                         v_action(xpath_name_test, xpath_name_test_star);
                     }
-                } else if (lexVal == lex_ncname) {
+                } else if (lexVal == lex::ncname) {
                     o_qname = false;
                     lex_token* token1 = ltp_get(1);
                     lex_token* token2 = ltp_get(2);
-                    if (token1 && token2 && token1->lex_get_value() == lex_colon) {
-                        if (token2->lex_get_value() == lex_star) {
+                    if (token1 && token2 && token1->lex_get_value() == lex::colon) {
+                        if (token2->lex_get_value() == lex::star) {
                             v_inc_current(3);
                             if (o_final) {
                                 v_action(xpath_name_test, xpath_name_test_ncname);
@@ -1011,22 +1015,22 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             // [Namespace XML : 6] QName					::= (Prefix ':')? LocalPart
             // [Namespace XML : 7] Prefix					::= NCName
             // [Namespace XML : 8] LocalPart				::= NCName
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_ncname) {
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex::ncname) {
                 return false;
             }
-            if (ltp_get(1) && ltp_get(1)->lex_get_value() == lex_colon) {
-                if (!ltp_get(2) || ltp_get(2)->lex_get_value() != lex_ncname) {
+            if (ltp_get(1) && ltp_get(1)->lex_get_value() == lex::colon) {
+                if (!ltp_get(2) || ltp_get(2)->lex_get_value() != lex::ncname) {
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_xml_prefix, 0, 0, ltp_get(0)->cp_get_literal());
-                    v_action(xpath_xml_local_part, 0, 0, ltp_get(2)->cp_get_literal());
+                    v_action(xpath_xml_prefix, 0, lex::null, ltp_get(0)->cp_get_literal());
+                    v_action(xpath_xml_local_part, 0, lex::null, ltp_get(2)->cp_get_literal());
                     v_action(xpath_xml_q_name, xpath_xml_q_name_colon);
                 }
                 v_inc_current(3);
             } else {
                 if (o_final) {
-                    v_action(xpath_xml_local_part, 0, 0, ltp_get(0)->cp_get_literal());
+                    v_action(xpath_xml_local_part, 0, lex::null, ltp_get(0)->cp_get_literal());
                     v_action(xpath_xml_q_name, xpath_xml_q_name_simple);
                 }
                 v_inc_current(1);

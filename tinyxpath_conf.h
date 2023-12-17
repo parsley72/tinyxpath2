@@ -31,6 +31,6 @@ distribution.
 #ifndef __TINYXPATH_CONF_H
 #define __TINYXPATH_CONF_H
 
-// #define TINYXPATH_DEBUG
+#define TINYXPATH_DEBUG
 
 #endif  // __TINYXPATH_CONF_H

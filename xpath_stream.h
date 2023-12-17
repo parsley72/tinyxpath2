@@ -57,7 +57,7 @@ class xpath_stream : public byte_stream {
     /// Decode the byte stream, and construct the lexical list
     void v_lexico_decode() {
         enum { s_init, s_ncname, s_number, s_literal_1, s_literal_2, s_end } state;
-        lexico lex_new, lex_next;
+        lex lex_new, lex_next;
         unsigned u_size;
         bool o_dot_in_number;
 
@@ -69,25 +69,25 @@ class xpath_stream : public byte_stream {
             switch (state) {
                 case s_init:
                     switch (lex_next) {
-                        case lex_bchar:
-                        case lex_under:
+                        case lex::bchar:
+                        case lex::under:
                             // [XML:4] NCName	::= (Letter | '_') (NCNameChar)*
 
                             u_size = 1;
                             state = s_ncname;
                             b_pop();
                             break;
-                        case lex_null:
+                        case lex::null:
                             state = s_end;
                             break;
-                        case lex_digit:
+                        case lex::digit:
                             u_size = 1;
                             state = s_number;
                             o_dot_in_number = false;
                             b_pop();
                             break;
-                        case lex_dot:
-                            if (lex_get_class(b_forward(1)) == lex_digit) {
+                        case lex::dot:
+                            if (lex_get_class(b_forward(1)) == lex::digit) {
                                 // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits
                                 // [31]   Digits				::=   [0-9]+
                                 u_size = 1;
@@ -100,14 +100,14 @@ class xpath_stream : public byte_stream {
                             }
                             break;
 
-                        case lex_1_quote:
+                        case lex::one_quote:
                             // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                             u_size = 0;
                             b_pop();
                             state = s_literal_1;
                             break;
 
-                        case lex_2_quote:
+                        case lex::two_quote:
                             // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                             u_size = 0;
                             b_pop();
@@ -123,8 +123,8 @@ class xpath_stream : public byte_stream {
                 case s_literal_1:
                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                     switch (lex_next) {
-                        case lex_1_quote:
-                            _tlp_list->v_add_token(lex_literal, bp_get_backward(u_size + 1), u_size);
+                        case lex::one_quote:
+                            _tlp_list->v_add_token(lex::literal, bp_get_backward(u_size + 1), u_size);
                             b_pop();
                             state = s_init;
                             break;
@@ -137,8 +137,8 @@ class xpath_stream : public byte_stream {
                 case s_literal_2:
                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                     switch (lex_next) {
-                        case lex_2_quote:
-                            _tlp_list->v_add_token(lex_literal, bp_get_backward(u_size + 1), u_size);
+                        case lex::two_quote:
+                            _tlp_list->v_add_token(lex::literal, bp_get_backward(u_size + 1), u_size);
                             b_pop();
                             state = s_init;
                             break;
@@ -151,12 +151,12 @@ class xpath_stream : public byte_stream {
                 case s_ncname:
                     switch (lex_next) {
                         // [XML:5] NCNameChar ::= Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
-                        case lex_bchar:
-                        case lex_digit:
-                        case lex_dot:
-                        case lex_minus:
-                        case lex_under:
-                        case lex_extend:
+                        case lex::bchar:
+                        case lex::digit:
+                        case lex::dot:
+                        case lex::minus:
+                        case lex::under:
+                        case lex::extend:
                             u_size++;
                             b_pop();
                             break;
@@ -171,9 +171,9 @@ class xpath_stream : public byte_stream {
                     switch (lex_next) {
                         // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits
                         // [31]   Digits				::=   [0-9]+
-                        case lex_dot:
+                        case lex::dot:
                             if (o_dot_in_number) {
-                                _tlp_list->v_add_token(lex_number, bp_get_backward(u_size + 1), u_size);
+                                _tlp_list->v_add_token(lex::number, bp_get_backward(u_size + 1), u_size);
                                 state = s_init;
                             } else {
                                 o_dot_in_number = true;
@@ -181,12 +181,12 @@ class xpath_stream : public byte_stream {
                                 b_pop();
                             }
                             break;
-                        case lex_digit:
+                        case lex::digit:
                             u_size++;
                             b_pop();
                             break;
                         default:
-                            _tlp_list->v_add_token(lex_number, bp_get_backward(u_size + 1), u_size);
+                            _tlp_list->v_add_token(lex::number, bp_get_backward(u_size + 1), u_size);
                             state = s_init;
                             break;
                     }
@@ -194,7 +194,7 @@ class xpath_stream : public byte_stream {
                 case s_end:
                     throw std::runtime_error("Invalid XPath expression");
             }
-            if (lex_next == lex_null)
+            if (lex_next == lex::null)
                 state = s_end;
         }
     }
@@ -207,7 +207,7 @@ class xpath_stream : public byte_stream {
     }
 
     /// Callback used by token_syntax_decoder::v_syntax_decode to notify of an action to be made. Pure virtual
-    virtual void v_action(xpath_construct, unsigned, unsigned, const char*) = 0;
+    virtual void v_action(xpath_construct, unsigned, lex, const char*) = 0;
 
     /// Callback used by token_syntax_decoder::v_syntax_decode to know the action counter position. Pure virtual
     /// \n This can be any kind of nomenclature, provided that the redefinition is coherent

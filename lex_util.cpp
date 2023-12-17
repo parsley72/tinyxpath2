@@ -35,174 +35,175 @@ using namespace std;
 namespace TinyXPath {
 
 /// Mapping of all the byte values into elementary lexical items
-static const lexico lex_char_map[256] = {
+static const lex lex_char_map[256] = {
     /*                      0            1            2            3            4            5            6 7   */
     /*                       8            9            a            b            c            d            e f  */
-    /* 00 .. 07 */ lex_null, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* 08 .. 0f */ lex_none, lex_space, lex_space, lex_none, lex_none, lex_space, lex_none, lex_none,
-    /* 10 .. 17 */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* 18 .. 1f */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* 20 .. 27 */ lex_space, lex_exclam, lex_2_quote, lex_none, lex_dollar, lex_none, lex_none, lex_1_quote,
-    /* 28 .. 2f */ lex_oparen, lex_cparen, lex_star, lex_plus, lex_comma, lex_minus, lex_dot, lex_slash,
-    /* 30 .. 37 */ lex_digit, lex_digit, lex_digit, lex_digit, lex_digit, lex_digit, lex_digit, lex_digit,
-    /* 38 .. 3f */ lex_digit, lex_digit, lex_colon, lex_scolon, lex_lt, lex_equal, lex_gt, lex_none,
-    /* 40 .. 47 */ lex_at, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* 48 .. 4f */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* 50 .. 57 */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* 58 .. 5f */ lex_bchar, lex_bchar, lex_bchar, lex_obrack, lex_none, lex_cbrack, lex_none, lex_under,
-    /* 60 .. 67 */ lex_none, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* 68 .. 6f */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* 70 .. 77 */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* 78 .. 7f */ lex_bchar, lex_bchar, lex_bchar, lex_none, lex_orchar, lex_none, lex_none, lex_none,
-    /* 80 .. 87 */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* 88 .. 8f */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* 90 .. 97 */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* 98 .. 9f */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* a0 .. a7 */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* a8 .. af */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* b0 .. b7 */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_extend,
-    /* b8 .. bf */ lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
-    /* c0 .. c7 */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* c8 .. cf */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* d0 .. d7 */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_none,
-    /* d8 .. df */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* e0 .. e7 */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* e8 .. ef */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar,
-    /* f0 .. f7 */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_none,
-    /* f8 .. ff */ lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar, lex_bchar};
+    /* 00 .. 07 */ lex::null, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* 08 .. 0f */ lex::none, lex::space, lex::space, lex::none, lex::none, lex::space, lex::none, lex::none,
+    /* 10 .. 17 */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* 18 .. 1f */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* 20 .. 27 */ lex::space, lex::exclam, lex::two_quote, lex::none, lex::dollar, lex::none, lex::none,
+    lex::one_quote,
+    /* 28 .. 2f */ lex::oparen, lex::cparen, lex::star, lex::plus, lex::comma, lex::minus, lex::dot, lex::slash,
+    /* 30 .. 37 */ lex::digit, lex::digit, lex::digit, lex::digit, lex::digit, lex::digit, lex::digit, lex::digit,
+    /* 38 .. 3f */ lex::digit, lex::digit, lex::colon, lex::scolon, lex::lt, lex::equal, lex::gt, lex::none,
+    /* 40 .. 47 */ lex::at, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* 48 .. 4f */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* 50 .. 57 */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* 58 .. 5f */ lex::bchar, lex::bchar, lex::bchar, lex::obrack, lex::none, lex::cbrack, lex::none, lex::under,
+    /* 60 .. 67 */ lex::none, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* 68 .. 6f */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* 70 .. 77 */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* 78 .. 7f */ lex::bchar, lex::bchar, lex::bchar, lex::none, lex::orchar, lex::none, lex::none, lex::none,
+    /* 80 .. 87 */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* 88 .. 8f */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* 90 .. 97 */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* 98 .. 9f */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* a0 .. a7 */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* a8 .. af */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* b0 .. b7 */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::extend,
+    /* b8 .. bf */ lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none, lex::none,
+    /* c0 .. c7 */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* c8 .. cf */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* d0 .. d7 */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::none,
+    /* d8 .. df */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* e0 .. e7 */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* e8 .. ef */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar,
+    /* f0 .. f7 */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::none,
+    /* f8 .. ff */ lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar, lex::bchar};
 
 /// Dump a lexical element
-const char* cp_disp_class_lex(lexico lex_in) {
+const char* cp_disp_class_lex(lex lex_in) {
     switch (lex_in) {
-        case lex_none:
+        case lex::none:
             return "<small>none</small>";
-        case lex_null:
+        case lex::null:
             return "null";
-        case lex_digit:
+        case lex::digit:
             return "digit";
-        case lex_bchar:
+        case lex::bchar:
             return "base char";
-        case lex_space:
+        case lex::space:
             return "space";
-        case lex_extend:
+        case lex::extend:
             return "extender";
-        case lex_slash:
+        case lex::slash:
             return "slash";
-        case lex_at:
+        case lex::at:
             return "at";
-        case lex_dot:
+        case lex::dot:
             return "dot";
-        case lex_minus:
+        case lex::minus:
             return "minus";
-        case lex_under:
+        case lex::under:
             return "under";
-        case lex_colon:
+        case lex::colon:
             return "colon";
-        case lex_scolon:
+        case lex::scolon:
             return "semi colon";
-        case lex_2_quote:
+        case lex::two_quote:
             return "double quote";
-        case lex_1_quote:
+        case lex::one_quote:
             return "simple quote";
-        case lex_dollar:
+        case lex::dollar:
             return "dollar";
-        case lex_oparen:
+        case lex::oparen:
             return "opening parenthesis";
-        case lex_cparen:
+        case lex::cparen:
             return "closing parenthesis";
-        case lex_star:
+        case lex::star:
             return "star";
-        case lex_plus:
+        case lex::plus:
             return "plus";
-        case lex_comma:
+        case lex::comma:
             return "comma";
-        case lex_lt:
+        case lex::lt:
             return "less than";
-        case lex_equal:
+        case lex::equal:
             return "equal";
-        case lex_gt:
+        case lex::gt:
             return "greater than";
-        case lex_obrack:
+        case lex::obrack:
             return "opening bracket";
-        case lex_cbrack:
+        case lex::cbrack:
             return "closing bracket";
-        case lex_orchar:
+        case lex::orchar:
             return "or character (|)";
-        case lex_exclam:
+        case lex::exclam:
             return "exclamation (!)";
-        case lex_2_colon:
+        case lex::two_colon:
             return "::";
-        case lex_2_slash:
+        case lex::two_slash:
             return "//";
-        case lex_2_dot:
+        case lex::two_dot:
             return "..";
-        case lex_not_equal:
+        case lex::not_equal:
             return "!=";
-        case lex_lt_equal:
+        case lex::lt_equal:
             return "<=";
-        case lex_gt_equal:
+        case lex::gt_equal:
             return ">=";
 
-        case lex_ncname:
+        case lex::ncname:
             return "NCName";
-        case lex_number:
+        case lex::number:
             return "Number";
-        case lex_literal:
+        case lex::literal:
             return "literal";
-        case lex_or:
+        case lex::_or:
             return "or";
-        case lex_and:
+        case lex::_and:
             return "and";
-        case lex_mod:
+        case lex::mod:
             return "mod";
-        case lex_div:
+        case lex::div:
             return "div";
-        case lex_ancestor:
+        case lex::ancestor:
             return "ancestor";
-        case lex_ancestor_or_self:
+        case lex::ancestor_or_self:
             return "ancestor-or-self";
-        case lex_attribute:
+        case lex::attribute:
             return "attribute";
-        case lex_child:
+        case lex::child:
             return "child";
-        case lex_descendant:
+        case lex::descendant:
             return "descendant";
-        case lex_descendant_or_self:
+        case lex::descendant_or_self:
             return "descendant-or-self";
-        case lex_following:
+        case lex::following:
             return "following";
-        case lex_following_sibling:
+        case lex::following_sibling:
             return "following-sibling";
-        case lex_namespace:
+        case lex::_namespace:
             return "namespace";
-        case lex_parent:
+        case lex::parent:
             return "parent";
-        case lex_preceding:
+        case lex::preceding:
             return "preceding";
-        case lex_preceding_sibling:
+        case lex::preceding_sibling:
             return "preceding-sibling";
-        case lex_self:
+        case lex::self:
             return "self";
-        case lex_processing_instruction:
+        case lex::processing_instruction:
             return "processing-instruction";
-        case lex_comment:
+        case lex::comment:
             return "comment";
-        case lex_node:
+        case lex::node:
             return "node";
-        case lex_text:
+        case lex::text:
             return "text";
     }
     return "???";
 }
 
 /// Get the lexical class of an XPath expression byte
-lexico lex_get_class(_byte_ b_in) {
+lex lex_get_class(_byte_ b_in) {
     return lex_char_map[b_in];
 }
 
 /// Check if a lexical element can be an axis name
-bool o_is_axis_name(lexico lex_test) {
-    if (lex_test >= lex_start_axis_name && lex_test <= lex_end_axis_name) {
+bool o_is_axis_name(lex lex_test) {
+    if (lex_test >= lex::start_axis_name && lex_test <= lex::end_axis_name) {
         return true;
     }
     return false;
@@ -210,21 +211,21 @@ bool o_is_axis_name(lexico lex_test) {
 
 /// Check if an ID maps an existing keyword
 /// \n Returns the new lexical element or lex_ncname if not found
-lexico lex_test_id(const _byte_* bp_str, unsigned u_size, lexico lex_next) {
+lex lex_test_id(const _byte_* bp_str, unsigned u_size, lex lex_next) {
     char* cp_equi;
 
     cp_equi = new char[u_size + 1];
     memcpy(cp_equi, bp_str, u_size);
     cp_equi[u_size] = 0;
-    for (unsigned u_lex = lex_start_keyword; u_lex <= lex_end_keyword; u_lex++)
-        if (!strcmp(cp_equi, cp_disp_class_lex(lexico(u_lex))))
+    for (lex u_lex = lex::start_keyword; u_lex <= lex::end_keyword; u_lex = static_cast<lex>((unsigned)u_lex + 1))
+        if (!strcmp(cp_equi, cp_disp_class_lex(lex(u_lex))))
             // DO not recognize the text keyword unless it is followed by an open parenthesis
-            if ((u_lex != lex_text) || (lex_next == lex_oparen)) {
+            if ((u_lex != lex::text) || (lex_next == lex::oparen)) {
                 delete[] cp_equi;
-                return lexico(u_lex);
+                return lex(u_lex);
             }
     delete[] cp_equi;
-    return lex_ncname;
+    return lex::ncname;
 }
 
 /// Removes all leading and trailing white spaces

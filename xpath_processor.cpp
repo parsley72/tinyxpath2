@@ -197,13 +197,13 @@ double xpath_processor::d_compute_xpath() {
 /// Callback from the XPath decoder : a rule has to be applied
 void xpath_processor::v_action(xpath_construct xc_rule,  ///< XPath Rule
     unsigned u_sub,                                      ///< Rule sub number
-    unsigned u_variable,                                 ///< Parameter, depends on the rule
+    lex u_variable,                                      ///< Parameter, depends on the rule
     const char* cp_literal)                              ///< Input literal, depends on the rule
 {
-    _as_action_store.v_add(xc_rule, u_sub, u_variable, cp_literal);
+    _as_action_store.v_add(xc_rule, u_sub, static_cast<unsigned>(u_variable), cp_literal);
 #ifdef TINYXPATH_DEBUG
     printf("Action %2d : %s (%d,%d,%s)\n", _as_action_store.i_get_size() - 1, cp_disp_construct(xc_rule), u_sub,
-        u_variable, cp_literal);
+        static_cast<unsigned>(u_variable), cp_literal);
 #endif
 }
 
@@ -951,7 +951,7 @@ void xpath_processor ::v_execute_step(
     int& i_relative_action,  ///< Path position : -1 if first in a '//' path, 0 if first in a '/' path, > 0 if followers
     bool o_skip_only) {
     bool o_by_name;
-    int i_axis_type, i_end_store, i_node_store, i_pred_store;
+    int i_end_store, i_node_store, i_pred_store;
     unsigned u_nb_node, u_node, u_pred, u_sub, u_variable;
     xpath_construct xc_action;
     string S_literal, S_name;
@@ -1015,7 +1015,7 @@ void xpath_processor ::v_execute_step(
 
         // Retrieve the archive flag stored by the xpath_axis_specifier rule execution
         // o_attrib_flag = o_pop_bool ();
-        i_axis_type = i_pop_int();
+        lex i_axis_type = static_cast<lex>(i_pop_int());
 
         u_nb_node = ns_source.u_get_nb_node_in_set();
         for (u_node = 0; u_node < u_nb_node; u_node++) {
@@ -1023,8 +1023,8 @@ void xpath_processor ::v_execute_step(
                 XNp_father = ns_source.XNp_get_node_in_set(u_node);
                 if (XNp_father) {
                     switch (i_axis_type) {
-                        case 0:
-                        case lex_child:
+                        case lex::null:  // 0
+                        case lex::child:
                             // none
                             XEp_child = XNp_father->FirstChildElement();
                             while (XEp_child) {
@@ -1032,8 +1032,8 @@ void xpath_processor ::v_execute_step(
                                 XEp_child = XEp_child->NextSiblingElement();
                             }
                             break;
-                        case 1:
-                        case lex_attribute:
+                        case lex::none:  // 1
+                        case lex::attribute:
                             // @
                             if (XNp_father->ToElement())
                                 XAp_attrib = XNp_father->ToElement()->FirstAttribute();
@@ -1044,12 +1044,12 @@ void xpath_processor ::v_execute_step(
                                 XAp_attrib = XAp_attrib->Next();
                             }
                             break;
-                        case lex_parent:
+                        case lex::parent:
                             XNp_parent = XNp_father->Parent();
                             if (XNp_parent)
                                 ns_target.v_add_node_in_set_if_name_or_star(XNp_parent, S_name);
                             break;
-                        case lex_ancestor:
+                        case lex::ancestor:
                             XNp_parent = XNp_father->Parent();
                             // we have to exclude our own dummy parent
                             while (XNp_parent && XNp_parent != _XNp_base_parent) {
@@ -1057,7 +1057,7 @@ void xpath_processor ::v_execute_step(
                                 XNp_parent = XNp_parent->Parent();
                             }
                             break;
-                        case lex_ancestor_or_self:
+                        case lex::ancestor_or_self:
                             if (XNp_father->ToElement() && XNp_father != _XNp_base_parent)
                                 ns_target.v_add_node_in_set_if_name_or_star(XNp_father, S_name);
                             XNp_parent = XNp_father->Parent();
@@ -1066,14 +1066,14 @@ void xpath_processor ::v_execute_step(
                                 XNp_parent = XNp_parent->Parent();
                             }
                             break;
-                        case lex_following_sibling:
+                        case lex::following_sibling:
                             XNp_next = XNp_father->NextSiblingElement();
                             while (XNp_next) {
                                 ns_target.v_add_node_in_set_if_name_or_star(XNp_next, S_name);
                                 XNp_next = XNp_next->NextSiblingElement();
                             }
                             break;
-                        case lex_preceding_sibling:
+                        case lex::preceding_sibling:
                             XNp_next = XNp_father->PreviousSibling();
                             while (XNp_next) {
                                 if (XNp_next->ToElement())
@@ -1081,7 +1081,7 @@ void xpath_processor ::v_execute_step(
                                 XNp_next = XNp_next->PreviousSibling();
                             }
                             break;
-                        case lex_descendant:
+                        case lex::descendant:
                             if (XNp_father->ToElement()) {
                                 if (S_name == "*")
                                     ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, nullptr);
@@ -1089,7 +1089,7 @@ void xpath_processor ::v_execute_step(
                                     ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, S_name.c_str());
                             }
                             break;
-                        case lex_descendant_or_self:
+                        case lex::descendant_or_self:
                             if (XNp_father->ToElement()) {
                                 if (XNp_father != _XNp_base_parent)
                                     ns_target.v_add_node_in_set_if_name_or_star(XNp_father, S_name);
@@ -1099,19 +1099,19 @@ void xpath_processor ::v_execute_step(
                                     ns_target.v_copy_selected_node_recursive_no_attrib(XNp_father, S_name.c_str());
                             }
                             break;
-                        case lex_self:
+                        case lex::self:
                             if (XNp_father->ToElement()) {
                                 if (XNp_father != _XNp_base_parent && XNp_father->ToElement())
                                     ns_target.v_add_node_in_set_if_name_or_star(XNp_father, S_name);
                             }
                             break;
-                        case lex_following:
+                        case lex::following:
                             ns_target.v_add_all_foll_node(XNp_father, S_name);
                             break;
-                        case lex_preceding:
+                        case lex::preceding:
                             ns_target.v_add_all_prec_node(XNp_father, S_name);
                             break;
-                        case lex_comment:
+                        case lex::comment:
                             XNp_next = XNp_father->FirstChild();
                             while (XNp_next) {
                                 if (XNp_next->ToComment())
@@ -1119,7 +1119,7 @@ void xpath_processor ::v_execute_step(
                                 XNp_next = XNp_next->NextSibling();
                             }
                             break;
-                        case lex_text:
+                        case lex::text:
                             XNp_next = XNp_father->FirstChild();
                             while (XNp_next) {
                                 if (XNp_next->ToText())
@@ -1127,7 +1127,7 @@ void xpath_processor ::v_execute_step(
                                 XNp_next = XNp_next->NextSibling();
                             }
                             break;
-                        case lex_node:
+                        case lex::node:
                             XNp_next = XNp_father->FirstChild();
                             while (XNp_next) {
                                 ns_target.v_add_node_in_set(XNp_next);

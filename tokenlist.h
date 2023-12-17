@@ -56,7 +56,7 @@ class token_list {
    public:
     /// constructor
     token_list() {
-        _ltp_first = new lex_token(lex_null, nullptr, 0);
+        _ltp_first = new lex_token(lex::null, nullptr, 0);
         _ltp_last = _ltp_first;
         _ltp_first->v_set_prev(_ltp_first);
         _ltp_first->v_set_next(_ltp_first);
@@ -70,7 +70,7 @@ class token_list {
         delete _ltp_first;
     }
     /// Adds a lexical token
-    void v_add_token(lexico l_in_enum, const _byte_* bp_in_value, unsigned u_in_size) {
+    void v_add_token(lex l_in_enum, const _byte_* bp_in_value, unsigned u_in_size) {
         lex_token* ltp_new;
 
         ltp_new = new lex_token(l_in_enum, bp_in_value, u_in_size);
@@ -111,7 +111,7 @@ class token_list {
     }
 
     /// Replaces the current element
-    void v_replace_current(lexico lex_in, const char* cp_rep) {
+    void v_replace_current(lex lex_in, const char* cp_rep) {
         if (!_ltp_current)
             return;
         _ltp_current->v_set(lex_in, cp_rep);
