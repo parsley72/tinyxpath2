@@ -46,14 +46,14 @@ class action_item {
     }
 
     /// Retrieve the set of values
-    void v_get(int& i_out_1, int& i_out_2, int& i_out_3, std::string& S_out) {
+    void v_get(int& i_out_1, int& i_out_2, int& i_out_3, std::string& S_out) const {
         i_out_1 = _i_1;
         i_out_2 = _i_2;
         i_out_3 = _i_3;
         S_out = _S_string;
     }
 
-   protected:
+   private:
     /// Integer triplet values
     int _i_1, _i_2, _i_3;
     /// String value
@@ -65,18 +65,18 @@ class action_item {
 /// \n It allocates them by set of 100
 class action_store {
    public:
-    action_store();
+    action_store() = default;
     ~action_store();
     /// add an element on the placeholder, given its details
     void v_add(int i_1, int i_2, int i_3, const char* cp_string);
     /// Get the current nb of stored elements
-    int i_get_size() {
+    int i_get_size() const {
         return _i_size;
     }
     /// Get one element from the placeholder
-    void v_get(int i_position, int& i_1, int& i_2, int& i_3, std::string& S_out);
+    void v_get(int i_position, int& i_1, int& i_2, int& i_3, std::string& S_out) const;
     /// Get the current position. See _i_position.
-    int i_get_position() {
+    int i_get_position() const {
         return _i_position;
     }
     /// Set the position to an arbitrary value. See _i_position.
@@ -88,16 +88,16 @@ class action_store {
         _i_position--;
     }
 
-   protected:
+   private:
     /// Used number of elements
-    int _i_size;
+    int _i_size = 0;
     /// This value is informative and is not related
     /// to the nb of elements in the placeholder
-    int _i_position;
+    int _i_position = 0;
     /// Nb of allocated elements
-    int _i_alloc;
+    int _i_alloc = 0;
     /// Pointers to the allocated elements
-    action_item** _aipp_list;
+    action_item** _aipp_list = nullptr;
 };
 
 }  // namespace TinyXPath

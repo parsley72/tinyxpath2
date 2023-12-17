@@ -48,7 +48,10 @@ class byte_stream {
 
    public:
     /// constructor
-    byte_stream(const char* cp_in) {
+    byte_stream(byte_stream& other) = delete;
+    byte_stream& operator=(const byte_stream& other) = delete;
+
+    explicit byte_stream(const char* cp_in) {
         if (cp_in) {
             _u_length = strlen(cp_in) + 1;
             _bp_in = new _byte_[_u_length];
@@ -67,37 +70,40 @@ class byte_stream {
     }
     /// destructor
     ~byte_stream() {
-        if (_bp_in)
+        if (_bp_in) {
             delete[] _bp_in;
+        }
     }
     /// Returns the byte on top
-    _byte_ b_top() {
+    _byte_ b_top() const {
         return *_bp_current;
     }
     /// Consumes one byte
     _byte_ b_pop() {
-        if (!o_is_valid())
+        if (!o_is_valid()) {
             return 0;
+        }
         _bp_current++;
         _o_valid = (_bp_current != _bp_end);
         return *(_bp_current - 1);
     }
     /// true if there are still some byte to consume
-    bool o_is_valid() {
+    bool o_is_valid() const {
         return _o_valid;
     }
     /// number of bytes still to consume
-    unsigned u_remain() {
+    unsigned u_remain() const {
         return (unsigned)(_bp_end - _bp_current);
     }
     /// peek a byte a little further down the stream
-    _byte_ b_forward(unsigned u_nb_char) {
-        if (u_remain() > u_nb_char)
+    _byte_ b_forward(unsigned u_nb_char) const {
+        if (u_remain() > u_nb_char) {
             return _bp_current[u_nb_char];
+        }
         return 0;
     }
     /// get a byte backward pointer to the stream
-    const _byte_* bp_get_backward(unsigned u_amount) {
+    const _byte_* bp_get_backward(unsigned u_amount) const {
         return _bp_current - u_amount + 1;
     }
 };

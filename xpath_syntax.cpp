@@ -77,8 +77,6 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
 {
     lex_token* ltp_freeze;
     bool o_empty, o_found, o_location_path, o_qname, o_temp;
-    unsigned u_nb_argument, u_nb_predicate;
-    int i_action_counter;
     bool o_test_more;
 
     _u_nb_recurs++;
@@ -87,7 +85,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
     ltp_freeze = nullptr;
 
     switch (xc_current) {
-        case xpath_location_path:
+        case xpath_location_path: {
             //
             // [1]   LocationPath			::=   RelativeLocationPath
             // 					         | AbsoluteLocationPath
@@ -109,14 +107,14 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         v_action(xpath_location_path, xpath_location_path_rel);
                     break;
             }
-            break;
+        } break;
 
         case xpath_absolute_location_path: {
             // [2]   AbsoluteLocationPath	::=   '/' RelativeLocationPath?
             // 					         | AbbreviatedAbsoluteLocationPath
             if (!ltp_get(0))
                 return false;
-            i_action_counter = i_get_action_counter();
+            const int i_action_counter = i_get_action_counter();
             lex_token* token = ltp_get(0);
             if (token) {
                 switch (token->lex_get_value()) {
@@ -127,22 +125,26 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         if (o_temp) {
                             v_set_current(ltp_freeze);
                             o_recognize(xpath_relative_location_path, o_final);
-                            if (o_final)
+                            if (o_final) {
                                 v_action(xpath_absolute_location_path, xpath_absolute_location_path_slash_rel,
                                     i_action_counter);
+                            }
                         } else {
                             v_set_current(ltp_freeze);
-                            if (o_final)
+                            if (o_final) {
                                 v_action(
                                     xpath_absolute_location_path, xpath_absolute_location_path_slash, i_action_counter);
+                            }
                         }
                         break;
                     case lex_2_slash:
-                        if (!o_recognize(xpath_abbreviated_absolute_location_path, o_final))
+                        if (!o_recognize(xpath_abbreviated_absolute_location_path, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(
                                 xpath_absolute_location_path, xpath_absolute_location_path_abbrev, i_action_counter);
+                        }
                         break;
                     default:
                         return false;
@@ -152,72 +154,85 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             }
         } break;
 
-        case xpath_relative_location_path:
+        case xpath_relative_location_path: {
             //
             // [3]   RelativeLocationPath	::=   Step
             // 					         | RelativeLocationPath '/' Step
             // 					         | AbbreviatedRelativeLocationPath
             // [11]   AbbreviatedRelativeLocationPath	::=   RelativeLocationPath '//' Step
             //
-            i_action_counter = i_get_action_counter();
-            if (!o_recognize(xpath_step, o_final))
+            const int i_action_counter = i_get_action_counter();
+            if (!o_recognize(xpath_step, o_final)) {
                 return false;
+            }
             if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_slash) {
                 v_inc_current(1);
-                if (!o_recognize(xpath_relative_location_path, o_final))
+                if (!o_recognize(xpath_relative_location_path, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_relative_location_path, xpath_relative_location_path_rel_step, i_action_counter);
+                }
             } else if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_2_slash) {
                 v_inc_current(1);
-                if (!o_recognize(xpath_relative_location_path, o_final))
+                if (!o_recognize(xpath_relative_location_path, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_relative_location_path, xpath_relative_location_path_rel_double_slash_step,
                         i_action_counter);
+                }
             } else {
-                if (o_final)
+                if (o_final) {
                     v_action(xpath_relative_location_path, xpath_relative_location_path_step, i_action_counter);
+                }
             }
-            break;
+        } break;
 
-        case xpath_step:
+        case xpath_step: {
             // [4]   Step					::=   AxisSpecifier NodeTest Predicate*
             // 					         | AbbreviatedStep
-            if (!ltp_get(0))
+            if (!ltp_get(0)) {
                 return false;
+            }
             switch (ltp_get(0)->lex_get_value()) {
                 case lex_dot:
-                case lex_2_dot:
-                    if (!o_recognize(xpath_abbrieviated_step, o_final))
+                case lex_2_dot: {
+                    if (!o_recognize(xpath_abbrieviated_step, o_final)) {
                         return false;
-                    if (o_final)
+                    }
+                    if (o_final) {
                         v_action(xpath_step, xpath_step_abbrev);
-                    break;
-                default:
-                    if (!o_recognize(xpath_axis_specifier, o_final))
+                    }
+                } break;
+                default: {
+                    if (!o_recognize(xpath_axis_specifier, o_final)) {
                         return false;
-                    if (!o_recognize(xpath_node_test, o_final))
+                    }
+                    if (!o_recognize(xpath_node_test, o_final)) {
                         return false;
+                    }
                     o_found = true;
-                    u_nb_predicate = 0;
+                    unsigned u_nb_predicate = 0;
                     while (o_found && ltp_get(0) && ltp_get(0)->lex_get_value() == lex_obrack) {
                         ltp_freeze = ltp_get(0);
-                        if (!o_recognize(xpath_predicate, false))
+                        if (!o_recognize(xpath_predicate, false)) {
                             o_found = false;
-                        else {
+                        } else {
                             v_set_current(ltp_freeze);
                             o_recognize(xpath_predicate, o_final);
                             u_nb_predicate++;
                         }
                     }
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_step, xpath_step_full, u_nb_predicate);
-                    break;
+                        break;
+                    }
+                }
             }
-            break;
+        } break;
 
-        case xpath_axis_specifier:
+        case xpath_axis_specifier: {
             //
             // [5]   AxisSpecifier			::=   AxisName '::'
             // 					         | AbbreviatedAxisSpecifier
@@ -228,35 +243,42 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 switch (ltp_get(0)->lex_get_value()) {
                     case lex_at:
                         v_inc_current(1);
-                        if (o_final)
+                        if (o_final) {
                             v_action(xpath_axis_specifier, xpath_axis_specifier_at);
+                        }
                         break;
                     default:
                         if (o_is_axis_name(ltp_get(0)->lex_get_value())) {
-                            if (!o_recognize(xpath_axis_name, o_final))
+                            if (!o_recognize(xpath_axis_name, o_final)) {
                                 return false;
-                            if (!ltp_get(0))
+                            }
+                            if (!ltp_get(0)) {
                                 return false;
-                            if (ltp_get(0)->lex_get_value() != lex_2_colon)
+                            }
+                            if (ltp_get(0)->lex_get_value() != lex_2_colon) {
                                 return false;
+                            }
                             v_inc_current(1);
-                            if (o_final)
+                            if (o_final) {
                                 v_action(xpath_axis_specifier, xpath_axis_specifier_axis_name);
-                        } else
+                            }
+                        } else {
                             o_empty = true;
+                        }
                         break;
                 }
-            } else
+            } else {
                 o_empty = true;
+            }
             if (o_empty) {
                 if (o_final) {
                     v_action(xpath_abbreviated_axis_specifier, 1);
                     v_action(xpath_axis_specifier, xpath_axis_specifier_empty);
                 }
             }
-            break;
+        } break;
 
-        case xpath_axis_name:
+        case xpath_axis_name: {
             // [6]   AxisName				::=   'ancestor'
             // 								| 'ancestor-or-self'
             // 								| 'attribute'
@@ -271,25 +293,27 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             // 								| 'preceding-sibling'
             // 								| 'self'
 
-            if (!ltp_get(0))
+            if (!ltp_get(0)) {
                 return false;
-            if (!o_is_axis_name(ltp_get(0)->lex_get_value()))
+            }
+            if (!o_is_axis_name(ltp_get(0)->lex_get_value())) {
                 return false;
-            if (o_final)
+            }
+            if (o_final) {
                 v_action(xpath_axis_name, 0, ltp_get(0)->lex_get_value());
+            }
             v_inc_current(1);
-            break;
+        } break;
 
-        case xpath_node_test:
+        case xpath_node_test: {
             // [7]   NodeTest				::=   NameTest
             // 								| NodeType '(' ')'
-            // 								| 'processing-instruction' '(' Literal ')'
-            // [38]   NodeType				::=   'comment'
-            // 				| 'text'
-            // 				| 'processing-instruction'
-            // 				| 'node'
-            if (!ltp_get(0))
+            // 								| 'processing-instruction' '(' Literal
+            // ')' [38]   NodeType				::=   'comment' 				| 'text'
+            // | 'processing-instruction' | 'node'
+            if (!ltp_get(0)) {
                 return false;
+            }
             switch (ltp_get(0)->lex_get_value()) {
                 case lex_comment:
                 case lex_text:
@@ -303,14 +327,16 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     if (token && token->lex_get_value() == lex_cparen) {
                         // single
                         v_inc_current(3);
-                        if (o_final)
+                        if (o_final) {
                             v_action(xpath_node_test, xpath_node_test_pi, lex_processing_instruction);
+                        }
                     } else {
                         // with literal
                         v_inc_current(3);
-                        if (o_final)
+                        if (o_final) {
                             v_action(xpath_node_test, xpath_node_test_pi_lit, lex_processing_instruction,
                                 ltp_get(0)->cp_get_literal());
+                        }
                         v_inc_current(1);
                     }
                 } break;
@@ -320,207 +346,246 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     if (o_final)
                         v_action(xpath_node_test, xpath_node_test_name_test);
             }
-            break;
+        } break;
 
-        case xpath_predicate:
+        case xpath_predicate: {
             // [8]   Predicate				::=   '[' PredicateExpr ']'
-            if (!ltp_get(1))
+            if (!ltp_get(1)) {
                 return false;
-            if (ltp_get(0)->lex_get_value() != lex_obrack)
+            }
+            if (ltp_get(0)->lex_get_value() != lex_obrack) {
                 return false;
+            }
             v_inc_current(1);
-            if (!o_recognize(xpath_predicate_expr, o_final))
+            if (!o_recognize(xpath_predicate_expr, o_final)) {
                 return false;
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cbrack)
+            }
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cbrack) {
                 return false;
+            }
             v_inc_current(1);
-            if (o_final)
+            if (o_final) {
                 v_action(xpath_predicate, 0);
-            break;
+            }
+        } break;
 
-        case xpath_predicate_expr:
+        case xpath_predicate_expr: {
             // [9]   PredicateExpr			::=   Expr
-            if (!o_recognize(xpath_expr, o_final))
+            if (!o_recognize(xpath_expr, o_final)) {
                 return false;
-            if (o_final)
+            }
+            if (o_final) {
                 v_action(xpath_predicate_expr, 0);
-            break;
+            }
+        } break;
 
-        case xpath_abbreviated_absolute_location_path:
+        case xpath_abbreviated_absolute_location_path: {
             // [10]   AbbreviatedAbsoluteLocationPath	::=   '//' RelativeLocationPath
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_2_slash)
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_2_slash) {
                 return false;
+            }
             v_inc_current(1);
-            if (!o_recognize(xpath_relative_location_path, o_final))
+            if (!o_recognize(xpath_relative_location_path, o_final)) {
                 return false;
-            if (o_final)
+            }
+            if (o_final) {
                 v_action(xpath_abbreviated_absolute_location_path, 0);
-            break;
+            }
+        } break;
 
             // Note : [11] is processed by [3]
 
-        case xpath_abbrieviated_step:
+        case xpath_abbrieviated_step: {
             // [12]   AbbreviatedStep					::=   '.' | '..'
-            if (!ltp_get(0))
+            if (!ltp_get(0)) {
                 return false;
+            }
             switch (ltp_get(0)->lex_get_value()) {
-                case lex_dot:
+                case lex_dot: {
                     v_inc_current(1);
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_abbrieviated_step, 0);
-                    break;
-                case lex_2_dot:
+                    }
+                } break;
+                case lex_2_dot: {
                     v_inc_current(1);
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_abbrieviated_step, 1);
-                    break;
+                    }
+                } break;
                 default:
                     return false;
             }
-            break;
+        } break;
 
             // Note : [13] processed by [5]
 
-        case xpath_expr:
+        case xpath_expr: {
             //
             // [14]   Expr					::=   OrExpr
             //
-            if (!ltp_get(0))
+            if (!ltp_get(0)) {
                 return false;
-            if (!o_recognize(xpath_or_expr, o_final))
+            }
+            if (!o_recognize(xpath_or_expr, o_final)) {
                 return false;
-            if (o_final)
+            }
+            if (o_final) {
                 v_action(xpath_expr, 0);
-            break;
+            }
+        } break;
 
-        case xpath_primary_expr:
+        case xpath_primary_expr: {
             // [15]   PrimaryExpr			::=   VariableReference
             // 				            | '(' Expr ')'
             // 				            | Literal
             // 				            | Number
             // 				            | FunctionCall
-            if (!ltp_get(0))
+            if (!ltp_get(0)) {
                 return false;
+            }
             switch (ltp_get(0)->lex_get_value()) {
                 case lex_dollar:
-                    if (!o_recognize(xpath_variable_reference, o_final))
+                    if (!o_recognize(xpath_variable_reference, o_final)) {
                         return false;
-                    if (o_final)
+                    }
+                    if (o_final) {
                         v_action(xpath_primary_expr, xpath_primary_expr_variable);
+                    }
                     break;
                 case lex_oparen:
                     v_inc_current(1);
-                    if (!o_recognize(xpath_expr, o_final))
+                    if (!o_recognize(xpath_expr, o_final)) {
                         return false;
-                    if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cparen)
+                    }
+                    if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cparen) {
                         return false;
+                    }
                     v_inc_current(1);
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_primary_expr, xpath_primary_expr_paren_expr);
+                    }
                     break;
-                case lex_literal:
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_primary_expr, xpath_primary_expr_literal, 0, ltp_get(0)->cp_get_literal());
+                    }
                     v_inc_current(1);
                     break;
-                case lex_number:
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_primary_expr, xpath_primary_expr_number, 0, ltp_get(0)->cp_get_literal());
+                    }
                     v_inc_current(1);
                     break;
                 default:
-                    if (!o_recognize(xpath_function_call, o_final))
+                    if (!o_recognize(xpath_function_call, o_final)) {
                         return false;
-                    if (o_final)
+                    }
+                    if (o_final) {
                         v_action(xpath_primary_expr, xpath_primary_expr_function_call);
+                    }
                     break;
             }
-            break;
+        } break;
 
-        case xpath_function_call:
+        case xpath_function_call: {
             // [16]   FunctionCall			::=   FunctionName '(' ( Argument ( ',' Argument )* )? ')'
             // [35]   FunctionName	      ::=  	QName - NodeType
-            if (!ltp_get(0))
+            if (!ltp_get(0)) {
                 return false;
+            }
             switch (ltp_get(0)->lex_get_value()) {
                 case lex_comment:
                 case lex_text:
                 case lex_node:
-                case lex_processing_instruction:
+                case lex_processing_instruction: {
                     if (o_final) {
                         v_action(xpath_xml_local_part, 0, 0, ltp_get(0)->cp_get_literal());
                         v_action(xpath_xml_q_name, xpath_xml_q_name_simple);
                     }
                     v_inc_current(1);
-                    break;
-                default:
-                    if (!o_recognize(xpath_xml_q_name, o_final))
+                } break;
+                default: {
+                    if (!o_recognize(xpath_xml_q_name, o_final)) {
                         return false;
+                    }
+                } break;
             }
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_oparen)
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_oparen) {
                 return false;
+            }
             v_inc_current(1);
-            if (!ltp_get(0))
+            if (!ltp_get(0)) {
                 return false;
+            }
             if (ltp_get(0)->lex_get_value() == lex_cparen) {
                 v_inc_current(1);
-                if (o_final)
+                if (o_final) {
                     v_action(xpath_function_call, 0);
+                }
             } else {
                 ltp_freeze = ltp_get(0);
                 o_found = true;
-                u_nb_argument = 0;
+                unsigned u_nb_argument = 0;
                 while (o_found) {
                     if (u_nb_argument) {
-                        if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_comma)
+                        if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_comma) {
                             o_found = false;
-                        else
+                        } else {
                             v_inc_current(1);
+                        }
                     }
                     if (o_found) {
-                        if (!o_recognize(xpath_argument, o_final))
+                        if (!o_recognize(xpath_argument, o_final)) {
                             o_found = false;
-                        else {
+                        } else {
                             u_nb_argument++;
                             ltp_freeze = ltp_get(0);
                         }
                     }
                 }
                 v_set_current(ltp_freeze);
-                if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cparen)
+                if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_cparen) {
                     return false;
+                }
                 v_inc_current(1);
-                if (o_final)
+                if (o_final) {
                     v_action(xpath_function_call, 1, u_nb_argument);
+                }
             }
-            break;
+        } break;
 
-        case xpath_argument:
+        case xpath_argument: {
             // [17]   Argument				::=   Expr
-            if (!o_recognize(xpath_expr, o_final))
+            if (!o_recognize(xpath_expr, o_final)) {
                 return false;
-            if (o_final)
+            }
+            if (o_final) {
                 v_action(xpath_argument, 0);
-            break;
+            }
+        } break;
 
-        case xpath_union_expr:
+        case xpath_union_expr: {
             //
             // [18]   UnionExpr			::=   PathExpr
             // 					         | UnionExpr '|' PathExpr
             //
-            if (!o_recognize(xpath_path_expr, o_final))
+            if (!o_recognize(xpath_path_expr, o_final)) {
                 return false;
+            }
             if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_orchar) {
                 v_inc_current(1);
-                if (!o_recognize(xpath_union_expr, o_final))
+                if (!o_recognize(xpath_union_expr, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_union_expr, xpath_union_expr_union);
-            } else if (o_final)
+                }
+            } else if (o_final) {
                 v_action(xpath_union_expr, xpath_union_expr_simple);
-            break;
+            }
+        } break;
 
-        case xpath_path_expr:
+        case xpath_path_expr: {
             //
             // [19]   PathExpr				::=   LocationPath
             // 	        							| FilterExpr
@@ -530,137 +595,162 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             ltp_freeze = ltp_get(0);
             o_location_path = false;
 
-            if (!o_recognize(xpath_filter_expr, false))
+            if (!o_recognize(xpath_filter_expr, false)) {
                 o_location_path = true;
-            else {
+            } else {
                 v_set_current(ltp_freeze);
                 o_recognize(xpath_filter_expr, o_final);
                 if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_slash) {
                     v_inc_current(1);
-                    if (!o_recognize(xpath_relative_location_path, o_final))
+                    if (!o_recognize(xpath_relative_location_path, o_final)) {
                         o_location_path = true;
-                    else if (o_final)
+                    } else if (o_final) {
                         v_action(xpath_path_expr, xpath_path_expr_slash);
-                } else if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_2_slash) {
+                    }
                     v_inc_current(1);
-                    if (!o_recognize(xpath_relative_location_path, o_final))
+                    if (!o_recognize(xpath_relative_location_path, o_final)) {
                         o_location_path = true;
-                    else if (o_final)
+                    } else if (o_final) {
                         v_action(xpath_path_expr, xpath_path_expr_2_slash);
+                    }
                 } else {
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_path_expr, xpath_path_expr_filter);
+                    }
                 }
             }
 
             if (o_location_path) {
                 v_set_current(ltp_freeze);
-                if (!o_recognize(xpath_location_path, o_final))
+                if (!o_recognize(xpath_location_path, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_path_expr, xpath_path_expr_location_path);
+                }
             }
-            break;
+        } break;
 
-        case xpath_filter_expr:
+        case xpath_filter_expr: {
             //
             // [20]   FilterExpr			::=   PrimaryExpr
             // 				            | FilterExpr Predicate
             //
-            if (!o_recognize(xpath_primary_expr, o_final))
+            if (!o_recognize(xpath_primary_expr, o_final)) {
                 return false;
+            }
             if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_obrack) {
-                if (!o_recognize(xpath_predicate, o_final))
+                if (!o_recognize(xpath_predicate, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_filter_expr, xpath_filter_expr_predicate);
-            } else if (o_final)
+                }
+            } else if (o_final) {
                 v_action(xpath_filter_expr, xpath_filter_expr_primary);
-            break;
+            }
+        } break;
 
-        case xpath_or_expr:
+        case xpath_or_expr: {
             //
             // [21]   OrExpr				::=   AndExpr
             // 					         | OrExpr 'or' AndExpr
             //
             o_test_more = false;
-            if (!o_recognize(xpath_and_expr, o_final))
+            if (!o_recognize(xpath_and_expr, o_final)) {
                 return false;
+            }
             if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_or) {
                 v_inc_current(1);
-                if (!o_recognize(xpath_and_expr, o_final))
+                if (!o_recognize(xpath_and_expr, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_or_expr, xpath_or_expr_or);
+                }
                 o_test_more = true;
-            } else if (o_final)
+            } else if (o_final) {
                 v_action(xpath_or_expr, xpath_or_expr_simple);
+            }
             if (o_test_more) {
                 while (ltp_get(0) && (ltp_get(0)->lex_get_value() == lex_or)) {
                     v_inc_current(1);
-                    if (!o_recognize(xpath_and_expr, o_final))
+                    if (!o_recognize(xpath_and_expr, o_final)) {
                         return false;
-                    if (o_final)
+                    }
+                    if (o_final) {
                         v_action(xpath_or_expr, xpath_or_expr_more);
+                    }
                 }
             }
-            break;
+        } break;
 
-        case xpath_and_expr:
+        case xpath_and_expr: {
             //
             // [22]   AndExpr				::=   EqualityExpr
             // 								| AndExpr 'and' EqualityExpr
             //
-            if (!o_recognize(xpath_equality_expr, o_final))
+            if (!o_recognize(xpath_equality_expr, o_final)) {
                 return false;
+            }
             if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_and) {
                 v_inc_current(1);
-                if (!o_recognize(xpath_equality_expr, o_final))
+                if (!o_recognize(xpath_equality_expr, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_and_expr, xpath_and_expr_and);
-            } else if (o_final)
+                }
+            } else if (o_final) {
                 v_action(xpath_and_expr, xpath_and_expr_simple);
-            break;
+            }
+        } break;
 
-        case xpath_equality_expr:
+        case xpath_equality_expr: {
             //
             // [23]   EqualityExpr			::=   RelationalExpr
             // 					         | EqualityExpr '=' RelationalExpr
             // 					         | EqualityExpr '!=' RelationalExpr
             //
-            if (!o_recognize(xpath_relational_expr, o_final))
+            if (!o_recognize(xpath_relational_expr, o_final)) {
                 return false;
+            }
             if (ltp_get(0)) {
                 switch (ltp_get(0)->lex_get_value()) {
                     case lex_equal:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_relational_expr, o_final))
+                        if (!o_recognize(xpath_relational_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_equality_expr, xpath_equality_expr_equal);
+                        }
                         break;
 
                     case lex_not_equal:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_relational_expr, o_final))
+                        if (!o_recognize(xpath_relational_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_equality_expr, xpath_equality_expr_not_equal);
+                        }
                         break;
 
                     default:
-                        if (o_final)
+                        if (o_final) {
                             v_action(xpath_equality_expr, xpath_equality_expr_simple);
+                        }
                         break;
                 }
             } else {
-                if (o_final)
+                if (o_final) {
                     v_action(xpath_equality_expr, xpath_equality_expr_simple);
+                }
             }
-            break;
+        } break;
 
-        case xpath_relational_expr:
+        case xpath_relational_expr: {
             //
             // [24]   RelationalExpr		::=   AdditiveExpr
             // 					         | RelationalExpr '<' AdditiveExpr
@@ -668,48 +758,59 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             // 					         | RelationalExpr '<=' AdditiveExpr
             // 					         | RelationalExpr '>=' AdditiveExpr
             //
-            if (!o_recognize(xpath_additive_expr, o_final))
+            if (!o_recognize(xpath_additive_expr, o_final)) {
                 return false;
+            }
             if (ltp_get(0)) {
                 switch (ltp_get(0)->lex_get_value()) {
                     case lex_lt:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_additive_expr, o_final))
+                        if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_relational_expr, xpath_relational_expr_lt);
+                        }
                         break;
                     case lex_gt:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_additive_expr, o_final))
+                        if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_relational_expr, xpath_relational_expr_gt);
+                        }
                         break;
                     case lex_lt_equal:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_additive_expr, o_final))
+                        if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_relational_expr, xpath_relational_expr_lte);
+                        }
                         break;
                     case lex_gt_equal:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_additive_expr, o_final))
+                        if (!o_recognize(xpath_additive_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_relational_expr, xpath_relational_expr_gte);
+                        }
                         break;
                     default:
-                        if (o_final)
+                        if (o_final) {
                             v_action(xpath_relational_expr, xpath_relational_expr_simple);
+                        }
                         break;
                 }  // switch
-            } else if (o_final)
+            } else if (o_final) {
                 v_action(xpath_relational_expr, xpath_relational_expr_simple);
-            break;
+            }
+        } break;
 
-        case xpath_additive_expr:
+        case xpath_additive_expr: {
             //
             // [25]   AdditiveExpr			::=   MultiplicativeExpr
             // 					         | AdditiveExpr '+' MultiplicativeExpr
@@ -722,23 +823,28 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 switch (ltp_get(0)->lex_get_value()) {
                     case lex_plus:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_multiplicative_expr, o_final))
+                        if (!o_recognize(xpath_multiplicative_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_additive_expr, xpath_additive_expr_plus);
+                        }
                         o_test_more = true;
                         break;
                     case lex_minus:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_multiplicative_expr, o_final))
+                        if (!o_recognize(xpath_multiplicative_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_additive_expr, xpath_additive_expr_minus);
+                        }
                         o_test_more = true;
                         break;
                     default:
-                        if (o_final)
+                        if (o_final) {
                             v_action(xpath_additive_expr, xpath_additive_expr_simple);
+                        }
                         break;
                 }  // switch
             } else if (o_final)
@@ -748,22 +854,26 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                        (ltp_get(0)->lex_get_value() == lex_plus || ltp_get(0)->lex_get_value() == lex_minus)) {
                     if (ltp_get(0)->lex_get_value() == lex_plus) {
                         v_inc_current(1);
-                        if (!o_recognize(xpath_multiplicative_expr, o_final))
+                        if (!o_recognize(xpath_multiplicative_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_additive_expr, xpath_additive_expr_more_plus);
+                        }
                     } else {
                         v_inc_current(1);
-                        if (!o_recognize(xpath_multiplicative_expr, o_final))
+                        if (!o_recognize(xpath_multiplicative_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_additive_expr, xpath_additive_expr_more_minus);
+                        }
                     }
                 }
             }
-            break;
+        } break;
 
-        case xpath_multiplicative_expr:
+        case xpath_multiplicative_expr: {
             //
             // [26]   MultiplicativeExpr   ::=   UnaryExpr
             // 					         | MultiplicativeExpr MultiplyOperator UnaryExpr
@@ -779,67 +889,83 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         // [34]   MultiplyOperator		::=   '*'
                         //
                         v_inc_current(1);
-                        if (!o_recognize(xpath_unary_expr, o_final))
+                        if (!o_recognize(xpath_unary_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_multiplicative_expr, xpath_multiplicative_expr_star);
+                        }
                         break;
                     case lex_div:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_unary_expr, o_final))
+                        if (!o_recognize(xpath_unary_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_multiplicative_expr, xpath_multiplicative_expr_div);
+                        }
                         break;
                     case lex_mod:
                         v_inc_current(1);
-                        if (!o_recognize(xpath_unary_expr, o_final))
+                        if (!o_recognize(xpath_unary_expr, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_multiplicative_expr, xpath_multiplicative_expr_mod);
+                        }
                         break;
                     default:
-                        if (o_final)
+                        if (o_final) {
                             v_action(xpath_multiplicative_expr, xpath_multiplicative_expr_simple);
+                        }
                         break;
                 }
-            } else if (o_final)
+            } else if (o_final) {
                 v_action(xpath_multiplicative_expr, xpath_multiplicative_expr_simple);
-            break;
+            }
+        } break;
 
-        case xpath_unary_expr:
+        case xpath_unary_expr: {
             //
             // [27]   UnaryExpr			::=   UnionExpr
             // 					         | '-' UnaryExpr
             //
             if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex_minus) {
                 v_inc_current(1);
-                if (!o_recognize(xpath_unary_expr, o_final))
+                if (!o_recognize(xpath_unary_expr, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_unary_expr, xpath_unary_expr_minus);
+                }
             } else {
-                if (!o_recognize(xpath_union_expr, o_final))
+                if (!o_recognize(xpath_union_expr, o_final)) {
                     return false;
-                if (o_final)
+                }
+                if (o_final) {
                     v_action(xpath_unary_expr, xpath_unary_expr_simple);
+                }
             }
-            break;
+        } break;
 
-        case xpath_variable_reference:
+        case xpath_variable_reference: {
             // [36]   VariableReference	::=   '$' QName
-            if (!ltp_get(0) || !ltp_get(1))
+            if (!ltp_get(0) || !ltp_get(1)) {
                 return false;
-            if (ltp_get(0)->lex_get_value() != lex_dollar)
+            }
+            if (ltp_get(0)->lex_get_value() != lex_dollar) {
                 return false;
+            }
             v_inc_current(1);
-            if (!o_recognize(xpath_xml_q_name, o_final))
+            if (!o_recognize(xpath_xml_q_name, o_final)) {
                 return false;
-            if (o_final)
+            }
+            if (o_final) {
                 v_action(xpath_variable_reference, 0);
-            break;
+            }
+        } break;
 
-        case xpath_name_test:
+        case xpath_name_test: {
             // [37]   NameTest				::=   '*'
             // 				            | NCName ':' '*'
             // 				            | QName
@@ -850,8 +976,9 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 lexico lexVal = ltp_get(0)->lex_get_value();
                 if (lexVal == lex_star) {
                     v_inc_current(1);
-                    if (o_final)
+                    if (o_final) {
                         v_action(xpath_name_test, xpath_name_test_star);
+                    }
                 } else if (lexVal == lex_ncname) {
                     o_qname = false;
                     lex_token* token1 = ltp_get(1);
@@ -859,31 +986,38 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     if (token1 && token2 && token1->lex_get_value() == lex_colon) {
                         if (token2->lex_get_value() == lex_star) {
                             v_inc_current(3);
-                            if (o_final)
+                            if (o_final) {
                                 v_action(xpath_name_test, xpath_name_test_ncname);
-                        } else
+                            }
+                        } else {
                             o_qname = true;
-                    } else
+                        }
+                    } else {
                         o_qname = true;
+                    }
                     if (o_qname) {
-                        if (!o_recognize(xpath_xml_q_name, o_final))
+                        if (!o_recognize(xpath_xml_q_name, o_final)) {
                             return false;
-                        if (o_final)
+                        }
+                        if (o_final) {
                             v_action(xpath_name_test, xpath_name_test_qname);
+                        }
                     }
                 }
             }
-            break;
+        } break;
 
-        case xpath_xml_q_name:
+        case xpath_xml_q_name: {
             // [Namespace XML : 6] QName					::= (Prefix ':')? LocalPart
             // [Namespace XML : 7] Prefix					::= NCName
             // [Namespace XML : 8] LocalPart				::= NCName
-            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_ncname)
+            if (!ltp_get(0) || ltp_get(0)->lex_get_value() != lex_ncname) {
                 return false;
+            }
             if (ltp_get(1) && ltp_get(1)->lex_get_value() == lex_colon) {
-                if (!ltp_get(2) || ltp_get(2)->lex_get_value() != lex_ncname)
+                if (!ltp_get(2) || ltp_get(2)->lex_get_value() != lex_ncname) {
                     return false;
+                }
                 if (o_final) {
                     v_action(xpath_xml_prefix, 0, 0, ltp_get(0)->cp_get_literal());
                     v_action(xpath_xml_local_part, 0, 0, ltp_get(2)->cp_get_literal());
@@ -897,13 +1031,14 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 }
                 v_inc_current(1);
             }
-            break;
+        } break;
 
-        default:
-            if (o_final)
+        default: {
+            if (o_final) {
                 v_action(xpath_unknown, 0);
+            }
             return false;
-            break;
+        } break;
     }
     return true;
 }  // v_recognize ()

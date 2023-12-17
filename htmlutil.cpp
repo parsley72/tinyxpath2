@@ -39,12 +39,13 @@ using namespace tinyxml2;
 
 /// Generate some indentation on the HTML or file output
 void v_levelize(int i_level, FILE* Fp_out, bool o_html) {
-    int i_loop;
-    for (i_loop = 0; i_loop < i_level; i_loop++)
-        if (o_html)
+    for (int i_loop = 0; i_loop < i_level; i_loop++) {
+        if (o_html) {
             fprintf(Fp_out, "&nbsp;&nbsp;&nbsp;");
-        else
+        } else {
             fprintf(Fp_out, "   ");
+        }
+    }
 }
 
 /// Dumps an XML tree to an HTML document
@@ -70,17 +71,16 @@ void v_out_html(FILE* Fp_out,   ///< Output HTML file
                 fprintf(Fp_out, " %s='%s'", XAp_att->Name(), XAp_att->Value());
                 XAp_att = XAp_att->Next();
             }
-            if (XNp_child->FirstChild())
+            if (XNp_child->FirstChild()) {
                 fprintf(Fp_out, "&gt;<br>\n");  // '>\n'
-            else
+            } else {
                 fprintf(Fp_out, " /&gt;<br>\n");
+            }
         } else if (XNp_child->ToComment()) {
             fprintf(Fp_out, "&lt;!-- %s --&gt;<br>\n", XNp_child->ToComment()->Value());
         } else if (XNp_child->ToText()) {
             fprintf(Fp_out, "%s\n", XNp_child->ToText()->Value());
-        } else if (XNp_child->ToUnknown()) {
-        } else if (XNp_child->ToDeclaration()) {
-        } else {
+        } else if (!XNp_child->ToUnknown() && !XNp_child->ToDeclaration()) {
             assert(false);
         }
 
@@ -88,13 +88,11 @@ void v_out_html(FILE* Fp_out,   ///< Output HTML file
 
         if (XNp_child->ToDocument()) {
             fprintf(Fp_out, "\nEnd document\n");
-        } else if (XNp_child->ToElement()) {
-            if (XNp_child->FirstChild()) {
-                v_levelize((int)u_level, Fp_out, true);
-                fprintf(Fp_out, "&lt;");
-                fprintf(Fp_out, "/%s", XNp_child->ToElement()->Value());
-                fprintf(Fp_out, "&gt;<br>\n");  // '>\n'
-            }
+        } else if (XNp_child->ToElement() && XNp_child->FirstChild()) {
+            v_levelize((int)u_level, Fp_out, true);
+            fprintf(Fp_out, "&lt;");
+            fprintf(Fp_out, "/%s", XNp_child->ToElement()->Value());
+            fprintf(Fp_out, "&gt;<br>\n");  // '>\n'
         }
         XNp_child = XNp_child->NextSibling();
     }

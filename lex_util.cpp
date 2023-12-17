@@ -35,7 +35,7 @@ using namespace std;
 namespace TinyXPath {
 
 /// Mapping of all the byte values into elementary lexical items
-static lexico lex_char_map[256] = {
+static const lexico lex_char_map[256] = {
     /*                      0            1            2            3            4            5            6 7   */
     /*                       8            9            a            b            c            d            e f  */
     /* 00 .. 07 */ lex_null, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none, lex_none,
@@ -202,8 +202,9 @@ lexico lex_get_class(_byte_ b_in) {
 
 /// Check if a lexical element can be an axis name
 bool o_is_axis_name(lexico lex_test) {
-    if (lex_test >= lex_start_axis_name && lex_test <= lex_end_axis_name)
+    if (lex_test >= lex_start_axis_name && lex_test <= lex_end_axis_name) {
         return true;
+    }
     return false;
 }
 
@@ -211,12 +212,11 @@ bool o_is_axis_name(lexico lex_test) {
 /// \n Returns the new lexical element or lex_ncname if not found
 lexico lex_test_id(const _byte_* bp_str, unsigned u_size, lexico lex_next) {
     char* cp_equi;
-    unsigned u_lex;
 
     cp_equi = new char[u_size + 1];
     memcpy(cp_equi, bp_str, u_size);
     cp_equi[u_size] = 0;
-    for (u_lex = lex_start_keyword; u_lex <= lex_end_keyword; u_lex++)
+    for (unsigned u_lex = lex_start_keyword; u_lex <= lex_end_keyword; u_lex++)
         if (!strcmp(cp_equi, cp_disp_class_lex(lexico(u_lex))))
             // DO not recognize the text keyword unless it is followed by an open parenthesis
             if ((u_lex != lex_text) || (lex_next == lex_oparen)) {

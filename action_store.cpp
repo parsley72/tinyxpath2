@@ -38,21 +38,12 @@ namespace TinyXPath {
 /// Allocation unit
 const int i_alloc_size = 100;
 
-/// constructor
-action_store::action_store() {
-    _i_size = 0;
-    _i_position = 0;
-    _i_alloc = 0;
-    _aipp_list = nullptr;
-}
-
 /// destructor
 action_store::~action_store() {
-    int i_item;
-
     if (_i_size) {
-        for (i_item = 0; i_item < _i_size; i_item++)
+        for (int i_item = 0; i_item < _i_size; i_item++) {
             delete _aipp_list[i_item];
+        }
         delete[] _aipp_list;
     }
 }
@@ -77,7 +68,7 @@ void action_store::v_add(int i_1, int i_2, int i_3, const char* cp_string) {
 }
 
 /// Get one element from the placeholder
-void action_store::v_get(int i_entry, int& i_1, int& i_2, int& i_3, string& S_out) {
+void action_store::v_get(int i_entry, int& i_1, int& i_2, int& i_3, string& S_out) const {
     assert(i_entry >= 0 && i_entry < _i_size);
     assert(_aipp_list[i_entry]);
     _aipp_list[i_entry]->v_get(i_1, i_2, i_3, S_out);

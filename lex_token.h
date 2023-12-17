@@ -36,22 +36,24 @@ namespace TinyXPath {
 */
 class lex_token {
     /// Representation
-    char* _cp_value;
+    char* _cp_value = nullptr;
     /// lexical value
     lexico _l_enum;
     /// pointer to next element
-    lex_token *_ltp_next, *_ltp_prev;
+    lex_token* _ltp_next = nullptr;
+    lex_token* _ltp_prev = nullptr;
 
    public:
+    lex_token(lex_token& other) = delete;
+    lex_token& operator=(lex_token& other) = delete;
+
     /// constructor
-    lex_token(lexico l_in_enum, const _byte_* bp_in_value, unsigned u_in_size) {
-        _l_enum = l_in_enum;
-        _cp_value = new char[u_in_size + 1];
-        if (u_in_size)
+    lex_token(lexico l_in_enum, const _byte_* bp_in_value, unsigned u_in_size)
+        : _cp_value(new char[u_in_size + 1]), _l_enum(l_in_enum) {
+        if (u_in_size) {
             memcpy(_cp_value, bp_in_value, u_in_size);
+        }
         _cp_value[u_in_size] = 0;
-        _ltp_next = nullptr;
-        _ltp_prev = nullptr;
     }
     /// set the next element in list
     void v_set_next(lex_token* ltp_in_next) {
@@ -63,8 +65,9 @@ class lex_token {
     }
     /// destructor. doesn't destroys next in list
     ~lex_token() {
-        if (_cp_value)
+        if (_cp_value) {
             delete[] _cp_value;
+        }
     }
 
     /// get next in list
@@ -80,15 +83,16 @@ class lex_token {
     /// Return the next i-th element in the list
     lex_token* ltp_get_next(int i_nb) {
         lex_token* ltp_ret;
-        int i;
 
         ltp_ret = this;
-        for (i = 0; i < i_nb; i++) {
-            if (!ltp_ret)
+        for (int i = 0; i < i_nb; i++) {
+            if (!ltp_ret) {
                 return nullptr;
+            }
             ltp_ret = ltp_ret->ltp_get_next();
-            if (!ltp_ret || !ltp_ret->o_is_valid())
+            if (!ltp_ret || !ltp_ret->o_is_valid()) {
                 return nullptr;
+            }
         }
         return ltp_ret;
     }
@@ -104,11 +108,11 @@ class lex_token {
         delete[] _cp_value;
         const size_t u_length = strlen(cp_repre);
         _cp_value = new char[u_length + 1];
-        strcpy(_cp_value, cp_repre);
+        strncpy(_cp_value, cp_repre, u_length);
     }
 
     /// return the string value of a lexical element
-    const char* cp_get_literal() {
+    const char* cp_get_literal() const {
         return _cp_value;
     }
 

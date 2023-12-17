@@ -250,8 +250,9 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
 
     v_pop_one_action(xc_action, u_sub, u_variable, S_literal);
     // verify it's the rule we were waiting for
-    if (xc_action != xc_rule)
+    if (xc_action != xc_rule) {
         throw execution_error(2);
+    }
     switch (xc_action) {
         case xpath_expr:
             // [14] Expr ::= OrExpr
@@ -285,13 +286,15 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(3);
+                    }
                     break;
                 case xpath_or_expr_more: {
                     // These  case is  involved for expressions like a or b or c
@@ -316,13 +319,15 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(7);
+                    }
                 } break;
             }
             break;
@@ -354,13 +359,15 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(4);
+                    }
                     break;
             }
             break;
@@ -387,23 +394,26 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            if (u_sub == xpath_equality_expr_equal)
+                            if (u_sub == xpath_equality_expr_equal) {
                                 v_function_equal(erpp_arg);
-                            else
+                            } else {
                                 v_function_not_equal(erpp_arg);
+                            }
                         }
                     } catch (execution_error) {
                         o_error = true;
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(5);
+                    }
                     break;
             }
             break;
@@ -439,13 +449,15 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(6);
+                    }
                     break;
                 default:
                     assert(false);
@@ -473,23 +485,26 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            if (u_sub == xpath_additive_expr_plus)
+                            if (u_sub == xpath_additive_expr_plus) {
                                 v_function_plus(erpp_arg);
-                            else
+                            } else {
                                 v_function_minus(erpp_arg);
+                            }
                         }
                     } catch (execution_error) {
                         o_error = true;
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(7);
+                    }
                     break;
                 case xpath_additive_expr_more_plus:
                 case xpath_additive_expr_more_minus:
@@ -510,23 +525,26 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            if (u_sub == xpath_additive_expr_more_plus)
+                            if (u_sub == xpath_additive_expr_more_plus) {
                                 v_function_plus(erpp_arg);
-                            else
+                            } else {
                                 v_function_minus(erpp_arg);
+                            }
                         }
                     } catch (execution_error) {
                         o_error = true;
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(7);
+                    }
                     break;
             }
             break;
@@ -560,13 +578,15 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                     }
                     if (erpp_arg) {
                         for (u_arg = 0; u_arg < 2; u_arg++) {
-                            if (erpp_arg[u_arg])
+                            if (erpp_arg[u_arg]) {
                                 delete erpp_arg[u_arg];
+                            }
                         }
                         delete[] erpp_arg;
                     }
-                    if (o_error)
+                    if (o_error) {
                         throw execution_error(8);
+                    }
                     break;
             }
             break;
@@ -676,8 +696,9 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         /// Compute each argument, and store them in a temporary list
                         v_execute_one(xpath_argument, o_skip_only);
                         if (!o_skip_only) {
-                            if (!_xs_stack.u_get_size())
+                            if (!_xs_stack.u_get_size()) {
                                 throw execution_error(10);
+                            }
                             erpp_arg[u_variable - u_arg - 1] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
                         }
@@ -693,13 +714,15 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             }
             if (erpp_arg) {
                 for (u_arg = 0; u_arg < u_variable; u_arg++) {
-                    if (erpp_arg[u_arg])
+                    if (erpp_arg[u_arg]) {
                         delete erpp_arg[u_arg];
+                    }
                 }
                 delete[] erpp_arg;
             }
-            if (o_error)
+            if (o_error) {
                 throw execution_error(11);
+            }
             break;
 
         case xpath_xml_q_name:
@@ -715,8 +738,9 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_xml_local_part:
-            if (!o_skip_only)
+            if (!o_skip_only) {
                 v_push_string(S_literal);
+            }
             break;
 
         case xpath_xml_prefix:
@@ -968,8 +992,9 @@ void xpath_processor ::v_execute_step(
 
     // Skip the predicates
     i_pred_store = _as_action_store.i_get_position();
-    for (u_pred = 0; u_pred < u_variable; u_pred++)
+    for (u_pred = 0; u_pred < u_variable; u_pred++) {
         v_execute_one(xpath_predicate, true);
+    }
     i_node_store = _as_action_store.i_get_position();
 
     // Skip the node test
@@ -1192,90 +1217,51 @@ void xpath_processor::v_execute_function(string& S_name,  ///< Function name
     unsigned u_nb_arg,                                    ///< Nb of arguments
     expression_result** erpp_arg)                         ///< Argument list
 {
-    if (S_name == "ceiling")
+    if (S_name == "ceiling") {
         v_function_ceiling(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "concat")
+    } else if (S_name == "concat") {
         v_function_concat(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "contains")
+    } else if (S_name == "contains") {
         v_function_contains(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "count")
+    } else if (S_name == "count") {
         v_function_count(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "false")
+    } else if (S_name == "false") {
         v_function_false(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "floor")
+    } else if (S_name == "floor") {
         v_function_floor(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "last")
+    } else if (S_name == "last") {
         v_function_last(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "name")
+    } else if (S_name == "name") {
         v_function_name(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "normalize-space")
+    } else if (S_name == "normalize-space") {
         v_function_normalize_space(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "not")
+    } else if (S_name == "not") {
         v_function_not(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "position")
+    } else if (S_name == "position") {
         v_function_position(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "starts-with")
+    } else if (S_name == "starts-with") {
         v_function_starts_with(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "string-length")
+    } else if (S_name == "string-length") {
         v_function_string_length(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "substring")
+    } else if (S_name == "substring") {
         v_function_substring(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "sum")
+    } else if (S_name == "sum") {
         v_function_sum(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "text")
+    } else if (S_name == "text") {
         v_function_text(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "translate")
+    } else if (S_name == "translate") {
         v_function_translate(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "true")
+    } else if (S_name == "true") {
         v_function_true(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "number")
+    } else if (S_name == "number") {
         v_function_number(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "string")
+    } else if (S_name == "string") {
         v_function_string(u_nb_arg, erpp_arg);
-    else
-
-        if (S_name == "boolean")
+    } else if (S_name == "boolean") {
         v_function_boolean(u_nb_arg, erpp_arg);
-    else
+    } else {
         throw execution_error(13);
+    }
 }
 
 /// XPath \b ceiling function
