@@ -196,14 +196,15 @@ double xpath_processor::d_compute_xpath() {
 
 /// Callback from the XPath decoder : a rule has to be applied
 void xpath_processor::v_action(xpath_construct xc_rule,  ///< XPath Rule
-    unsigned u_sub,                                      ///< Rule sub number
+    xpath_sub xp_sub,                                    ///< Rule sub number
     lex u_variable,                                      ///< Parameter, depends on the rule
     const char* cp_literal)                              ///< Input literal, depends on the rule
 {
-    _as_action_store.v_add(static_cast<int>(xc_rule), u_sub, static_cast<unsigned>(u_variable), cp_literal);
+    _as_action_store.v_add(
+        static_cast<int>(xc_rule), static_cast<int>(xp_sub), static_cast<unsigned>(u_variable), cp_literal);
 #ifdef TINYXPATH_DEBUG
-    printf("Action %2d : %s (%d,%d,%s)\n", _as_action_store.i_get_size() - 1, cp_disp_construct(xc_rule), u_sub,
-        static_cast<unsigned>(u_variable), cp_literal);
+    printf("Action %2d : %s (%d,%d,%s)\n", _as_action_store.i_get_size() - 1, cp_disp_construct(xc_rule),
+        static_cast<int>(xp_sub), static_cast<unsigned>(u_variable), cp_literal);
 #endif
 }
 
@@ -221,7 +222,7 @@ void xpath_processor::v_execute_stack() {
 
 /// Retrieves one quadruplet from the action placeholder
 void xpath_processor::v_pop_one_action(xpath_construct& xc_action,  ///< Next rule on placeholder
-    unsigned& u_sub,                                                ///< Sub rule
+    xpath_sub& xp_sub,                                              ///< Sub rule
     unsigned& u_ref,                                                ///< Rule optional parameter
     string& S_literal)                                              ///< Rule optional string
 {
@@ -229,7 +230,7 @@ void xpath_processor::v_pop_one_action(xpath_construct& xc_action,  ///< Next ru
 
     _as_action_store.v_get(_as_action_store.i_get_position(), i_1, i_2, i_3, S_literal);
     xc_action = static_cast<xpath_construct>(i_1);
-    u_sub = i_2;
+    xp_sub = static_cast<xpath_sub>(i_2);
     u_ref = i_3;
     _as_action_store.v_dec_position();
 }
@@ -239,7 +240,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
     bool o_skip_only)  ///< True if we only need to skip rules and not act on the data stack
 {
     xpath_construct xc_action;
-    unsigned u_sub;
+    xpath_sub xp_sub;
     unsigned u_variable;
     string S_literal;
     string S_temp;
@@ -248,7 +249,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
     unsigned u_arg;
     bool o_error;
 
-    v_pop_one_action(xc_action, u_sub, u_variable, S_literal);
+    v_pop_one_action(xc_action, xp_sub, u_variable, S_literal);
     // verify it's the rule we were waiting for
     if (xc_action != xc_rule) {
         throw execution_error(2);
@@ -260,11 +261,11 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::or_expr:
-            switch (u_sub) {
-                case xpath_or_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::or_expr_simple:
                     v_execute_one(xpath_construct::and_expr, o_skip_only);
                     break;
-                case xpath_or_expr_or:
+                case xpath_sub::or_expr_or:
                     o_error = false;
                     erpp_arg = nullptr;
                     try {
@@ -296,7 +297,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         throw execution_error(3);
                     }
                     break;
-                case xpath_or_expr_more: {
+                case xpath_sub::or_expr_more: {
                     // These  case is  involved for expressions like a or b or c
                     try {
                         o_error = false;
@@ -333,11 +334,11 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::and_expr:
-            switch (u_sub) {
-                case xpath_and_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::and_expr_simple:
                     v_execute_one(xpath_construct::equality_expr, o_skip_only);
                     break;
-                case xpath_and_expr_and:
+                case xpath_sub::and_expr_and:
                     o_error = false;
                     erpp_arg = nullptr;
                     try {
@@ -373,12 +374,12 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::equality_expr:
-            switch (u_sub) {
-                case xpath_equality_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::equality_expr_simple:
                     v_execute_one(xpath_construct::relational_expr, o_skip_only);
                     break;
-                case xpath_equality_expr_equal:
-                case xpath_equality_expr_not_equal:
+                case xpath_sub::equality_expr_equal:
+                case xpath_sub::equality_expr_not_equal:
                     o_error = false;
                     erpp_arg = nullptr;
                     try {
@@ -394,7 +395,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            if (u_sub == xpath_equality_expr_equal) {
+                            if (xp_sub == xpath_sub::equality_expr_equal) {
                                 v_function_equal(erpp_arg);
                             } else {
                                 v_function_not_equal(erpp_arg);
@@ -419,14 +420,14 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::relational_expr:
-            switch (u_sub) {
-                case xpath_relational_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::relational_expr_simple:
                     v_execute_one(xpath_construct::additive_expr, o_skip_only);
                     break;
-                case xpath_relational_expr_lt:
-                case xpath_relational_expr_gt:
-                case xpath_relational_expr_lte:
-                case xpath_relational_expr_gte:
+                case xpath_sub::relational_expr_lt:
+                case xpath_sub::relational_expr_gt:
+                case xpath_sub::relational_expr_lte:
+                case xpath_sub::relational_expr_gte:
                     o_error = false;
                     erpp_arg = nullptr;
                     try {
@@ -442,7 +443,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            v_function_relational(erpp_arg, u_sub);
+                            v_function_relational(erpp_arg, xp_sub);
                         }
                     } catch (execution_error) {
                         o_error = true;
@@ -465,12 +466,12 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::additive_expr:
-            switch (u_sub) {
-                case xpath_additive_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::additive_expr_simple:
                     v_execute_one(xpath_construct::multiplicative_expr, o_skip_only);
                     break;
-                case xpath_additive_expr_plus:
-                case xpath_additive_expr_minus:
+                case xpath_sub::additive_expr_plus:
+                case xpath_sub::additive_expr_minus:
                     try {
                         o_error = false;
                         erpp_arg = nullptr;
@@ -485,7 +486,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            if (u_sub == xpath_additive_expr_plus) {
+                            if (xp_sub == xpath_sub::additive_expr_plus) {
                                 v_function_plus(erpp_arg);
                             } else {
                                 v_function_minus(erpp_arg);
@@ -506,8 +507,8 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         throw execution_error(7);
                     }
                     break;
-                case xpath_additive_expr_more_plus:
-                case xpath_additive_expr_more_minus:
+                case xpath_sub::additive_expr_more_plus:
+                case xpath_sub::additive_expr_more_minus:
                     // These 2 cases are involved for expressions like a+b+c
                     // The second argument is an additive expression, not a multiplicative as it is the case
                     // when single a+b expressions are encountered
@@ -525,7 +526,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            if (u_sub == xpath_additive_expr_more_plus) {
+                            if (xp_sub == xpath_sub::additive_expr_more_plus) {
                                 v_function_plus(erpp_arg);
                             } else {
                                 v_function_minus(erpp_arg);
@@ -550,13 +551,13 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::multiplicative_expr:
-            switch (u_sub) {
-                case xpath_multiplicative_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::multiplicative_expr_simple:
                     v_execute_one(xpath_construct::unary_expr, o_skip_only);
                     break;
-                case xpath_multiplicative_expr_star:
-                case xpath_multiplicative_expr_div:
-                case xpath_multiplicative_expr_mod:
+                case xpath_sub::multiplicative_expr_star:
+                case xpath_sub::multiplicative_expr_div:
+                case xpath_sub::multiplicative_expr_mod:
                     try {
                         o_error = false;
                         erpp_arg = nullptr;
@@ -571,7 +572,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         if (!o_skip_only) {
                             erpp_arg[0] = new expression_result(*_xs_stack.erp_top());
                             _xs_stack.v_pop();
-                            v_function_mult(erpp_arg, u_sub);
+                            v_function_mult(erpp_arg, xp_sub);
                         }
                     } catch (execution_error) {
                         o_error = true;
@@ -591,12 +592,12 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             }
             break;
         case xpath_construct::unary_expr:
-            switch (u_sub) {
-                case xpath_unary_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::unary_expr_simple:
                     // [27]   UnaryExpr			::=   UnionExpr
                     v_execute_one(xpath_construct::union_expr, o_skip_only);
                     break;
-                case xpath_unary_expr_minus:
+                case xpath_sub::unary_expr_minus:
                     // [27]   UnaryExpr			::=   '-' UnaryExpr
                     v_execute_one(xpath_construct::unary_expr, o_skip_only);
                     v_function_opposite();
@@ -605,11 +606,11 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::union_expr:
-            switch (u_sub) {
-                case xpath_union_expr_simple:
+            switch (xp_sub) {
+                case xpath_sub::union_expr_simple:
                     v_execute_one(xpath_construct::path_expr, o_skip_only);
                     break;
-                case xpath_union_expr_union:
+                case xpath_sub::union_expr_union:
                     v_execute_one(xpath_construct::union_expr, o_skip_only);
                     if (_xs_stack.erp_top()->_e_type != e_node_set)
                         throw execution_error(9);
@@ -626,18 +627,18 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::path_expr:
-            switch (u_sub) {
-                case xpath_path_expr_location_path:
+            switch (xp_sub) {
+                case xpath_sub::path_expr_location_path:
                     v_execute_one(xpath_construct::location_path, o_skip_only);
                     break;
-                case xpath_path_expr_filter:
+                case xpath_sub::path_expr_filter:
                     v_execute_one(xpath_construct::filter_expr, o_skip_only);
                     break;
-                case xpath_path_expr_slash:
+                case xpath_sub::path_expr_slash:
                     v_execute_one(xpath_construct::filter_expr, o_skip_only);
                     v_execute_one(xpath_construct::relative_location_path, o_skip_only);
                     break;
-                case xpath_path_expr_2_slash:
+                case xpath_sub::path_expr_2_slash:
                     v_execute_one(xpath_construct::filter_expr, o_skip_only);
                     v_execute_one(xpath_construct::relative_location_path, o_skip_only);
                     break;
@@ -645,11 +646,11 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::filter_expr:
-            switch (u_sub) {
-                case xpath_filter_expr_primary:
+            switch (xp_sub) {
+                case xpath_sub::filter_expr_primary:
                     v_execute_one(xpath_construct::primary_expr, o_skip_only);
                     break;
-                case xpath_filter_expr_predicate:
+                case xpath_sub::filter_expr_predicate:
                     v_execute_one(xpath_construct::filter_expr, o_skip_only);
                     v_execute_one(xpath_construct::predicate, o_skip_only);
                     break;
@@ -657,18 +658,18 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::primary_expr:
-            switch (u_sub) {
-                case xpath_primary_expr_variable:
+            switch (xp_sub) {
+                case xpath_sub::primary_expr_variable:
                     v_execute_one(xpath_construct::variable_reference, o_skip_only);
                     break;
-                case xpath_primary_expr_paren_expr:
+                case xpath_sub::primary_expr_paren_expr:
                     v_execute_one(xpath_construct::expr, o_skip_only);
                     break;
-                case xpath_primary_expr_literal:
+                case xpath_sub::primary_expr_literal:
                     if (!o_skip_only)
                         v_push_string(S_literal);
                     break;
-                case xpath_primary_expr_number:
+                case xpath_sub::primary_expr_number:
                     if (!o_skip_only) {
                         if (strchr(S_literal.c_str(), '.'))
                             v_push_double(atof(S_literal.c_str()));
@@ -676,7 +677,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                             v_push_int(atoi(S_literal.c_str()), "primary number");
                     }
                     break;
-                case xpath_primary_expr_function_call:
+                case xpath_sub::primary_expr_function_call:
                     v_execute_one(xpath_construct::function_call, o_skip_only);
                     break;
             }
@@ -686,7 +687,7 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             erpp_arg = nullptr;
             o_error = false;
             try {
-                if (u_sub) {
+                if (xp_sub != xpath_sub::absolute_location_path_slash_rel) {  // TODO not sure if this is a valid check
                     // execute arguments
                     if (!o_skip_only) {
                         erpp_arg = new expression_result*[u_variable];
@@ -726,12 +727,12 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::xml_q_name:
-            switch (u_sub) {
-                case xpath_xml_q_name_colon:
+            switch (xp_sub) {
+                case xpath_sub::xml_q_name_colon:
                     v_execute_one(xpath_construct::xml_local_part, o_skip_only);
                     v_execute_one(xpath_construct::xml_prefix, o_skip_only);
                     break;
-                case xpath_xml_q_name_simple:
+                case xpath_sub::xml_q_name_simple:
                     v_execute_one(xpath_construct::xml_local_part, o_skip_only);
                     break;
             }
@@ -759,27 +760,27 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::location_path:
-            switch (u_sub) {
-                case xpath_location_path_rel:
+            switch (xp_sub) {
+                case xpath_sub::location_path_rel:
                     v_execute_one(xpath_construct::relative_location_path, o_skip_only);
                     break;
-                case xpath_location_path_abs:
+                case xpath_sub::location_path_abs:
                     v_execute_one(xpath_construct::absolute_location_path, o_skip_only);
                     break;
             }
             break;
 
         case xpath_construct::relative_location_path:
-            switch (u_sub) {
-                case xpath_relative_location_path_rel_step:
+            switch (xp_sub) {
+                case xpath_sub::relative_location_path_rel_step:
                     // RelativeLocationPath	::=   RelativeLocationPath '/' Step
                     v_execute_one(xpath_construct::relative_location_path, o_skip_only);
                     // v_execute_step (i_relative_action);
                     break;
-                case xpath_relative_location_path_rel_double_slash_step:
+                case xpath_sub::relative_location_path_rel_double_slash_step:
                     // RelativeLocationPath	::= RelativeLocationPath '//' Step
                     break;
-                case xpath_relative_location_path_step:
+                case xpath_sub::relative_location_path_step:
                     // RelativeLocationPath	::=   Step
                     int i_dummy;
                     i_dummy = -2;
@@ -789,16 +790,16 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::absolute_location_path:
-            switch (u_sub) {
-                case xpath_absolute_location_path_slash:
+            switch (xp_sub) {
+                case xpath_sub::absolute_location_path_slash:
                     // AbsoluteLocationPath	::=   '/'
                     v_execute_absolute_path(u_variable, false, false);
                     break;
-                case xpath_absolute_location_path_slash_rel:
+                case xpath_sub::absolute_location_path_slash_rel:
                     // AbsoluteLocationPath	::=   '/' RelativeLocationPath
                     v_execute_absolute_path(u_variable, true, false);
                     break;
-                case xpath_absolute_location_path_abbrev:
+                case xpath_sub::absolute_location_path_abbrev:
                     // AbsoluteLocationPath	::= AbbreviatedAbsoluteLocationPath
                     v_execute_absolute_path(u_variable, true, true);
                     break;
@@ -806,18 +807,18 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::axis_specifier:
-            switch (u_sub) {
-                case xpath_axis_specifier_at:
+            switch (xp_sub) {
+                case xpath_sub::axis_specifier_at:
                     // AxisSpecifier			::= '@'
                     if (!o_skip_only)
                         // will be used in the v_execute_step
                         v_push_int(1, "axis specifier is at");
                     break;
-                case xpath_axis_specifier_axis_name:
+                case xpath_sub::axis_specifier_axis_name:
                     // AxisSpecifier			::= AxisName '::'
                     v_execute_one(xpath_construct::axis_name, o_skip_only);
                     break;
-                case xpath_axis_specifier_empty:
+                case xpath_sub::axis_specifier_empty:
                     if (!o_skip_only)
                         // will be used in the v_execute_step
                         v_push_int(0, "axis specifier is empty");
@@ -833,8 +834,8 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
 
         case xpath_construct::node_test:
             // to do : processing instructions ???
-            switch (u_sub) {
-                case xpath_node_test_reserved_keyword:
+            switch (xp_sub) {
+                case xpath_sub::node_test_reserved_keyword:
                     // will be used in the v_execute_step
                     if (!o_skip_only) {
                         i_pop_int();
@@ -843,11 +844,11 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
                         v_push_string(S_temp);
                     }
                     break;
-                case xpath_node_test_pi:
+                case xpath_sub::node_test_pi:
                     break;
-                case xpath_node_test_pi_lit:
+                case xpath_sub::node_test_pi_lit:
                     break;
-                case xpath_node_test_name_test:
+                case xpath_sub::node_test_name_test:
                     v_execute_one(xpath_construct::name_test, o_skip_only);
                     break;
             }
@@ -864,16 +865,16 @@ void xpath_processor::v_execute_one(xpath_construct xc_rule,  ///< Rule number
             break;
 
         case xpath_construct::name_test:
-            switch (u_sub) {
-                case xpath_name_test_star:
+            switch (xp_sub) {
+                case xpath_sub::name_test_star:
                     if (!o_skip_only) {
                         S_temp = "*";
                         v_push_string(S_temp);
                     }
                     break;
-                case xpath_name_test_ncname:
+                case xpath_sub::name_test_ncname:
                     break;
-                case xpath_name_test_qname:
+                case xpath_sub::name_test_qname:
                     v_execute_one(xpath_construct::xml_q_name, o_skip_only);
                     break;
             }
@@ -952,8 +953,9 @@ void xpath_processor ::v_execute_step(
     bool o_skip_only) {
     bool o_by_name;
     int i_end_store, i_node_store, i_pred_store;
-    unsigned u_nb_node, u_node, u_pred, u_sub, u_variable;
+    unsigned u_nb_node, u_node, u_pred, u_variable;
     xpath_construct xc_action;
+    xpath_sub xp_sub;
     string S_literal, S_name;
     const XMLElement *XEp_child, *XEp_elem;
     const XMLNode* XNp_father;
@@ -988,7 +990,7 @@ void xpath_processor ::v_execute_step(
     }
 
     // Pop our step action from the action placeholder
-    v_pop_one_action(xc_action, u_sub, u_variable, S_literal);
+    v_pop_one_action(xc_action, xp_sub, u_variable, S_literal);
 
     // Skip the predicates
     i_pred_store = _as_action_store.i_get_position();
@@ -1933,7 +1935,7 @@ void xpath_processor::v_function_and(expression_result** erpp_arg) {
 }
 
 /// XPath relational comparison function
-void xpath_processor::v_function_relational(expression_result** erpp_arg, unsigned u_sub) {
+void xpath_processor::v_function_relational(expression_result** erpp_arg, xpath_sub xp_sub) {
     bool o_res;
 
     assert(erpp_arg);
@@ -1945,17 +1947,17 @@ void xpath_processor::v_function_relational(expression_result** erpp_arg, unsign
 
         d_arg_1 = erpp_arg[0]->d_get_double();
         d_arg_2 = erpp_arg[1]->d_get_double();
-        switch (u_sub) {
-            case xpath_relational_expr_lt:
+        switch (xp_sub) {
+            case xpath_sub::relational_expr_lt:
                 o_res = d_arg_1 < d_arg_2;
                 break;
-            case xpath_relational_expr_gt:
+            case xpath_sub::relational_expr_gt:
                 o_res = d_arg_1 > d_arg_2;
                 break;
-            case xpath_relational_expr_lte:
+            case xpath_sub::relational_expr_lte:
                 o_res = d_arg_1 <= d_arg_2;
                 break;
-            case xpath_relational_expr_gte:
+            case xpath_sub::relational_expr_gte:
                 o_res = d_arg_1 >= d_arg_2;
                 break;
             default:
@@ -1966,17 +1968,17 @@ void xpath_processor::v_function_relational(expression_result** erpp_arg, unsign
 
         i_arg_1 = erpp_arg[0]->i_get_int();
         i_arg_2 = erpp_arg[1]->i_get_int();
-        switch (u_sub) {
-            case xpath_relational_expr_lt:
+        switch (xp_sub) {
+            case xpath_sub::relational_expr_lt:
                 o_res = i_arg_1 < i_arg_2;
                 break;
-            case xpath_relational_expr_gt:
+            case xpath_sub::relational_expr_gt:
                 o_res = i_arg_1 > i_arg_2;
                 break;
-            case xpath_relational_expr_lte:
+            case xpath_sub::relational_expr_lte:
                 o_res = i_arg_1 <= i_arg_2;
                 break;
-            case xpath_relational_expr_gte:
+            case xpath_sub::relational_expr_gte:
                 o_res = i_arg_1 >= i_arg_2;
                 break;
             default:
@@ -1987,27 +1989,27 @@ void xpath_processor::v_function_relational(expression_result** erpp_arg, unsign
 }
 
 /// XPath <b> * </b> function (arithmetic)
-void xpath_processor::v_function_mult(expression_result** erpp_arg, unsigned u_sub) {
+void xpath_processor::v_function_mult(expression_result** erpp_arg, xpath_sub xp_sub) {
     assert(erpp_arg);
     assert(erpp_arg[0]);
     assert(erpp_arg[1]);
 
     if (erpp_arg[0]->_e_type == e_double || erpp_arg[1]->_e_type == e_double ||
-        u_sub == xpath_multiplicative_expr_div) {
+        xp_sub == xpath_sub::multiplicative_expr_div) {
         double d_arg_1, d_arg_2, d_res;
 
         d_arg_1 = erpp_arg[0]->d_get_double();
         d_arg_2 = erpp_arg[1]->d_get_double();
-        switch (u_sub) {
-            case xpath_multiplicative_expr_star:
+        switch (xp_sub) {
+            case xpath_sub::multiplicative_expr_star:
                 d_res = d_arg_1 * d_arg_2;
                 break;
-            case xpath_multiplicative_expr_div:
+            case xpath_sub::multiplicative_expr_div:
                 if (fabs(d_arg_2) < 1.0e-6)
                     throw execution_error(33);
                 d_res = d_arg_1 / d_arg_2;
                 break;
-            case xpath_multiplicative_expr_mod:
+            case xpath_sub::multiplicative_expr_mod:
                 d_res = (int)d_arg_1 % (int)d_arg_2;
                 break;
             default:
@@ -2019,11 +2021,11 @@ void xpath_processor::v_function_mult(expression_result** erpp_arg, unsigned u_s
 
         i_arg_1 = erpp_arg[0]->i_get_int();
         i_arg_2 = erpp_arg[1]->i_get_int();
-        switch (u_sub) {
-            case xpath_multiplicative_expr_star:
+        switch (xp_sub) {
+            case xpath_sub::multiplicative_expr_star:
                 i_res = i_arg_1 * i_arg_2;
                 break;
-            case xpath_multiplicative_expr_mod:
+            case xpath_sub::multiplicative_expr_mod:
                 i_res = i_arg_1 % i_arg_2;
                 break;
             default:

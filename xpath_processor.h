@@ -73,13 +73,13 @@ class xpath_processor : public xpath_stream {
     enum { e_no_error, e_error_syntax, e_error_overflow, e_error_execution, e_error_stack } _e_error;
 
    protected:
-    void v_action(xpath_construct, unsigned, lex, const char*) override;
+    void v_action(xpath_construct, xpath_sub, lex, const char*) override;
     int i_get_action_counter() override;
 
     xpath_stack _xs_stack;
     action_store _as_action_store;
     void v_execute_stack();
-    void v_pop_one_action(xpath_construct& xc_action, unsigned& u_sub, unsigned& u_ref, std::string& S_literal);
+    void v_pop_one_action(xpath_construct& xc_action, xpath_sub& xp_sub, unsigned& u_ref, std::string& S_literal);
     void v_execute_one(xpath_construct xc_rule, bool o_skip_only);
 
     void v_execute_absolute_path(unsigned u_action_position, bool o_with_rel, bool o_everywhere);
@@ -119,9 +119,9 @@ class xpath_processor : public xpath_stream {
     void v_function_plus(expression_result** erpp_arg);
     void v_function_or(expression_result** erpp_arg);
     void v_function_and(expression_result** erpp_arg);
-    void v_function_relational(expression_result** erpp_arg, unsigned u_sub);
+    void v_function_relational(expression_result** erpp_arg, xpath_sub xp_sub);
     void v_function_opposite();
-    void v_function_mult(expression_result** erpp_arg, unsigned u_sub);
+    void v_function_mult(expression_result** erpp_arg, xpath_sub xp_sub);
 
     void v_push_int(int i_val, const char* cp_comment = "") {
         _xs_stack.v_push_int(i_val, cp_comment);

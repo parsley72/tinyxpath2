@@ -207,7 +207,7 @@ class xpath_stream : public byte_stream {
     }
 
     /// Callback used by token_syntax_decoder::v_syntax_decode to notify of an action to be made. Pure virtual
-    virtual void v_action(xpath_construct, unsigned, lex, const char*) = 0;
+    virtual void v_action(xpath_construct, xpath_sub, lex, const char*) = 0;
 
     /// Callback used by token_syntax_decoder::v_syntax_decode to know the action counter position. Pure virtual
     /// \n This can be any kind of nomenclature, provided that the redefinition is coherent

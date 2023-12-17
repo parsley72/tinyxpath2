@@ -98,13 +98,13 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     if (!o_recognize(xpath_construct::absolute_location_path, o_final))
                         return false;
                     if (o_final)
-                        v_action(xpath_construct::location_path, xpath_location_path_abs);
+                        v_action(xpath_construct::location_path, xpath_sub::location_path_abs);
                     break;
                 default:
                     if (!o_recognize(xpath_construct::relative_location_path, o_final))
                         return false;
                     if (o_final)
-                        v_action(xpath_construct::location_path, xpath_location_path_rel);
+                        v_action(xpath_construct::location_path, xpath_sub::location_path_rel);
                     break;
             }
         } break;
@@ -127,13 +127,13 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             o_recognize(xpath_construct::relative_location_path, o_final);
                             if (o_final) {
                                 v_action(xpath_construct::absolute_location_path,
-                                    xpath_absolute_location_path_slash_rel, action_counter);
+                                    xpath_sub::absolute_location_path_slash_rel, action_counter);
                             }
                         } else {
                             v_set_current(ltp_freeze);
                             if (o_final) {
-                                v_action(xpath_construct::absolute_location_path, xpath_absolute_location_path_slash,
-                                    action_counter);
+                                v_action(xpath_construct::absolute_location_path,
+                                    xpath_sub::absolute_location_path_slash, action_counter);
                             }
                         }
                         break;
@@ -142,7 +142,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::absolute_location_path, xpath_absolute_location_path_abbrev,
+                            v_action(xpath_construct::absolute_location_path, xpath_sub::absolute_location_path_abbrev,
                                 action_counter);
                         }
                         break;
@@ -171,8 +171,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(
-                        xpath_construct::relative_location_path, xpath_relative_location_path_rel_step, action_counter);
+                    v_action(xpath_construct::relative_location_path, xpath_sub::relative_location_path_rel_step,
+                        action_counter);
                 }
             } else if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::two_slash) {
                 v_inc_current(1);
@@ -181,12 +181,12 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 }
                 if (o_final) {
                     v_action(xpath_construct::relative_location_path,
-                        xpath_relative_location_path_rel_double_slash_step, action_counter);
+                        xpath_sub::relative_location_path_rel_double_slash_step, action_counter);
                 }
             } else {
                 if (o_final) {
-                    v_action(
-                        xpath_construct::relative_location_path, xpath_relative_location_path_step, action_counter);
+                    v_action(xpath_construct::relative_location_path, xpath_sub::relative_location_path_step,
+                        action_counter);
                 }
             }
         } break;
@@ -204,7 +204,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         return false;
                     }
                     if (o_final) {
-                        v_action(xpath_construct::step, xpath_step_abbrev);
+                        v_action(xpath_construct::step, xpath_sub::step_abbrev);
                     }
                 } break;
                 default: {
@@ -227,7 +227,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         }
                     }
                     if (o_final) {
-                        v_action(xpath_construct::step, xpath_step_full, static_cast<lex>(u_nb_predicate));
+                        v_action(xpath_construct::step, xpath_sub::step_full, static_cast<lex>(u_nb_predicate));
                         break;
                     }
                 }
@@ -246,7 +246,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     case lex::at:
                         v_inc_current(1);
                         if (o_final) {
-                            v_action(xpath_construct::axis_specifier, xpath_axis_specifier_at);
+                            v_action(xpath_construct::axis_specifier, xpath_sub::axis_specifier_at);
                         }
                         break;
                     default:
@@ -262,7 +262,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             }
                             v_inc_current(1);
                             if (o_final) {
-                                v_action(xpath_construct::axis_specifier, xpath_axis_specifier_axis_name);
+                                v_action(xpath_construct::axis_specifier, xpath_sub::axis_specifier_axis_name);
                             }
                         } else {
                             o_empty = true;
@@ -274,8 +274,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             }
             if (o_empty) {
                 if (o_final) {
-                    v_action(xpath_construct::abbreviated_axis_specifier, 1);
-                    v_action(xpath_construct::axis_specifier, xpath_axis_specifier_empty);
+                    v_action(xpath_construct::abbreviated_axis_specifier, xpath_sub::absolute_location_path_slash);
+                    v_action(xpath_construct::axis_specifier, xpath_sub::axis_specifier_empty);
                 }
             }
         } break;
@@ -302,7 +302,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             if (o_final) {
-                v_action(xpath_construct::axis_name, 0, ltp_get(0)->lex_get_value());
+                v_action(xpath_construct::axis_name, xpath_sub::absolute_location_path_slash_rel,
+                    ltp_get(0)->lex_get_value());
             }
             v_inc_current(1);
         } break;
@@ -320,9 +321,10 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 case lex::comment:
                 case lex::text:
                 case lex::node:
-                    if (o_final)
-                        v_action(
-                            xpath_construct::node_test, xpath_node_test_reserved_keyword, ltp_get(0)->lex_get_value());
+                    if (o_final) {
+                        v_action(xpath_construct::node_test, xpath_sub::node_test_reserved_keyword,
+                            ltp_get(0)->lex_get_value());
+                    }
                     v_inc_current(3);
                     break;
                 case lex::processing_instruction: {
@@ -331,23 +333,26 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         // single
                         v_inc_current(3);
                         if (o_final) {
-                            v_action(xpath_construct::node_test, xpath_node_test_pi, lex::processing_instruction);
+                            v_action(xpath_construct::node_test, xpath_sub::node_test_pi, lex::processing_instruction);
                         }
                     } else {
                         // with literal
                         v_inc_current(3);
                         if (o_final) {
-                            v_action(xpath_construct::node_test, xpath_node_test_pi_lit, lex::processing_instruction,
-                                ltp_get(0)->cp_get_literal());
+                            v_action(xpath_construct::node_test, xpath_sub::node_test_pi_lit,
+                                lex::processing_instruction, ltp_get(0)->cp_get_literal());
                         }
                         v_inc_current(1);
                     }
                 } break;
-                default:
-                    if (!o_recognize(xpath_construct::name_test, o_final))
+                default: {
+                    if (!o_recognize(xpath_construct::name_test, o_final)) {
                         return false;
-                    if (o_final)
-                        v_action(xpath_construct::node_test, xpath_node_test_name_test);
+                    }
+                    if (o_final) {
+                        v_action(xpath_construct::node_test, xpath_sub::node_test_name_test);
+                    }
+                } break;
             }
         } break;
 
@@ -368,7 +373,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             }
             v_inc_current(1);
             if (o_final) {
-                v_action(xpath_construct::predicate, 0);
+                v_action(xpath_construct::predicate, xpath_sub::absolute_location_path_slash_rel);
             }
         } break;
 
@@ -378,7 +383,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             if (o_final) {
-                v_action(xpath_construct::predicate_expr, 0);
+                v_action(xpath_construct::predicate_expr, xpath_sub::absolute_location_path_slash_rel);
             }
         } break;
 
@@ -392,7 +397,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             if (o_final) {
-                v_action(xpath_construct::abbreviated_absolute_location_path, 0);
+                v_action(
+                    xpath_construct::abbreviated_absolute_location_path, xpath_sub::absolute_location_path_slash_rel);
             }
         } break;
 
@@ -407,13 +413,13 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 case lex::dot: {
                     v_inc_current(1);
                     if (o_final) {
-                        v_action(xpath_construct::abbrieviated_step, 0);
+                        v_action(xpath_construct::abbrieviated_step, xpath_sub::absolute_location_path_slash_rel);
                     }
                 } break;
                 case lex::two_dot: {
                     v_inc_current(1);
                     if (o_final) {
-                        v_action(xpath_construct::abbrieviated_step, 1);
+                        v_action(xpath_construct::abbrieviated_step, xpath_sub::absolute_location_path_slash);
                     }
                 } break;
                 default:
@@ -434,7 +440,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             if (o_final) {
-                v_action(xpath_construct::expr, 0);
+                v_action(xpath_construct::expr, xpath_sub::absolute_location_path_slash_rel);
             }
         } break;
 
@@ -453,7 +459,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         return false;
                     }
                     if (o_final) {
-                        v_action(xpath_construct::primary_expr, xpath_primary_expr_variable);
+                        v_action(xpath_construct::primary_expr, xpath_sub::primary_expr_variable);
                     }
                     break;
                 case lex::oparen:
@@ -466,19 +472,19 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     }
                     v_inc_current(1);
                     if (o_final) {
-                        v_action(xpath_construct::primary_expr, xpath_primary_expr_paren_expr);
+                        v_action(xpath_construct::primary_expr, xpath_sub::primary_expr_paren_expr);
                     }
                     break;
                 case lex::literal:
                     if (o_final) {
-                        v_action(xpath_construct::primary_expr, xpath_primary_expr_literal, lex::null,
+                        v_action(xpath_construct::primary_expr, xpath_sub::primary_expr_literal, lex::null,
                             ltp_get(0)->cp_get_literal());
                     }
                     v_inc_current(1);
                     break;
                 case lex::number:
                     if (o_final) {
-                        v_action(xpath_construct::primary_expr, xpath_primary_expr_number, lex::null,
+                        v_action(xpath_construct::primary_expr, xpath_sub::primary_expr_number, lex::null,
                             ltp_get(0)->cp_get_literal());
                     }
                     v_inc_current(1);
@@ -488,7 +494,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         return false;
                     }
                     if (o_final) {
-                        v_action(xpath_construct::primary_expr, xpath_primary_expr_function_call);
+                        v_action(xpath_construct::primary_expr, xpath_sub::primary_expr_function_call);
                     }
                     break;
             }
@@ -506,8 +512,9 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 case lex::node:
                 case lex::processing_instruction: {
                     if (o_final) {
-                        v_action(xpath_construct::xml_local_part, 0, lex::null, ltp_get(0)->cp_get_literal());
-                        v_action(xpath_construct::xml_q_name, xpath_xml_q_name_simple);
+                        v_action(xpath_construct::xml_local_part, xpath_sub::absolute_location_path_slash_rel,
+                            lex::null, ltp_get(0)->cp_get_literal());
+                        v_action(xpath_construct::xml_q_name, xpath_sub::xml_q_name_simple);
                     }
                     v_inc_current(1);
                 } break;
@@ -527,7 +534,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
             if (ltp_get(0)->lex_get_value() == lex::cparen) {
                 v_inc_current(1);
                 if (o_final) {
-                    v_action(xpath_construct::function_call, 0);
+                    v_action(xpath_construct::function_call, xpath_sub::absolute_location_path_slash_rel);
                 }
             } else {
                 ltp_freeze = ltp_get(0);
@@ -556,7 +563,8 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 }
                 v_inc_current(1);
                 if (o_final) {
-                    v_action(xpath_construct::function_call, 1, static_cast<lex>(u_nb_argument));
+                    v_action(xpath_construct::function_call, xpath_sub::absolute_location_path_slash,
+                        static_cast<lex>(u_nb_argument));
                 }
             }
         } break;
@@ -567,7 +575,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             if (o_final) {
-                v_action(xpath_construct::argument, 0);
+                v_action(xpath_construct::argument, xpath_sub::absolute_location_path_slash_rel);
             }
         } break;
 
@@ -585,10 +593,10 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::union_expr, xpath_union_expr_union);
+                    v_action(xpath_construct::union_expr, xpath_sub::union_expr_union);
                 }
             } else if (o_final) {
-                v_action(xpath_construct::union_expr, xpath_union_expr_simple);
+                v_action(xpath_construct::union_expr, xpath_sub::union_expr_simple);
             }
         } break;
 
@@ -612,18 +620,18 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     if (!o_recognize(xpath_construct::relative_location_path, o_final)) {
                         o_location_path = true;
                     } else if (o_final) {
-                        v_action(xpath_construct::path_expr, xpath_path_expr_slash);
+                        v_action(xpath_construct::path_expr, xpath_sub::path_expr_slash);
                     }
                 } else if (ltp_get(0) && ltp_get(0)->lex_get_value() == lex::two_slash) {
                     v_inc_current(1);
                     if (!o_recognize(xpath_construct::relative_location_path, o_final)) {
                         o_location_path = true;
                     } else if (o_final) {
-                        v_action(xpath_construct::path_expr, xpath_path_expr_2_slash);
+                        v_action(xpath_construct::path_expr, xpath_sub::path_expr_2_slash);
                     }
                 } else {
                     if (o_final) {
-                        v_action(xpath_construct::path_expr, xpath_path_expr_filter);
+                        v_action(xpath_construct::path_expr, xpath_sub::path_expr_filter);
                     }
                 }
             }
@@ -634,7 +642,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::path_expr, xpath_path_expr_location_path);
+                    v_action(xpath_construct::path_expr, xpath_sub::path_expr_location_path);
                 }
             }
         } break;
@@ -652,10 +660,10 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::filter_expr, xpath_filter_expr_predicate);
+                    v_action(xpath_construct::filter_expr, xpath_sub::filter_expr_predicate);
                 }
             } else if (o_final) {
-                v_action(xpath_construct::filter_expr, xpath_filter_expr_primary);
+                v_action(xpath_construct::filter_expr, xpath_sub::filter_expr_primary);
             }
         } break;
 
@@ -674,11 +682,11 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::or_expr, xpath_or_expr_or);
+                    v_action(xpath_construct::or_expr, xpath_sub::or_expr_or);
                 }
                 o_test_more = true;
             } else if (o_final) {
-                v_action(xpath_construct::or_expr, xpath_or_expr_simple);
+                v_action(xpath_construct::or_expr, xpath_sub::or_expr_simple);
             }
             if (o_test_more) {
                 while (ltp_get(0) && (ltp_get(0)->lex_get_value() == lex::_or)) {
@@ -687,7 +695,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         return false;
                     }
                     if (o_final) {
-                        v_action(xpath_construct::or_expr, xpath_or_expr_more);
+                        v_action(xpath_construct::or_expr, xpath_sub::or_expr_more);
                     }
                 }
             }
@@ -707,10 +715,10 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::and_expr, xpath_and_expr_and);
+                    v_action(xpath_construct::and_expr, xpath_sub::and_expr_and);
                 }
             } else if (o_final) {
-                v_action(xpath_construct::and_expr, xpath_and_expr_simple);
+                v_action(xpath_construct::and_expr, xpath_sub::and_expr_simple);
             }
         } break;
 
@@ -731,7 +739,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::equality_expr, xpath_equality_expr_equal);
+                            v_action(xpath_construct::equality_expr, xpath_sub::equality_expr_equal);
                         }
                         break;
 
@@ -741,19 +749,19 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::equality_expr, xpath_equality_expr_not_equal);
+                            v_action(xpath_construct::equality_expr, xpath_sub::equality_expr_not_equal);
                         }
                         break;
 
                     default:
                         if (o_final) {
-                            v_action(xpath_construct::equality_expr, xpath_equality_expr_simple);
+                            v_action(xpath_construct::equality_expr, xpath_sub::equality_expr_simple);
                         }
                         break;
                 }
             } else {
                 if (o_final) {
-                    v_action(xpath_construct::equality_expr, xpath_equality_expr_simple);
+                    v_action(xpath_construct::equality_expr, xpath_sub::equality_expr_simple);
                 }
             }
         } break;
@@ -777,7 +785,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::relational_expr, xpath_relational_expr_lt);
+                            v_action(xpath_construct::relational_expr, xpath_sub::relational_expr_lt);
                         }
                         break;
                     case lex::gt:
@@ -786,7 +794,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::relational_expr, xpath_relational_expr_gt);
+                            v_action(xpath_construct::relational_expr, xpath_sub::relational_expr_gt);
                         }
                         break;
                     case lex::lt_equal:
@@ -795,7 +803,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::relational_expr, xpath_relational_expr_lte);
+                            v_action(xpath_construct::relational_expr, xpath_sub::relational_expr_lte);
                         }
                         break;
                     case lex::gt_equal:
@@ -804,17 +812,17 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::relational_expr, xpath_relational_expr_gte);
+                            v_action(xpath_construct::relational_expr, xpath_sub::relational_expr_gte);
                         }
                         break;
                     default:
                         if (o_final) {
-                            v_action(xpath_construct::relational_expr, xpath_relational_expr_simple);
+                            v_action(xpath_construct::relational_expr, xpath_sub::relational_expr_simple);
                         }
                         break;
                 }  // switch
             } else if (o_final) {
-                v_action(xpath_construct::relational_expr, xpath_relational_expr_simple);
+                v_action(xpath_construct::relational_expr, xpath_sub::relational_expr_simple);
             }
         } break;
 
@@ -835,7 +843,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::additive_expr, xpath_additive_expr_plus);
+                            v_action(xpath_construct::additive_expr, xpath_sub::additive_expr_plus);
                         }
                         o_test_more = true;
                         break;
@@ -845,18 +853,18 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::additive_expr, xpath_additive_expr_minus);
+                            v_action(xpath_construct::additive_expr, xpath_sub::additive_expr_minus);
                         }
                         o_test_more = true;
                         break;
                     default:
                         if (o_final) {
-                            v_action(xpath_construct::additive_expr, xpath_additive_expr_simple);
+                            v_action(xpath_construct::additive_expr, xpath_sub::additive_expr_simple);
                         }
                         break;
                 }  // switch
             } else if (o_final)
-                v_action(xpath_construct::additive_expr, xpath_additive_expr_simple);
+                v_action(xpath_construct::additive_expr, xpath_sub::additive_expr_simple);
             if (o_test_more) {
                 while (ltp_get(0) &&
                        (ltp_get(0)->lex_get_value() == lex::plus || ltp_get(0)->lex_get_value() == lex::minus)) {
@@ -866,7 +874,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::additive_expr, xpath_additive_expr_more_plus);
+                            v_action(xpath_construct::additive_expr, xpath_sub::additive_expr_more_plus);
                         }
                     } else {
                         v_inc_current(1);
@@ -874,7 +882,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::additive_expr, xpath_additive_expr_more_minus);
+                            v_action(xpath_construct::additive_expr, xpath_sub::additive_expr_more_minus);
                         }
                     }
                 }
@@ -901,7 +909,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::multiplicative_expr, xpath_multiplicative_expr_star);
+                            v_action(xpath_construct::multiplicative_expr, xpath_sub::multiplicative_expr_star);
                         }
                         break;
                     case lex::div:
@@ -910,7 +918,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::multiplicative_expr, xpath_multiplicative_expr_div);
+                            v_action(xpath_construct::multiplicative_expr, xpath_sub::multiplicative_expr_div);
                         }
                         break;
                     case lex::mod:
@@ -919,17 +927,17 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::multiplicative_expr, xpath_multiplicative_expr_mod);
+                            v_action(xpath_construct::multiplicative_expr, xpath_sub::multiplicative_expr_mod);
                         }
                         break;
                     default:
                         if (o_final) {
-                            v_action(xpath_construct::multiplicative_expr, xpath_multiplicative_expr_simple);
+                            v_action(xpath_construct::multiplicative_expr, xpath_sub::multiplicative_expr_simple);
                         }
                         break;
                 }
             } else if (o_final) {
-                v_action(xpath_construct::multiplicative_expr, xpath_multiplicative_expr_simple);
+                v_action(xpath_construct::multiplicative_expr, xpath_sub::multiplicative_expr_simple);
             }
         } break;
 
@@ -944,14 +952,14 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::unary_expr, xpath_unary_expr_minus);
+                    v_action(xpath_construct::unary_expr, xpath_sub::unary_expr_minus);
                 }
             } else {
                 if (!o_recognize(xpath_construct::union_expr, o_final)) {
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::unary_expr, xpath_unary_expr_simple);
+                    v_action(xpath_construct::unary_expr, xpath_sub::unary_expr_simple);
                 }
             }
         } break;
@@ -969,7 +977,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 return false;
             }
             if (o_final) {
-                v_action(xpath_construct::variable_reference, 0);
+                v_action(xpath_construct::variable_reference, xpath_sub::absolute_location_path_slash_rel);
             }
         } break;
 
@@ -985,7 +993,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                 if (lexVal == lex::star) {
                     v_inc_current(1);
                     if (o_final) {
-                        v_action(xpath_construct::name_test, xpath_name_test_star);
+                        v_action(xpath_construct::name_test, xpath_sub::name_test_star);
                     }
                 } else if (lexVal == lex::ncname) {
                     o_qname = false;
@@ -995,7 +1003,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                         if (token2->lex_get_value() == lex::star) {
                             v_inc_current(3);
                             if (o_final) {
-                                v_action(xpath_construct::name_test, xpath_name_test_ncname);
+                                v_action(xpath_construct::name_test, xpath_sub::name_test_ncname);
                             }
                         } else {
                             o_qname = true;
@@ -1008,7 +1016,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                             return false;
                         }
                         if (o_final) {
-                            v_action(xpath_construct::name_test, xpath_name_test_qname);
+                            v_action(xpath_construct::name_test, xpath_sub::name_test_qname);
                         }
                     }
                 }
@@ -1027,15 +1035,18 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
                     return false;
                 }
                 if (o_final) {
-                    v_action(xpath_construct::xml_prefix, 0, lex::null, ltp_get(0)->cp_get_literal());
-                    v_action(xpath_construct::xml_local_part, 0, lex::null, ltp_get(2)->cp_get_literal());
-                    v_action(xpath_construct::xml_q_name, xpath_xml_q_name_colon);
+                    v_action(xpath_construct::xml_prefix, xpath_sub::absolute_location_path_slash_rel, lex::null,
+                        ltp_get(0)->cp_get_literal());
+                    v_action(xpath_construct::xml_local_part, xpath_sub::absolute_location_path_slash_rel, lex::null,
+                        ltp_get(2)->cp_get_literal());
+                    v_action(xpath_construct::xml_q_name, xpath_sub::xml_q_name_colon);
                 }
                 v_inc_current(3);
             } else {
                 if (o_final) {
-                    v_action(xpath_construct::xml_local_part, 0, lex::null, ltp_get(0)->cp_get_literal());
-                    v_action(xpath_construct::xml_q_name, xpath_xml_q_name_simple);
+                    v_action(xpath_construct::xml_local_part, xpath_sub::absolute_location_path_slash_rel, lex::null,
+                        ltp_get(0)->cp_get_literal());
+                    v_action(xpath_construct::xml_q_name, xpath_sub::xml_q_name_simple);
                 }
                 v_inc_current(1);
             }
@@ -1043,7 +1054,7 @@ bool token_syntax_decoder::o_recognize(xpath_construct xc_current,  ///< XPath c
 
         default: {
             if (o_final) {
-                v_action(xpath_construct::unknown, 0);
+                v_action(xpath_construct::unknown, xpath_sub::absolute_location_path_slash_rel);
             }
             return false;
         } break;
