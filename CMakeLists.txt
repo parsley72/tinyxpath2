@@ -9,14 +9,16 @@ project(TinyXPath2
 
 # set(CMAKE_BUILD_TYPE "Debug")
 
-include_directories(tinyxml2)
+set(TINYXPATH2_HEADERS action_store.h byte_stream.h htmlutil.h lex_token.h lex_util.h node_set.h tinyxpath_conf.h tokenlist.h xml_util.h xpath_expression.h xpath_processor.h xpath_stack.h xpath_static.h xpath_stream.h xpath_syntax.h)
 
-add_library(tinyxpath2 STATIC htmlutil.cpp tinyxml2/tinyxml2.cpp action_store.cpp lex_util.cpp node_set.cpp tokenlist.cpp xml_util.cpp xpath_expression.cpp xpath_processor.cpp xpath_stack.cpp xpath_stream.cpp xpath_syntax.cpp xpath_static.cpp action_store.h byte_stream.h htmlutil.h lex_token.h lex_util.h node_set.h tinyxpath_conf.h tokenlist.h xml_util.h xpath_expression.h xpath_processor.h xpath_stack.h xpath_stream.h xpath_syntax.h)
+add_library(tinyxpath2 STATIC htmlutil.cpp action_store.cpp lex_util.cpp node_set.cpp tokenlist.cpp xml_util.cpp xpath_expression.cpp xpath_processor.cpp xpath_stack.cpp xpath_stream.cpp xpath_syntax.cpp xpath_static.cpp ${TINYXPATH2_HEADERS})
 
-set_target_properties(tinyxpath2 PROPERTIES PUBLIC_HEADER "tinyxml2/tinyxml2.h;xpath_static.h")
+set_target_properties(tinyxpath2 PROPERTIES PUBLIC_HEADER "action_store.h;byte_stream.h;htmlutil.h;lex_token.h;lex_util.h;node_set.h;tinyxpath_conf.h;tokenlist.h;xml_util.h;xpath_expression.h;xpath_processor.h;xpath_stack.h;xpath_static.h;xpath_stream.h;xpath_syntax.h")
 
 install(TARGETS tinyxpath2
   PUBLIC_HEADER DESTINATION include
   ARCHIVE DESTINATION lib/${LIBRARY_SUBDIR})
 
-add_executable(test_tinyxpath2 main.cpp htmlutil.cpp tinyxml2/tinyxml2.cpp action_store.cpp lex_util.cpp node_set.cpp tokenlist.cpp xml_util.cpp xpath_expression.cpp xpath_processor.cpp xpath_stack.cpp xpath_stream.cpp xpath_syntax.cpp xpath_static.cpp action_store.h byte_stream.h htmlutil.h lex_token.h lex_util.h node_set.h tinyxpath_conf.h tokenlist.h xml_util.h xpath_expression.h xpath_processor.h xpath_stack.h xpath_stream.h xpath_syntax.h)
+if (CMAKE_BUILD_TYPE EQUAL "Debug")
+  add_executable(test_tinyxpath2 main.cpp htmlutil.cpp action_store.cpp lex_util.cpp node_set.cpp tokenlist.cpp xml_util.cpp xpath_expression.cpp xpath_processor.cpp xpath_stack.cpp xpath_stream.cpp xpath_syntax.cpp xpath_static.cpp ${TINYXPATH2_HEADERS})
+endif()
