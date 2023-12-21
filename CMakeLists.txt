@@ -7,18 +7,27 @@ project(TinyXPath2
   LANGUAGES CXX
   )
 
+# set(CMAKE_MESSAGE_LOG_LEVEL "STATUS")
 # set(CMAKE_BUILD_TYPE "Debug")
 
-set(TINYXPATH2_HEADERS action_store.h byte_stream.h htmlutil.h lex_token.h lex_util.h node_set.h tinyxpath_conf.h tokenlist.h xml_util.h xpath_expression.h xpath_processor.h xpath_stack.h xpath_static.h xpath_stream.h xpath_syntax.h)
+configure_file(tinyxpath2.pc.in tinyxpath2.pc @ONLY)
 
-add_library(tinyxpath2 STATIC htmlutil.cpp action_store.cpp lex_util.cpp node_set.cpp tokenlist.cpp xml_util.cpp xpath_expression.cpp xpath_processor.cpp xpath_stack.cpp xpath_stream.cpp xpath_syntax.cpp xpath_static.cpp ${TINYXPATH2_HEADERS})
+include_directories(tinyxml2)
+
+set(TINYXPATH2_CODE htmlutil.cpp action_store.cpp lex_util.cpp node_set.cpp tokenlist.cpp xml_util.cpp xpath_expression.cpp xpath_processor.cpp xpath_stack.cpp xpath_stream.cpp xpath_syntax.cpp xpath_static.cpp)
+
+add_library(tinyxpath2 STATIC ${TINYXPATH2_CODE})
+target_include_directories(tinyxpath2 PRIVATE .)
 
 set_target_properties(tinyxpath2 PROPERTIES PUBLIC_HEADER "action_store.h;byte_stream.h;htmlutil.h;lex_token.h;lex_util.h;node_set.h;tinyxpath_conf.h;tokenlist.h;xml_util.h;xpath_expression.h;xpath_processor.h;xpath_stack.h;xpath_static.h;xpath_stream.h;xpath_syntax.h")
 
 install(TARGETS tinyxpath2
   PUBLIC_HEADER DESTINATION include
   ARCHIVE DESTINATION lib/${LIBRARY_SUBDIR})
+install(FILES ${CMAKE_BINARY_DIR}/tinyxpath2.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
 
-if (CMAKE_BUILD_TYPE EQUAL "Debug")
-  add_executable(test_tinyxpath2 main.cpp htmlutil.cpp action_store.cpp lex_util.cpp node_set.cpp tokenlist.cpp xml_util.cpp xpath_expression.cpp xpath_processor.cpp xpath_stack.cpp xpath_stream.cpp xpath_syntax.cpp xpath_static.cpp ${TINYXPATH2_HEADERS})
+message(WARNING "CMAKE_BUILD_TYPE: [${CMAKE_BUILD_TYPE}]")
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_executable(test_tinyxpath2 main.cpp tinyxml2/tinyxml2.cpp ${TINYXPATH2_CODE})
 endif()
